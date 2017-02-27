@@ -1,0 +1,44 @@
+#built application files
+*.apk
+*.ap_
+
+# files for the dex VM
+*.dex
+
+# Java class files
+*.class
+
+# Windows
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# OS X
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# Git
+*.orig
+*.patch
+
+# Gradle
+/build/
+.gradle/
+!/gradle/**/*.jar
+.settings/gradle/
+
+# Eclipse
+.classpath
+.project
+/bin/
+
+# VIM
+*.sw*
+
+# IntelliJ Idea (don't ignore run configurations)
+*.iml
+.idea/
+.iml/
+!.idea/runConfigurations/
