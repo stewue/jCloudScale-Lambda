@@ -8,6 +8,7 @@ repositories {
 }
 
 dependencies {
+    compile group: 'org.aspectj', name: 'aspectjweaver', version: '1.8.10'
     compile 'com.amazonaws:aws-java-sdk-lambda:1.11.93'
     compile 'com.amazonaws:aws-lambda-java-core:1.1.0'
     compile 'com.googlecode.json-simple:json-simple:1.1.1'
