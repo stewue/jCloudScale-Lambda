@@ -192,14 +192,21 @@ public class AwsCloudProvider implements CloudProvider {
             createFunctionRequest.setMemorySize( JcsConfiguration.AWS_DEFAULT_MEMORY_SIZE );
             createFunctionResult = amazonLamdba.createFunction( createFunctionRequest );
 
-            Logger.info( "Lambda Function '" + functionName + "' created" );
-        }
+            // Set Permission for gateway api
+            AddPermissionRequest addPermissionRequest = new AddPermissionRequest();
+            addPermissionRequest.setFunctionName( createFunctionResult.getFunctionArn() );
+            addPermissionRequest.setAction( "lambda:*" );
+            addPermissionRequest.setPrincipal( "apigateway.amazonaws.com" );
+            addPermissionRequest.setStatementId( UUID.randomUUID().toString() );
+            amazonLamdba.addPermission( addPermissionRequest );
 
-        ////////////////////////////////////////////
-        ////////////////////////////////////////////
-        // TODO: Gateway
-        ////////////////////////////////////////////
-        ////////////////////////////////////////////
+            Logger.info( "Lambda Function '" + functionName + "' created" );
+
+            createGatewayAPI( "TEST", createFunctionResult.getFunctionArn()  );
+        }
+    }
+
+    private void createGatewayAPI ( String functionName, String functionARN ){
         if( restApiId == null ){
             GetRestApisResult getRestApisResult = amazonApiGateway.getRestApis( new GetRestApisRequest() );
             for( RestApi item : getRestApisResult.getItems() ){
@@ -236,9 +243,7 @@ public class AwsCloudProvider implements CloudProvider {
         CreateResourceRequest createResourceRequest = new CreateResourceRequest();
         createResourceRequest.setRestApiId( restApiId );
         createResourceRequest.setParentId( rootResource.getId() );
-        // TODO not hard-coded
-        String endpointName = "abcdefg";
-        createResourceRequest.setPathPart( endpointName );
+        createResourceRequest.setPathPart( functionName );
         CreateResourceResult createResourceResult = amazonApiGateway.createResource( createResourceRequest );
 
         // Create Method
@@ -255,8 +260,9 @@ public class AwsCloudProvider implements CloudProvider {
         putIntegrationRequest.setRestApiId( restApiId );
         putIntegrationRequest.setResourceId( createResourceResult.getId() );
         putIntegrationRequest.setType( IntegrationType.AWS );
-        putIntegrationRequest.setUri( "arn:aws:apigateway:" + JcsConfiguration.AWS_REGION.getName() + ":lambda:path/2015-03-31/functions/" + createFunctionResult.getFunctionArn() + "/invocations" );
+        putIntegrationRequest.setUri( "arn:aws:apigateway:" + JcsConfiguration.AWS_REGION.getName() + ":lambda:path/2015-03-31/functions/" + functionARN + "/invocations" );
         putIntegrationRequest.setIntegrationHttpMethod( "POST" );
+        putIntegrationRequest.setContentHandling( ContentHandlingStrategy.CONVERT_TO_TEXT );
         amazonApiGateway.putIntegration( putIntegrationRequest );
 
         // Create Method Response
@@ -265,6 +271,7 @@ public class AwsCloudProvider implements CloudProvider {
         putMethodResponseRequest.setRestApiId( restApiId );
         putMethodResponseRequest.setResourceId( createResourceResult.getId() );
         putMethodResponseRequest.setStatusCode( "200" );
+        putMethodResponseRequest.setResponseModels( new HashMap<String, String>(){{ put("application/json","Empty"); }} );
         amazonApiGateway.putMethodResponse( putMethodResponseRequest );
 
         // Create Integration Response
@@ -275,41 +282,14 @@ public class AwsCloudProvider implements CloudProvider {
         putIntegrationResponseRequest.setStatusCode( "200" );
         amazonApiGateway.putIntegrationResponse( putIntegrationResponseRequest );
 
-
-
-
-
         // Create new deployment stage
+        // ToDo do this step only once after all changes
         CreateDeploymentRequest createDeploymentRequest = new CreateDeploymentRequest();
         createDeploymentRequest.setRestApiId( restApiId );
         createDeploymentRequest.setStageName( JcsConfiguration.AWS_API_GATEWAY_STAGE_NAME );
         CreateDeploymentResult createDeploymentResult = amazonApiGateway.createDeployment( createDeploymentRequest );
 
-        /*UpdateStageRequest updateStageRequest = new UpdateStageRequest();
-        updateStageRequest.setRestApiId( restApiId );
-        updateStageRequest.setStageName( JcsConfiguration.AWS_API_GATEWAY_STAGE_NAME );*/
-
-        //
-        /*GetStageRequest getStageRequest = new GetStageRequest();
-        getStageRequest.setRestApiId( restApiId );
-        getStageRequest.setStageName( JcsConfiguration.AWS_API_GATEWAY_STAGE_NAME );*/
-
-       /* GetDeploymentsRequest getDeploymentsRequest = new GetDeploymentsRequest();
-        getDeploymentsRequest.setRestApiId( restApiId );
-        GetDeploymentsResult getDeploymentsResult = amazonApiGateway.getDeployments( getDeploymentsRequest );*/
-
-        /*for( Deployment item : getDeploymentsResult.getItems() ){
-            if( createDeploymentResult.getId() != item.getId() ){
-                DeleteDeploymentRequest deleteDeploymentRequest = new DeleteDeploymentRequest();
-                deleteDeploymentRequest.setRestApiId( restApiId );
-                deleteDeploymentRequest.setDeploymentId( item.getId() );
-                amazonApiGateway.deleteDeployment( deleteDeploymentRequest );
-            }
-        }*/
-
-
-
-        System.out.println( "https://" + restApiId + ".execute-api." + JcsConfiguration.AWS_REGION.getName() + ".amazonaws.com/" + JcsConfiguration.AWS_API_GATEWAY_STAGE_NAME + "/" + endpointName );
+        Logger.info( "API Gateway for Lambda Function '" + functionName + "' created" );
     }
 
     private String getRole (){
@@ -367,102 +347,12 @@ public class AwsCloudProvider implements CloudProvider {
                 // Create Function with uploaded File
                 createFunction( functionName, handlerName, functionCode );
 
+                System.out.println( functionName + " => https://" + restApiId + ".execute-api." + JcsConfiguration.AWS_REGION.getName() + ".amazonaws.com/" + JcsConfiguration.AWS_API_GATEWAY_STAGE_NAME + "/" + functionName );
+
                 // ToDo: only once after all Methods are registered
                 // Remove buckets
                 removeAllTemporaryBuckets();
             }
-
-            if( restApiId == null ){
-                GetRestApisResult getRestApisResult = amazonApiGateway.getRestApis( new GetRestApisRequest() );
-                for( RestApi item : getRestApisResult.getItems() ){
-                    if( item.getName().equals( JcsConfiguration.AWS_API_GATEWAY_NAME ) ){
-                        restApiId = item.getId();
-                        break;
-                    }
-                }
-            }
-
-            if( rootResource == null ) {
-                // Search root resource
-                GetResourcesRequest getResourcesRequest = new GetResourcesRequest();
-                getResourcesRequest.setRestApiId( restApiId );
-                GetResourcesResult getResourcesResult = amazonApiGateway.getResources( getResourcesRequest );
-
-                for (Resource resource : getResourcesResult.getItems()) {
-                    if (resource.getParentId() == null) {
-                        rootResource = resource;
-                        break;
-                    }
-                }
-            }
-
-/*
-            // Create Resource
-            CreateResourceRequest createResourceRequest = new CreateResourceRequest();
-            createResourceRequest.setRestApiId( restApiId );
-            createResourceRequest.setParentId( rootResource.getId() );
-            // TODO not hard-coded
-            String endpointName = "abcdefg";
-            createResourceRequest.setPathPart( endpointName );
-            CreateResourceResult createResourceResult = amazonApiGateway.createResource( createResourceRequest );
-
-            // Create Method
-            PutMethodRequest putMethodRequest = new PutMethodRequest();
-            putMethodRequest.setRestApiId( restApiId );
-            putMethodRequest.setResourceId( createResourceResult.getId() );
-            putMethodRequest.setHttpMethod( "POST" );
-            putMethodRequest.setAuthorizationType( "None" );
-            amazonApiGateway.putMethod( putMethodRequest );
-
-            // Create Integration Request
-            PutIntegrationRequest putIntegrationRequest = new PutIntegrationRequest();
-            putIntegrationRequest.setHttpMethod( "POST" );
-            putIntegrationRequest.setRestApiId( restApiId );
-            putIntegrationRequest.setResourceId( createResourceResult.getId() );
-            putIntegrationRequest.setType( IntegrationType.AWS );
-            putIntegrationRequest.setUri( "arn:aws:apigateway:" + JcsConfiguration.AWS_REGION.getName() + ":lambda:path/2015-03-31/functions/" + lambdaFunctionConfigurations.get( "HelloLambdaFunction" ).getFunctionArn() + "/invocations" );
-            putIntegrationRequest.setIntegrationHttpMethod( "POST" );
-            putIntegrationRequest.setContentHandling( ContentHandlingStrategy.CONVERT_TO_TEXT );
-            amazonApiGateway.putIntegration( putIntegrationRequest );
-
-            // Create Method Response
-            PutMethodResponseRequest putMethodResponseRequest = new PutMethodResponseRequest();
-            putMethodResponseRequest.setHttpMethod( "POST" );
-            putMethodResponseRequest.setRestApiId( restApiId );
-            putMethodResponseRequest.setResourceId( createResourceResult.getId() );
-            putMethodResponseRequest.setStatusCode( "200" );
-            putMethodResponseRequest.setResponseModels( new HashMap<String, String>(){{ put("application/json","Empty"); }} );
-            amazonApiGateway.putMethodResponse( putMethodResponseRequest );
-
-            // Create Integration Response
-            PutIntegrationResponseRequest putIntegrationResponseRequest = new PutIntegrationResponseRequest();
-            putIntegrationResponseRequest.setHttpMethod( "POST" );
-            putIntegrationResponseRequest.setRestApiId( restApiId );
-            putIntegrationResponseRequest.setResourceId( createResourceResult.getId() );
-            putIntegrationResponseRequest.setStatusCode( "200" );
-            amazonApiGateway.putIntegrationResponse( putIntegrationResponseRequest );*/
-
-
-            // Create new deployment stage
-            CreateDeploymentRequest createDeploymentRequest = new CreateDeploymentRequest();
-            createDeploymentRequest.setRestApiId( restApiId );
-            createDeploymentRequest.setStageName( JcsConfiguration.AWS_API_GATEWAY_STAGE_NAME );
-            CreateDeploymentResult createDeploymentResult = amazonApiGateway.createDeployment( createDeploymentRequest );
-
-            //TODO TMP
-            /*GetMethodRequest getMethodRequest = new GetMethodRequest();
-            getMethodRequest.setRestApiId( restApiId );
-            getMethodRequest.setResourceId( "yj5zmv" );
-            getMethodRequest.setHttpMethod( "PUT" );
-            GetMethodResult result1 = amazonApiGateway.getMethod( getMethodRequest );*/
-
-            GetMethodRequest getMethodRequest2 = new GetMethodRequest();
-            getMethodRequest2.setRestApiId( restApiId );
-            getMethodRequest2.setResourceId( "4twqsy" /*createResourceResult.getId()*/ );
-            getMethodRequest2.setHttpMethod( "POST" );
-            GetMethodResult result2 = amazonApiGateway.getMethod( getMethodRequest2 );
-
-            System.out.println( "xy" );
         }
         catch (AmazonServiceException ase) {
             Logger.error( "Caught an AmazonServiceException, which means your request made it to Amazon, but was rejected with an error response for some reason." );
