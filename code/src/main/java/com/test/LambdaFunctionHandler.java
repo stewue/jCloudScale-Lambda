@@ -12,19 +12,13 @@ public class LambdaFunctionHandler implements RequestHandler<Object, String> {
     }
 }*/
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.BufferedReader;
-import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
-
-
+import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+
+import java.io.*;
 
 
 public class LambdaFunctionHandler implements RequestStreamHandler {
