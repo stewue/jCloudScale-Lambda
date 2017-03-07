@@ -1,6 +1,7 @@
 package ch.uzh.ifi.seal.jcs_lambda.cloudprovider;
 
+import java.io.File;
+
 public interface CloudProvider {
-    void registerMethod ();
-    void removeMethod ();
+    void registerMethod ( String functionName, String handlerName, File file );
 }
