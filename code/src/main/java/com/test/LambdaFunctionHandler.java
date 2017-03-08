@@ -1,16 +1,4 @@
 package com.test;
-/*
-import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
-import com.amazonaws.services.lambda.runtime.RequestHandler;
-
-public class LambdaFunctionHandler implements RequestHandler<Object, String> {
-    @Override
-    public String handleRequest(Object request, Context context){
-        context.getLogger().log("##################" + request );
-        return "Fehlerhaft?";
-    }
-}*/
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
