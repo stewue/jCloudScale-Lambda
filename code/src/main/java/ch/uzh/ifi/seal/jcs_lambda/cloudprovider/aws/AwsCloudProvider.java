@@ -42,6 +42,9 @@ public class AwsCloudProvider implements CloudProvider {
     AWSLambda amazonLamdba;
     HashMap<String, FunctionConfiguration> lambdaFunctionConfigurations = new HashMap<>();
 
+    /**
+     * login to all aws services with the credential
+     */
     public AwsCloudProvider (){
         // Create AWS Credentials
         basicAWSCredentials = new BasicAWSCredentials( JcsConfiguration.AWS_ACCESS_KEY_ID, JcsConfiguration.AWS_SECRET_KEY_ID );
@@ -109,9 +112,11 @@ public class AwsCloudProvider implements CloudProvider {
         Logger.info( "Delete a bucket '" + bucketName + "' in Amazon S3" );
     }
 
+    /**
+     * Remove all buckets in S3 with our prefix
+     */
     private void removeAllTemporaryBuckets (){
         // Get all buckets
-        // ToDo No prefix possible?
         ListBucketsRequest listBucketsRequest = new ListBucketsRequest();
         List<Bucket> buckets = amazonS3.listBuckets( listBucketsRequest );
 
@@ -123,6 +128,11 @@ public class AwsCloudProvider implements CloudProvider {
         }
     }
 
+    /**
+     * Upload a jar-File to Amazon S3
+     * @param file path to the file, that we would upload
+     * @return the id of the uploaded file
+     */
     private FunctionCode uploadFile( File file ){
         // check if already a temporary bucket, for uploading the files, exists
         if( s3Bucketname == null ){
@@ -145,6 +155,12 @@ public class AwsCloudProvider implements CloudProvider {
         return functionCode;
     }
 
+    /**
+     * create a lambda function with the uploaded file from S3
+     * @param functionName the name of the function that we create
+     * @param handlerName the start point of the execution
+     * @param functionCode Amazon S3 id of the uploaded file
+     */
     private void createFunction ( String functionName, String handlerName, FunctionCode functionCode ){
         // Check if function name already exists
         GetFunctionRequest getFunctionRequest = new GetFunctionRequest();
@@ -206,7 +222,14 @@ public class AwsCloudProvider implements CloudProvider {
         }
     }
 
+    /**
+     * create a rest-endpoint for calling it from outside of the amazon cloud
+     * @param functionName the name of the function, that is now a part of the path
+     * @param functionARN the arn of the function
+     */
     private void createGatewayAPI ( String functionName, String functionARN ){
+
+        // Get the id of the restAPI
         if( restApiId == null ){
             GetRestApisResult getRestApisResult = amazonApiGateway.getRestApis( new GetRestApisRequest() );
             for( RestApi item : getRestApisResult.getItems() ){
@@ -217,6 +240,7 @@ public class AwsCloudProvider implements CloudProvider {
             }
         }
 
+        // if no restAPI exists then create it
         if( restApiId == null){
             // Create Rest API
             CreateRestApiRequest createRestApiRequest = new CreateRestApiRequest();
@@ -225,6 +249,7 @@ public class AwsCloudProvider implements CloudProvider {
             restApiId = createRestApiResult.getId();
         }
 
+        // Get the root resource of the restAPI
         if( rootResource == null ) {
             // Search root resource
             GetResourcesRequest getResourcesRequest = new GetResourcesRequest();
@@ -292,6 +317,10 @@ public class AwsCloudProvider implements CloudProvider {
         Logger.info( "API Gateway for Lambda Function '" + functionName + "' created" );
     }
 
+    /**
+     * create a role and set the policy, that the role has only access to aws lambda
+     * @return the arn of the role
+     */
     private String getRole (){
         if( roleARN == null ){
             // Check if role already exists
@@ -335,6 +364,12 @@ public class AwsCloudProvider implements CloudProvider {
         return roleARN;
     }
 
+    /**
+     * Upload a function to AWS and register it
+     * @param functionName the name of the function that we create
+     * @param handlerName the start point of the execution
+     * @param file path to the file, that we would upload
+     */
     @Override
     public void registerMethod ( String functionName, String handlerName, File file ){
         try {
