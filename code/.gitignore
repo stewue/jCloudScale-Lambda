@@ -23,11 +23,8 @@ $RECYCLE.BIN/
 *.orig
 *.patch
 
-# Gradle
-/build/
-.gradle/
-!/gradle/**/*.jar
-.settings/gradle/
+# Maven
+/target/
 
 # Eclipse
 .classpath
