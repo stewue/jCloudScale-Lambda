@@ -1,6 +1,6 @@
 package com.aws;
 
-public class RequestDTO {
+public class Request {
     public int a;
     public String b;
 }
