@@ -1,12 +1,10 @@
-package com.test;
+package com.demo;
 
-import com.aws.RequestDTO;
-import com.aws.ResponseDTO;
+import com.aws.Request;
 import com.google.gson.Gson;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URL;
 
 public class URLSample {
@@ -15,16 +13,13 @@ public class URLSample {
 
     public static void main(String[] args) throws Exception {
 
-        RequestDTO requestDTO = new RequestDTO();
-        requestDTO.a = 7;
-        requestDTO.b = "stefan";
+        Request request = new Request();
+        request.a = 7;
+        request.b = "stefan";
 
         String url = "https://wcfhgyglqg.execute-api.eu-central-1.amazonaws.com/prod/TEST";
 
-        ResponseDTO responseDTO = gson.fromJson( doRequest( url,  gson.toJson(requestDTO) ), ResponseDTO.class );
-
-        System.out.println( responseDTO.c );
-        System.out.println( responseDTO.d );
+        //Response response = gson.fromJson( doRequest( url,  gson.toJson(request) ), Response.class );
     }
 
     private static String doRequest ( String url, String urlParameters ){
@@ -32,9 +27,8 @@ public class URLSample {
             URL obj = new URL(url);
             HttpsURLConnection con = (HttpsURLConnection) obj.openConnection();
 
-            //add reuqest header
+            //add request header
             con.setRequestMethod("POST");
-            con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
 
             // Send post request
             con.setDoOutput(true);
@@ -56,8 +50,7 @@ public class URLSample {
 
             return response.toString();
         }
-        catch ( MalformedURLException e ){}
-        catch ( IOException e ){}
+        catch ( Exception e ){}
 
         return null;
     }

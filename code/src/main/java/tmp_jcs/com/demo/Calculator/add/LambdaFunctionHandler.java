@@ -1,12 +1,10 @@
-package com.aws;
+package tmp_jcs.com.demo.Calculator.add; 
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 import com.google.gson.Gson;
-import com.demo.ReturnObj;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-
 import java.io.*;
 
 public class LambdaFunctionHandler implements RequestStreamHandler {
@@ -32,11 +30,7 @@ public class LambdaFunctionHandler implements RequestStreamHandler {
         writer.close();
     }
 
-    private ReturnObj emulateMethod(int a, String b ){
-        ReturnObj returnObj = new ReturnObj();
-        returnObj.c = 2 * a;
-        returnObj.d = b + " --- xyz";
-
-        return returnObj;
+    private int emulateMethod( int a, int b ){
+        return a + b; 
     }
 }
