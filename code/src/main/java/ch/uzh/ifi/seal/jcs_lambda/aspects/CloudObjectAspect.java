@@ -1,5 +1,6 @@
 package ch.uzh.ifi.seal.jcs_lambda.aspects;
 
+import ch.uzh.ifi.seal.jcs_lambda.utility.JarBuilder;
 import ch.uzh.ifi.seal.jcs_lambda.utility.UtilFileLoader;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -28,6 +29,8 @@ public class CloudObjectAspect {
         finally {
             //If we want to be sure that some of our code is executed even if we get an exception
         }
+
+        JarBuilder.mvnBuild();
 
         return returnObject;
     }
