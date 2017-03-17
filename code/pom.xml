@@ -78,7 +78,7 @@
                     <!-- MainClass in mainfest make a executable jar -->
                     <archive>
                         <manifest>
-                            <mainClass>com.test.URLSample</mainClass>
+                            <mainClass>com.demo.URLSample</mainClass>
                         </manifest>
                     </archive>
 
