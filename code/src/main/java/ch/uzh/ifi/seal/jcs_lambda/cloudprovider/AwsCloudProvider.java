@@ -1,7 +1,6 @@
-package ch.uzh.ifi.seal.jcs_lambda.cloudprovider.aws;
+package ch.uzh.ifi.seal.jcs_lambda.cloudprovider;
 
-import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.CloudProvider;
-import ch.uzh.ifi.seal.jcs_lambda.configuration.JcsConfiguration;
+import ch.uzh.ifi.seal.jcs_lambda.configuration.AwsConfiguration;
 import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
@@ -23,9 +22,12 @@ import com.amazonaws.services.s3.model.*;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
 
-public class AwsCloudProvider implements CloudProvider {
+public class AwsCloudProvider {
 
     BasicAWSCredentials basicAWSCredentials;
 
@@ -47,34 +49,34 @@ public class AwsCloudProvider implements CloudProvider {
      */
     public AwsCloudProvider (){
         // Create AWS Credentials
-        basicAWSCredentials = new BasicAWSCredentials( JcsConfiguration.AWS_ACCESS_KEY_ID, JcsConfiguration.AWS_SECRET_KEY_ID );
+        basicAWSCredentials = new BasicAWSCredentials( AwsConfiguration.AWS_ACCESS_KEY_ID, AwsConfiguration.AWS_SECRET_KEY_ID );
         Logger.info( "Init AWS Credentials" );
 
         // Create IAM (Identity and Access Management) Object
         awsIAM = AmazonIdentityManagementClientBuilder.standard()
             .withCredentials( new AWSStaticCredentialsProvider(basicAWSCredentials) )
-            .withRegion( JcsConfiguration.AWS_REGION )
+            .withRegion( AwsConfiguration.AWS_REGION )
             .build();
         Logger.info( "Init IAM Credentials" );
 
         // Create ApiGateway Object
         amazonApiGateway = AmazonApiGatewayClientBuilder.standard()
                 .withCredentials( new AWSStaticCredentialsProvider(basicAWSCredentials) )
-                .withRegion( JcsConfiguration.AWS_REGION )
+                .withRegion( AwsConfiguration.AWS_REGION )
                 .build();
         Logger.info( "Init ApiGateway Credentials" );
 
         // Create Amazon S3 Object
         amazonS3 = AmazonS3ClientBuilder.standard()
             .withCredentials( new AWSStaticCredentialsProvider(basicAWSCredentials) )
-            .withRegion( JcsConfiguration.AWS_REGION )
+            .withRegion( AwsConfiguration.AWS_REGION )
             .build();
         Logger.info( "Init Amazon S3 Credentials" );
 
         // Create Amazon Lambda Object
         amazonLamdba = AWSLambdaClientBuilder.standard()
             .withCredentials( new AWSStaticCredentialsProvider(basicAWSCredentials) )
-            .withRegion( JcsConfiguration.AWS_REGION )
+            .withRegion( AwsConfiguration.AWS_REGION )
             .build();
         Logger.info( "Init AWS Lambda Credentials" );
 
@@ -122,7 +124,7 @@ public class AwsCloudProvider implements CloudProvider {
 
         for( Bucket bucket : buckets ){
             // Check if bucket has prefix (= is only temporary)
-            if( bucket.getName().startsWith( JcsConfiguration.AWS_BUCKET_PREFIX ) ){
+            if( bucket.getName().startsWith( AwsConfiguration.AWS_BUCKET_PREFIX ) ){
                 removeBucket( bucket.getName() );
             }
         }
@@ -137,7 +139,7 @@ public class AwsCloudProvider implements CloudProvider {
         // check if already a temporary bucket, for uploading the files, exists
         if( s3Bucketname == null ){
             // bucket name must be unique over all users
-            s3Bucketname = JcsConfiguration.AWS_BUCKET_PREFIX + "-" + UUID.randomUUID();
+            s3Bucketname = AwsConfiguration.AWS_BUCKET_PREFIX + "-" + UUID.randomUUID();
 
             // create a new bucket
             amazonS3.createBucket( s3Bucketname );
@@ -189,8 +191,8 @@ public class AwsCloudProvider implements CloudProvider {
             functionConfigurationRequest.setFunctionName( functionName );
             functionConfigurationRequest.setHandler( handlerName );
             functionConfigurationRequest.setRole( getRole() );
-            functionConfigurationRequest.setTimeout( JcsConfiguration.AWS_TIMEOUT );
-            functionConfigurationRequest.setMemorySize( JcsConfiguration.AWS_DEFAULT_MEMORY_SIZE );
+            functionConfigurationRequest.setTimeout( AwsConfiguration.AWS_TIMEOUT );
+            functionConfigurationRequest.setMemorySize( AwsConfiguration.AWS_DEFAULT_MEMORY_SIZE );
             amazonLamdba.updateFunctionConfiguration( functionConfigurationRequest );
 
             Logger.info( "Lambda Function '" + functionName + "' updated" );
@@ -204,8 +206,8 @@ public class AwsCloudProvider implements CloudProvider {
             createFunctionRequest.setPublish( true );
             createFunctionRequest.setRole( getRole() );
             createFunctionRequest.setRuntime( Runtime.Java8 );
-            createFunctionRequest.setTimeout( JcsConfiguration.AWS_TIMEOUT );
-            createFunctionRequest.setMemorySize( JcsConfiguration.AWS_DEFAULT_MEMORY_SIZE );
+            createFunctionRequest.setTimeout( AwsConfiguration.AWS_TIMEOUT );
+            createFunctionRequest.setMemorySize( AwsConfiguration.AWS_DEFAULT_MEMORY_SIZE );
             createFunctionResult = amazonLamdba.createFunction( createFunctionRequest );
 
             // Set Permission for gateway api
@@ -218,7 +220,7 @@ public class AwsCloudProvider implements CloudProvider {
 
             Logger.info( "Lambda Function '" + functionName + "' created" );
 
-            createGatewayAPI( "TEST", createFunctionResult.getFunctionArn()  );
+            createGatewayAPI( functionName, createFunctionResult.getFunctionArn()  );
         }
     }
 
@@ -233,7 +235,7 @@ public class AwsCloudProvider implements CloudProvider {
         if( restApiId == null ){
             GetRestApisResult getRestApisResult = amazonApiGateway.getRestApis( new GetRestApisRequest() );
             for( RestApi item : getRestApisResult.getItems() ){
-                if( item.getName().equals( JcsConfiguration.AWS_API_GATEWAY_NAME ) ){
+                if( item.getName().equals( AwsConfiguration.AWS_API_GATEWAY_NAME ) ){
                     restApiId = item.getId();
                     break;
                 }
@@ -244,7 +246,7 @@ public class AwsCloudProvider implements CloudProvider {
         if( restApiId == null){
             // Create Rest API
             CreateRestApiRequest createRestApiRequest = new CreateRestApiRequest();
-            createRestApiRequest.setName( JcsConfiguration.AWS_API_GATEWAY_NAME );
+            createRestApiRequest.setName( AwsConfiguration.AWS_API_GATEWAY_NAME );
             CreateRestApiResult createRestApiResult = amazonApiGateway.createRestApi( createRestApiRequest );
             restApiId = createRestApiResult.getId();
         }
@@ -285,7 +287,7 @@ public class AwsCloudProvider implements CloudProvider {
         putIntegrationRequest.setRestApiId( restApiId );
         putIntegrationRequest.setResourceId( createResourceResult.getId() );
         putIntegrationRequest.setType( IntegrationType.AWS );
-        putIntegrationRequest.setUri( "arn:aws:apigateway:" + JcsConfiguration.AWS_REGION.getName() + ":lambda:path/2015-03-31/functions/" + functionARN + "/invocations" );
+        putIntegrationRequest.setUri( "arn:aws:apigateway:" + AwsConfiguration.AWS_REGION.getName() + ":lambda:path/2015-03-31/functions/" + functionARN + "/invocations" );
         putIntegrationRequest.setIntegrationHttpMethod( "POST" );
         putIntegrationRequest.setContentHandling( ContentHandlingStrategy.CONVERT_TO_TEXT );
         amazonApiGateway.putIntegration( putIntegrationRequest );
@@ -311,7 +313,7 @@ public class AwsCloudProvider implements CloudProvider {
         // ToDo do this step only once after all changes
         CreateDeploymentRequest createDeploymentRequest = new CreateDeploymentRequest();
         createDeploymentRequest.setRestApiId( restApiId );
-        createDeploymentRequest.setStageName( JcsConfiguration.AWS_API_GATEWAY_STAGE_NAME );
+        createDeploymentRequest.setStageName( AwsConfiguration.AWS_API_GATEWAY_STAGE_NAME );
         CreateDeploymentResult createDeploymentResult = amazonApiGateway.createDeployment( createDeploymentRequest );
 
         Logger.info( "API Gateway for Lambda Function '" + functionName + "' created" );
@@ -325,7 +327,7 @@ public class AwsCloudProvider implements CloudProvider {
         if( roleARN == null ){
             // Check if role already exists
             GetRoleRequest getRoleRequest = new GetRoleRequest();
-            getRoleRequest.setRoleName( JcsConfiguration.AWS_ROLE_NAME );
+            getRoleRequest.setRoleName( AwsConfiguration.AWS_ROLE_NAME );
 
             GetRoleResult getRoleResult = null;
             try {
@@ -338,25 +340,25 @@ public class AwsCloudProvider implements CloudProvider {
                 // save only roleARN
                 roleARN = getRoleResult.getRole().getArn();
 
-                Logger.info( "IAM role '" + JcsConfiguration.AWS_ROLE_NAME + "' loaded" );
+                Logger.info( "IAM role '" + AwsConfiguration.AWS_ROLE_NAME + "' loaded" );
             }
             else{
 
                 // create a new role
                 CreateRoleRequest createRoleRequest = new CreateRoleRequest();
                 createRoleRequest.setAssumeRolePolicyDocument( "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"lambda.amazonaws.com\"},\"Action\":\"sts:AssumeRole\"}]}" );
-                createRoleRequest.setRoleName( JcsConfiguration.AWS_ROLE_NAME );
+                createRoleRequest.setRoleName( AwsConfiguration.AWS_ROLE_NAME );
                 CreateRoleResult createRoleResult = awsIAM.createRole( createRoleRequest );
 
                 roleARN = createRoleResult.getRole().getArn();
 
                 // set policy for role
                 AttachRolePolicyRequest attachRolePolicyRequest = new AttachRolePolicyRequest();
-                attachRolePolicyRequest.setRoleName( JcsConfiguration.AWS_ROLE_NAME );
+                attachRolePolicyRequest.setRoleName( AwsConfiguration.AWS_ROLE_NAME );
                 attachRolePolicyRequest.setPolicyArn( "arn:aws:iam::aws:policy/AWSLambdaFullAccess" );
                 awsIAM.attachRolePolicy( attachRolePolicyRequest );
 
-                Logger.info( "IAM role '" + JcsConfiguration.AWS_ROLE_NAME + "' created and policy set" );
+                Logger.info( "IAM role '" + AwsConfiguration.AWS_ROLE_NAME + "' created and policy set" );
             }
 
         }
@@ -370,7 +372,6 @@ public class AwsCloudProvider implements CloudProvider {
      * @param handlerName the start point of the execution
      * @param file path to the file, that we would upload
      */
-    @Override
     public void registerMethod ( String functionName, String handlerName, File file ){
         try {
             // Check if lambda function already exists and isn't change (same checksum)
@@ -382,7 +383,7 @@ public class AwsCloudProvider implements CloudProvider {
                 // Create Function with uploaded File
                 createFunction( functionName, handlerName, functionCode );
 
-                System.out.println( functionName + " => https://" + restApiId + ".execute-api." + JcsConfiguration.AWS_REGION.getName() + ".amazonaws.com/" + JcsConfiguration.AWS_API_GATEWAY_STAGE_NAME + "/" + functionName );
+                System.out.println( functionName + " => https://" + restApiId + ".execute-api." + AwsConfiguration.AWS_REGION.getName() + ".amazonaws.com/" + AwsConfiguration.AWS_API_GATEWAY_STAGE_NAME + "/" + functionName );
 
                 // ToDo: only once after all Methods are registered
                 // Remove buckets
