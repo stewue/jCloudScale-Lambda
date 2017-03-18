@@ -9,6 +9,7 @@
     <properties>
         <javaVersion>1.8</javaVersion>
         <aspectj.version>1.8.9</aspectj.version>
+        <aws.version>1.11.98</aws.version>
     </properties>
 
     <dependencies>
@@ -35,33 +36,28 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-lambda</artifactId>
-            <version>1.11.98</version>
+            <version>${aws.version}</version>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-s3</artifactId>
-            <version>1.11.98</version>
+            <version>${aws.version}</version>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-iam</artifactId>
-            <version>1.11.98</version>
+            <version>${aws.version}</version>
         </dependency>
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-api-gateway</artifactId>
-            <version>1.11.98</version>
+            <version>${aws.version}</version>
         </dependency>
         <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
             <version>1.8.10</version>
         </dependency>
-
-
-
-
-
         <dependency>
             <groupId>org.reflections</groupId>
             <artifactId>reflections</artifactId>
