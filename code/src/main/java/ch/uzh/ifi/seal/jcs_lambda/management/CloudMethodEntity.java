@@ -22,7 +22,7 @@ public class CloudMethodEntity {
     private String returnType;
 
     // TODO
-    private String url = "https://wcfhgyglqg.execute-api.eu-central-1.amazonaws.com/prod/TEST";
+    private String url;
     private String checksum;
 
     private String temporaryPackageName;
@@ -44,6 +44,7 @@ public class CloudMethodEntity {
         FileBuilder.createRequestClass( temporaryPackageName, parameters );
         FileBuilder.createResponseClass( temporaryPackageName, returnType );
 
+        // Create Lambda Handler for AWS
         FileBuilder.createLambdaHandler( this );
     }
 
@@ -67,6 +68,10 @@ public class CloudMethodEntity {
         return returnType;
     }
 
+    public void setUrl ( String url ){
+        this.url = url;
+    }
+
     public Object runMethodOnCloud( HashMap<String, Object> parameters ) {
         try{
             Class requestClass = Class.forName( temporaryPackageName + ".Request" );
@@ -79,15 +84,6 @@ public class CloudMethodEntity {
 
                 field.set( requestInstance, value );
             }
-
-           /* Class HelperClass = Class.forName( tmpPackage + ".Helper" );
-            Object HelperInstance = HelperClass.newInstance();
-
-            Class params[] = { String.class, Object.class };
-            Object paramsObj[] = { url, requestInstance };
-            Method HelperMethod = HelperClass.getDeclaredMethod("testing", params );
-
-            return HelperMethod.invoke(HelperInstance, paramsObj);*/
 
             Gson gson = new Gson();
 
