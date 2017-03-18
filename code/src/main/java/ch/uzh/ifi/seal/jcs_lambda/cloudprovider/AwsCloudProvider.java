@@ -29,20 +29,20 @@ import java.util.UUID;
 
 public class AwsCloudProvider {
 
-    BasicAWSCredentials basicAWSCredentials;
+    private BasicAWSCredentials basicAWSCredentials;
 
-    AmazonIdentityManagement awsIAM;
-    String roleARN;
+    private AmazonIdentityManagement awsIAM;
+    private String roleARN;
 
-    AmazonApiGateway amazonApiGateway;
-    String restApiId;
-    Resource rootResource;
+    private AmazonApiGateway amazonApiGateway;
+    private String restApiId;
+    private Resource rootResource;
 
-    AmazonS3 amazonS3;
-    String s3Bucketname;
+    private AmazonS3 amazonS3;
+    private String s3Bucketname;
 
-    AWSLambda amazonLamdba;
-    HashMap<String, FunctionConfiguration> lambdaFunctionConfigurations = new HashMap<>();
+    private AWSLambda amazonLamdba;
+    private HashMap<String, FunctionConfiguration> lambdaFunctionConfigurations = new HashMap<>();
 
     /**
      * login to all aws services with the credential
@@ -372,7 +372,7 @@ public class AwsCloudProvider {
      * @param handlerName the start point of the execution
      * @param file path to the file, that we would upload
      */
-    public void registerMethod ( String functionName, String handlerName, File file ){
+    public String registerMethod ( String functionName, String handlerName, File file ){
         try {
             // Check if lambda function already exists and isn't change (same checksum)
             // TODO checksum
@@ -383,11 +383,11 @@ public class AwsCloudProvider {
                 // Create Function with uploaded File
                 createFunction( functionName, handlerName, functionCode );
 
-                System.out.println( functionName + " => https://" + restApiId + ".execute-api." + AwsConfiguration.AWS_REGION.getName() + ".amazonaws.com/" + AwsConfiguration.AWS_API_GATEWAY_STAGE_NAME + "/" + functionName );
-
                 // ToDo: only once after all Methods are registered
                 // Remove buckets
                 removeAllTemporaryBuckets();
+
+                return functionName + " => https://" + restApiId + ".execute-api." + AwsConfiguration.AWS_REGION.getName() + ".amazonaws.com/" + AwsConfiguration.AWS_API_GATEWAY_STAGE_NAME + "/" + functionName;
             }
         }
         catch (AmazonServiceException ase) {
@@ -402,5 +402,7 @@ public class AwsCloudProvider {
             Logger.error("Caught an AmazonClientException, which means the client encountered a serious internal problem while trying to communicate with, such as not being able to access the network." );
             Logger.error("Error Message: " + ace.getMessage() );
         }
+
+        return "";
     }
 }

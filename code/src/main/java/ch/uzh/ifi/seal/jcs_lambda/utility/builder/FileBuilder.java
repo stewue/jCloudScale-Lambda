@@ -16,38 +16,6 @@ import java.util.Scanner;
 public class FileBuilder {
     private static final String RELATIVE_PATH = "src/main/java/";
 
-
-/*    public static void createTmpFiles( ProceedingJoinPoint joinPoint){
-
-        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-
-        String methodName = signature.getMethod().getName();
-        String className = signature.getMethod().getDeclaringClass().getSimpleName();
-        String originPackageName = signature.getMethod().getDeclaringClass().getPackage().getName();
-        String newPackageName = originPackageName + "." + className + "." + methodName; //TODO overloading
-
-        Class[] parameterTypes = signature.getParameterTypes();
-        String [] parameterNames = signature.getParameterNames();
-        String returnType = signature.getReturnType().getName();
-
-        String methodSignature = methodName + " ( ";
-        for( int i=0; i<parameterTypes.length; i++ ){
-            Class type = parameterTypes[i];
-            Object argumentName = parameterNames[i];
-
-            if( i>0 ){
-                methodSignature += ", ";
-            }
-
-            methodSignature += type + " " + argumentName;
-        }
-        methodSignature += " )";
-
-        createRequestClass( newPackageName, parameterTypes, parameterNames );
-        createResponseClass( newPackageName, returnType );
-        createLambdaHandler( methodSignature, className, newPackageName, parameterTypes, parameterNames, returnType, originPackageName );
-    }*/
-
     public static void createRequestClass (String temporaryPackageName, HashMap<String, Class> parameters ){
 
         String sourceCode = "package " + temporaryPackageName + "; \n \n";
@@ -176,7 +144,7 @@ public class FileBuilder {
         catch ( Exception e ){}
 
         String source = "";
-        while(scanner.hasNext()) {
+        while( scanner.hasNext() ) {
             source += " "+ scanner.next();
         }
 

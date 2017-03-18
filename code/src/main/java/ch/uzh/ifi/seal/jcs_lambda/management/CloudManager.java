@@ -43,8 +43,9 @@ public class CloudManager {
             CloudMethodEntity method = entry.getValue();
 
             String functionName = method.getFullQualifiedName().replace(".", "--");
-            String handlerName = method.getTemporaryPackageName() + "LambdaFunctionHandler::handleRequest";
-            awsCloudProvider.registerMethod( functionName, handlerName, file );
+            String handlerName = method.getTemporaryPackageName() + ".LambdaFunctionHandler::handleRequest";
+
+            method.setUrl( awsCloudProvider.registerMethod( functionName, handlerName, file ) );
         }
         //TODO Upload
     }
