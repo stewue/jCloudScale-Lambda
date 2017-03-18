@@ -1,7 +1,5 @@
 package ch.uzh.ifi.seal.jcs_lambda.logging;
 
-import com.sun.xml.internal.bind.v2.util.FatalAdapter;
-
 public enum LogLevel {
     OFF(-1),
     FATAL(0),

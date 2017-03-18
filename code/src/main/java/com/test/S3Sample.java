@@ -1,6 +1,6 @@
 package com.test;
 
-import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.aws.AwsCloudProvider;
+import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.AwsCloudProvider;
 
 import java.io.File;
 

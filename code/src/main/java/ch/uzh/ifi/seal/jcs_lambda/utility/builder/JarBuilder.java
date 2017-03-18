@@ -1,5 +1,6 @@
-package ch.uzh.ifi.seal.jcs_lambda.utility;
+package ch.uzh.ifi.seal.jcs_lambda.utility.builder;
 
+import ch.uzh.ifi.seal.jcs_lambda.configuration.JcsConfiguration;
 import org.apache.maven.shared.invoker.*;
 
 import java.io.File;
@@ -19,9 +20,8 @@ public class JarBuilder {
 
         Invoker invoker = new DefaultInvoker();
         try {
-            //TODO not hard-coded
-            if (invoker.getMavenHome() == null){
-                invoker.setMavenHome(new File("C:\\Program Files\\apache-maven-3.3.9"));
+            if ( invoker.getMavenHome() == null ){
+                invoker.setMavenHome(new File( JcsConfiguration.MAVEN_HOME ));
             }
 
             InvocationResult result = invoker.execute(request);
