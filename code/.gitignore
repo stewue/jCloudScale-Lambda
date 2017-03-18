@@ -40,3 +40,5 @@ $RECYCLE.BIN/
 .iml/
 !.idea/runConfigurations/
 /out/
+
+/src/main/java/tmp_jcs/
