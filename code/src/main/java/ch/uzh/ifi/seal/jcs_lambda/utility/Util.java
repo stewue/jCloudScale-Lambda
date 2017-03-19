@@ -11,6 +11,8 @@ import java.io.DataOutputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,5 +82,11 @@ public class Util {
         }
 
         return null;
+    }
+
+    public static String getCurrentDate (){
+        SimpleDateFormat sdfDate = new SimpleDateFormat("HH:mm:ss dd.MM.yyyyy");
+        Date now = new Date();
+        return sdfDate.format(now);
     }
 }

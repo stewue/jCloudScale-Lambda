@@ -19,4 +19,9 @@ public class Calculator {
     private int returnInt (){
         return 7;
     }
+
+    @CloudMethod
+    public int sub( int a, int b ){
+        return a - b;
+    }
 }

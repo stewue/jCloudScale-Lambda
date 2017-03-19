@@ -2,8 +2,9 @@ package ch.uzh.ifi.seal.jcs_lambda.management;
 
 import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.AbstractResponse;
 import ch.uzh.ifi.seal.jcs_lambda.utility.Util;
-import ch.uzh.ifi.seal.jcs_lambda.utility.builder.FileBuilder;
+import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeModifier;
 import com.google.gson.Gson;
+import org.apache.commons.codec.digest.DigestUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -21,7 +22,6 @@ public class CloudMethodEntity {
     private HashMap<String, Class> parameters;
     private String returnType;
 
-    // TODO
     private String url;
     private String checksum;
 
@@ -37,15 +37,22 @@ public class CloudMethodEntity {
         fullQualifiedName = Util.getFullQualifiedName( packageName, className, methodName, parameters );
 
         temporaryPackageName = TEMPORARY_PACKAGE + "." + fullQualifiedName;
+
+        createChecksum();
     }
 
     public void modifyCode (){
         // Create DTO classes
-        FileBuilder.createRequestClass( temporaryPackageName, parameters );
-        FileBuilder.createResponseClass( temporaryPackageName, returnType );
+        CodeModifier.createRequestClass( temporaryPackageName, parameters );
+        CodeModifier.createResponseClass( temporaryPackageName, returnType );
 
         // Create Lambda Handler for AWS
-        FileBuilder.createLambdaHandler( this );
+        CodeModifier.createLambdaHandler( this );
+
+        // TODO
+        // Get source code from our method
+        String sourceCode = "";
+
     }
 
     public String getFullQualifiedName (){
@@ -72,7 +79,11 @@ public class CloudMethodEntity {
         this.url = url;
     }
 
-    public Object runMethodOnCloud( HashMap<String, Object> parameters ) {
+    public String getChecksum (){
+        return checksum;
+    }
+
+    public Object runMethodInCloud(HashMap<String, Object> parameters ) {
         try{
             Class requestClass = Class.forName( temporaryPackageName + ".Request" );
             Field[] requestFields = requestClass.getDeclaredFields();
@@ -155,5 +166,14 @@ public class CloudMethodEntity {
         }
 
         return argumentsWithTypeString;
+    }
+
+    private void createChecksum(){
+        String methodSignature = getMethodSignature();
+
+        String methodBody = CodeModifier.getMethodBody( methodSignature, className, packageName );
+        String sourceCode = methodSignature + " { " + methodBody + " }";
+
+        checksum = DigestUtils.sha256Hex( sourceCode );
     }
 }

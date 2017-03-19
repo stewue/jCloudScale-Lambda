@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
-public class FileBuilder {
+public class CodeModifier {
     private static final String RELATIVE_PATH = "src/main/java/";
 
     public static void createRequestClass (String temporaryPackageName, HashMap<String, Class> parameters ){
@@ -132,7 +132,7 @@ public class FileBuilder {
         catch ( Exception e ){}
     }
 
-    private static String getMethodBody ( String methodSignature, String className, String packageName ){
+    public static String getMethodBody ( String methodSignature, String className, String packageName ){
 
         File file = new File(RELATIVE_PATH + packageName.replace( ".", "/" ) + "/" + className + ".java" );
 
