@@ -2,6 +2,8 @@ package ch.uzh.ifi.seal.jcs_lambda.cloudprovider;
 
 import ch.uzh.ifi.seal.jcs_lambda.configuration.AwsConfiguration;
 import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
+import ch.uzh.ifi.seal.jcs_lambda.management.MethodDescription;
+import ch.uzh.ifi.seal.jcs_lambda.utility.AwsUtil;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
@@ -20,6 +22,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.*;
 import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
+import com.google.gson.Gson;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -28,6 +31,9 @@ import java.util.List;
 import java.util.UUID;
 
 public class AwsCloudProvider {
+
+    private static AwsCloudProvider instance = null;
+    private static Gson gson = new Gson();
 
     private BasicAWSCredentials basicAWSCredentials;
 
@@ -42,12 +48,12 @@ public class AwsCloudProvider {
     private String s3Bucketname;
 
     private AWSLambda amazonLamdba;
-    private HashMap<String, FunctionConfiguration> lambdaFunctionConfigurations = new HashMap<>();
+    private HashMap<String, MethodDescription> lambdaFunctionDescriptions = new HashMap<>();
 
     /**
      * login to all aws services with the credential
      */
-    public AwsCloudProvider (){
+    private AwsCloudProvider (){
         // Create AWS Credentials
         basicAWSCredentials = new BasicAWSCredentials( AwsConfiguration.AWS_ACCESS_KEY_ID, AwsConfiguration.AWS_SECRET_KEY_ID );
         Logger.info( "Init AWS Credentials" );
@@ -80,11 +86,63 @@ public class AwsCloudProvider {
             .build();
         Logger.info( "Init AWS Lambda Credentials" );
 
-        // Get all lambda functions and save them as a hash-map
+        // Get all lambda functions (and their descriptions) and save them as a hash-map
         ListFunctionsResult lambdaFunctions = amazonLamdba.listFunctions();
         for( FunctionConfiguration item  : lambdaFunctions.getFunctions() ){
-            lambdaFunctionConfigurations.put( item.getFunctionName(), item );
+            try {
+                MethodDescription description = gson.fromJson(item.getDescription(), MethodDescription.class);
+
+                if( description != null ){
+                    lambdaFunctionDescriptions.put(item.getFunctionName(), description);
+                }
+            }
+            catch ( Exception e ){
+
+            }
         }
+
+        getRestApiId();
+    }
+
+    public static AwsCloudProvider getInstance(){
+        if( instance == null ){
+            instance = new AwsCloudProvider();
+        }
+
+        return instance;
+    }
+
+    public MethodDescription getLambdaFunctionDescription ( String functionName ){
+        String awsFunctioName = AwsUtil.convertMethodName( functionName );
+
+        return lambdaFunctionDescriptions.get( awsFunctioName );
+    }
+
+    public String getBaseUrl (){
+        return "https://" + restApiId + ".execute-api." + AwsConfiguration.AWS_REGION.getName() + ".amazonaws.com/" + AwsConfiguration.AWS_API_GATEWAY_STAGE_NAME + "/";
+    }
+
+    private void getRestApiId (){
+        // Get the id of the restAPI
+        if( restApiId == null ){
+            GetRestApisResult getRestApisResult = amazonApiGateway.getRestApis( new GetRestApisRequest() );
+            for( RestApi item : getRestApisResult.getItems() ){
+                if( item.getName().equals( AwsConfiguration.AWS_API_GATEWAY_NAME ) ){
+                    restApiId = item.getId();
+                    break;
+                }
+            }
+        }
+
+        // if no restAPI exists then create it
+        if( restApiId == null){
+            // Create Rest API
+            CreateRestApiRequest createRestApiRequest = new CreateRestApiRequest();
+            createRestApiRequest.setName( AwsConfiguration.AWS_API_GATEWAY_NAME );
+            CreateRestApiResult createRestApiResult = amazonApiGateway.createRestApi( createRestApiRequest );
+            restApiId = createRestApiResult.getId();
+        }
+
     }
 
     /**
@@ -117,16 +175,22 @@ public class AwsCloudProvider {
     /**
      * Remove all buckets in S3 with our prefix
      */
-    private void removeAllTemporaryBuckets (){
-        // Get all buckets
-        ListBucketsRequest listBucketsRequest = new ListBucketsRequest();
-        List<Bucket> buckets = amazonS3.listBuckets( listBucketsRequest );
+    public void removeAllTemporaryCreatedBuckets(){
+        try{
+            // Get all buckets
+            ListBucketsRequest listBucketsRequest = new ListBucketsRequest();
+            List<Bucket> buckets = amazonS3.listBuckets( listBucketsRequest );
 
-        for( Bucket bucket : buckets ){
-            // Check if bucket has prefix (= is only temporary)
-            if( bucket.getName().startsWith( AwsConfiguration.AWS_BUCKET_PREFIX ) ){
-                removeBucket( bucket.getName() );
+            for( Bucket bucket : buckets ){
+                // Check if bucket has prefix (= is only temporary)
+                if( bucket.getName().startsWith( AwsConfiguration.AWS_BUCKET_PREFIX ) ){
+                    removeBucket( bucket.getName() );
+                }
             }
+
+        }
+        catch ( Exception e ){
+            logException( e );
         }
     }
 
@@ -135,26 +199,33 @@ public class AwsCloudProvider {
      * @param file path to the file, that we would upload
      * @return the id of the uploaded file
      */
-    private FunctionCode uploadFile( File file ){
-        // check if already a temporary bucket, for uploading the files, exists
-        if( s3Bucketname == null ){
-            // bucket name must be unique over all users
-            s3Bucketname = AwsConfiguration.AWS_BUCKET_PREFIX + "-" + UUID.randomUUID();
+    public FunctionCode uploadFile( File file ){
+        try {
+            // check if already a temporary bucket, for uploading the files, exists
+            if( s3Bucketname == null ){
+                // bucket name must be unique over all users
+                s3Bucketname = AwsConfiguration.AWS_BUCKET_PREFIX + "-" + UUID.randomUUID();
 
-            // create a new bucket
-            amazonS3.createBucket( s3Bucketname );
-            Logger.info( "Create a bucket '" + s3Bucketname + "' in Amazon S3 " );
+                // create a new bucket
+                amazonS3.createBucket( s3Bucketname );
+                Logger.info( "Create a bucket '" + s3Bucketname + "' in Amazon S3 " );
+            }
+
+            // upload file
+            amazonS3.putObject( new PutObjectRequest( s3Bucketname, file.getName(), file ) );
+            Logger.info( "File '" + file.getName() + "' uploaded in Amazon S3" );
+
+            FunctionCode functionCode = new FunctionCode();
+            functionCode.setS3Bucket( s3Bucketname );
+            functionCode.setS3Key( file.getName() );
+
+            return functionCode;
+        }
+        catch ( Exception e ){
+            logException( e );
         }
 
-        // upload file
-        amazonS3.putObject( new PutObjectRequest( s3Bucketname, file.getName(), file ) );
-        Logger.info( "File '" + file.getName() + "' uploaded in Amazon S3" );
-
-        FunctionCode functionCode = new FunctionCode();
-        functionCode.setS3Bucket( s3Bucketname );
-        functionCode.setS3Key( file.getName() );
-
-        return functionCode;
+        return null;
     }
 
     /**
@@ -162,8 +233,9 @@ public class AwsCloudProvider {
      * @param functionName the name of the function that we create
      * @param handlerName the start point of the execution
      * @param functionCode Amazon S3 id of the uploaded file
+     * @return url of rest endpoint
      */
-    private void createFunction ( String functionName, String handlerName, FunctionCode functionCode ){
+    public void createOrUpdateFunction ( String functionName, String handlerName, FunctionCode functionCode, MethodDescription description ){
         // Check if function name already exists
         GetFunctionRequest getFunctionRequest = new GetFunctionRequest();
         getFunctionRequest.setFunctionName( functionName );
@@ -176,51 +248,57 @@ public class AwsCloudProvider {
             functionExists = false;
         }
 
-        // update or create function
-        CreateFunctionResult createFunctionResult = null;
-        if( functionExists ){
-            // Update function code
-            UpdateFunctionCodeRequest functionCodeRequest = new UpdateFunctionCodeRequest();
-            functionCodeRequest.setFunctionName( functionName );
-            functionCodeRequest.setS3Bucket( functionCode.getS3Bucket() );
-            functionCodeRequest.setS3Key( functionCode.getS3Key() );
-            amazonLamdba.updateFunctionCode( functionCodeRequest );
+        try {
+            // update or create function
+            CreateFunctionResult createFunctionResult = null;
+            if (functionExists) {
+                // Update function code
+                UpdateFunctionCodeRequest functionCodeRequest = new UpdateFunctionCodeRequest();
+                functionCodeRequest.setFunctionName(functionName);
+                functionCodeRequest.setS3Bucket(functionCode.getS3Bucket());
+                functionCodeRequest.setS3Key(functionCode.getS3Key());
+                amazonLamdba.updateFunctionCode(functionCodeRequest);
 
-            // update function configuration
-            UpdateFunctionConfigurationRequest functionConfigurationRequest = new UpdateFunctionConfigurationRequest();
-            functionConfigurationRequest.setFunctionName( functionName );
-            functionConfigurationRequest.setHandler( handlerName );
-            functionConfigurationRequest.setRole( getRole() );
-            functionConfigurationRequest.setTimeout( AwsConfiguration.AWS_TIMEOUT );
-            functionConfigurationRequest.setMemorySize( AwsConfiguration.AWS_DEFAULT_MEMORY_SIZE );
-            amazonLamdba.updateFunctionConfiguration( functionConfigurationRequest );
+                // update function configuration
+                UpdateFunctionConfigurationRequest functionConfigurationRequest = new UpdateFunctionConfigurationRequest();
+                functionConfigurationRequest.setFunctionName(functionName);
+                functionConfigurationRequest.setDescription( gson.toJson( description ) );
+                functionConfigurationRequest.setHandler(handlerName);
+                functionConfigurationRequest.setRole(getRole());
+                functionConfigurationRequest.setTimeout(AwsConfiguration.AWS_TIMEOUT);
+                functionConfigurationRequest.setMemorySize(AwsConfiguration.AWS_DEFAULT_MEMORY_SIZE);
+                amazonLamdba.updateFunctionConfiguration(functionConfigurationRequest);
 
-            Logger.info( "Lambda Function '" + functionName + "' updated" );
+                Logger.info("Lambda Function '" + functionName + "' updated");
+            } else {
+                // Create the function
+                CreateFunctionRequest createFunctionRequest = new CreateFunctionRequest();
+                createFunctionRequest.setFunctionName(functionName);
+                createFunctionRequest.setDescription( gson.toJson( description ) );
+                createFunctionRequest.setCode(functionCode);
+                createFunctionRequest.setHandler(handlerName);
+                createFunctionRequest.setPublish(true);
+                createFunctionRequest.setRole(getRole());
+                createFunctionRequest.setRuntime(Runtime.Java8);
+                createFunctionRequest.setTimeout(AwsConfiguration.AWS_TIMEOUT);
+                createFunctionRequest.setMemorySize(AwsConfiguration.AWS_DEFAULT_MEMORY_SIZE);
+                createFunctionResult = amazonLamdba.createFunction(createFunctionRequest);
+
+                // Set Permission for gateway api
+                AddPermissionRequest addPermissionRequest = new AddPermissionRequest();
+                addPermissionRequest.setFunctionName(createFunctionResult.getFunctionArn());
+                addPermissionRequest.setAction("lambda:*");
+                addPermissionRequest.setPrincipal("apigateway.amazonaws.com");
+                addPermissionRequest.setStatementId(UUID.randomUUID().toString());
+                amazonLamdba.addPermission(addPermissionRequest);
+
+                Logger.info("Lambda Function '" + functionName + "' created");
+
+                createGatewayAPI(functionName, createFunctionResult.getFunctionArn());
+            }
         }
-        else {
-            // Create the function
-            CreateFunctionRequest createFunctionRequest = new CreateFunctionRequest();
-            createFunctionRequest.setFunctionName( functionName );
-            createFunctionRequest.setCode(  functionCode );
-            createFunctionRequest.setHandler( handlerName );
-            createFunctionRequest.setPublish( true );
-            createFunctionRequest.setRole( getRole() );
-            createFunctionRequest.setRuntime( Runtime.Java8 );
-            createFunctionRequest.setTimeout( AwsConfiguration.AWS_TIMEOUT );
-            createFunctionRequest.setMemorySize( AwsConfiguration.AWS_DEFAULT_MEMORY_SIZE );
-            createFunctionResult = amazonLamdba.createFunction( createFunctionRequest );
-
-            // Set Permission for gateway api
-            AddPermissionRequest addPermissionRequest = new AddPermissionRequest();
-            addPermissionRequest.setFunctionName( createFunctionResult.getFunctionArn() );
-            addPermissionRequest.setAction( "lambda:*" );
-            addPermissionRequest.setPrincipal( "apigateway.amazonaws.com" );
-            addPermissionRequest.setStatementId( UUID.randomUUID().toString() );
-            amazonLamdba.addPermission( addPermissionRequest );
-
-            Logger.info( "Lambda Function '" + functionName + "' created" );
-
-            createGatewayAPI( functionName, createFunctionResult.getFunctionArn()  );
+        catch ( Exception e ) {
+            logException( e );
         }
     }
 
@@ -230,27 +308,6 @@ public class AwsCloudProvider {
      * @param functionARN the arn of the function
      */
     private void createGatewayAPI ( String functionName, String functionARN ){
-
-        // Get the id of the restAPI
-        if( restApiId == null ){
-            GetRestApisResult getRestApisResult = amazonApiGateway.getRestApis( new GetRestApisRequest() );
-            for( RestApi item : getRestApisResult.getItems() ){
-                if( item.getName().equals( AwsConfiguration.AWS_API_GATEWAY_NAME ) ){
-                    restApiId = item.getId();
-                    break;
-                }
-            }
-        }
-
-        // if no restAPI exists then create it
-        if( restApiId == null){
-            // Create Rest API
-            CreateRestApiRequest createRestApiRequest = new CreateRestApiRequest();
-            createRestApiRequest.setName( AwsConfiguration.AWS_API_GATEWAY_NAME );
-            CreateRestApiResult createRestApiResult = amazonApiGateway.createRestApi( createRestApiRequest );
-            restApiId = createRestApiResult.getId();
-        }
-
         // Get the root resource of the restAPI
         if( rootResource == null ) {
             // Search root resource
@@ -334,6 +391,7 @@ public class AwsCloudProvider {
                 getRoleResult = awsIAM.getRole( getRoleRequest );
             }
             catch ( NoSuchEntityException ex ){
+
             }
 
             if( getRoleResult != null ){
@@ -366,43 +424,22 @@ public class AwsCloudProvider {
         return roleARN;
     }
 
-    /**
-     * Upload a function to AWS and register it
-     * @param functionName the name of the function that we create
-     * @param handlerName the start point of the execution
-     * @param file path to the file, that we would upload
-     */
-    public String registerMethod ( String functionName, String handlerName, File file ){
-        try {
-            // Check if lambda function already exists and isn't change (same checksum)
-            // TODO checksum
-            if( lambdaFunctionConfigurations.get( functionName ) == null ){
-                // Upload File to S3
-                FunctionCode functionCode = uploadFile( file );
+    private void logException ( Exception e ){
+        if( e instanceof AmazonServiceException ) {
+            AmazonServiceException ase = (AmazonServiceException) e;
 
-                // Create Function with uploaded File
-                createFunction( functionName, handlerName, functionCode );
-
-                // ToDo: only once after all Methods are registered
-                // Remove buckets
-                removeAllTemporaryBuckets();
-
-                return functionName + " => https://" + restApiId + ".execute-api." + AwsConfiguration.AWS_REGION.getName() + ".amazonaws.com/" + AwsConfiguration.AWS_API_GATEWAY_STAGE_NAME + "/" + functionName;
-            }
-        }
-        catch (AmazonServiceException ase) {
             Logger.error( "Caught an AmazonServiceException, which means your request made it to Amazon, but was rejected with an error response for some reason." );
-            Logger.error( "Error Message:    " + ase.getMessage() );
+            Logger.error( "Error Message:    " + e.getMessage() );
             Logger.error( "HTTP Status Code: " + ase.getStatusCode() );
             Logger.error( "AWS Error Code:   " + ase.getErrorCode() );
             Logger.error( "Error Type:       " + ase.getErrorType() );
             Logger.error( "Request ID:       " + ase.getRequestId() );
         }
-        catch (AmazonClientException ace) {
+        else if ( e instanceof AmazonClientException ) {
+            AmazonClientException ace = (AmazonClientException) e;
+
             Logger.error("Caught an AmazonClientException, which means the client encountered a serious internal problem while trying to communicate with, such as not being able to access the network." );
             Logger.error("Error Message: " + ace.getMessage() );
         }
-
-        return "";
     }
 }

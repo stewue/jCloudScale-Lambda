@@ -1,6 +1,8 @@
 package ch.uzh.ifi.seal.jcs_lambda.aspects;
 
-import ch.uzh.ifi.seal.jcs_lambda.annotations.*;
+import ch.uzh.ifi.seal.jcs_lambda.annotations.CloudMethod;
+import ch.uzh.ifi.seal.jcs_lambda.annotations.StartUp;
+import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
 import ch.uzh.ifi.seal.jcs_lambda.management.CloudManager;
 import ch.uzh.ifi.seal.jcs_lambda.management.CloudMethodEntity;
 import ch.uzh.ifi.seal.jcs_lambda.utility.Util;
@@ -27,6 +29,9 @@ public class CloudAspect {
 
     private static long startTimestamp;
 
+    // only pseudo variable, that import optimizer won't remove the startup annotation
+    private static Class clazz = StartUp.class;
+
     /**
      * On Startup register all methods with cloud annotation
      * @param joinPoint
@@ -35,7 +40,7 @@ public class CloudAspect {
     @Before("@annotation(StartUp) && execution(* *(..))")
     public void startUpMethod ( JoinPoint joinPoint ) throws Throwable {
 
-        System.out.println("@startUp******");
+        Logger.info( "@startUp" );
         startTimestamp = System.currentTimeMillis();
 
         cloudManager = CloudManager.getInstance();
@@ -55,8 +60,7 @@ public class CloudAspect {
             methodEntity.modifyCode();
         }
 
-        // ToDo
-        //cloudManager.buildAndUpload();
+        cloudManager.buildAndUpload();
     }
 
     @After("@annotation(StartUp) && execution(* *(..))")
@@ -64,17 +68,17 @@ public class CloudAspect {
         long endTimestamp = System.currentTimeMillis();
         long different = endTimestamp - startTimestamp;
 
-        System.out.println( "Time needed: " + ( different / 1000.0 ) + " sec" );
+        Logger.info( "Time needed: " + ( different / 1000.0 ) + " sec" );
     }
 
     @Around("@annotation(CloudMethod) && execution(* *(..))")
-    public Object createCloudMethod ( ProceedingJoinPoint joinPoint ) throws Throwable {
+    public Object runMethodInCloud ( ProceedingJoinPoint joinPoint ) throws Throwable {
 
         String fullQualifiedName = getFullQualifiedName( joinPoint );
         CloudMethodEntity methodEntity = cloudManager.getMethodByName( fullQualifiedName );
 
         HashMap<String, Object> parametersWithValues = getParametersWithValue( joinPoint );
-        return methodEntity.runMethodOnCloud( parametersWithValues );
+        return methodEntity.runMethodInCloud( parametersWithValues );
     }
 
     private static String getFullQualifiedName ( ProceedingJoinPoint joinPoint ){

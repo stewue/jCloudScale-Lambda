@@ -22,5 +22,6 @@ public class AspectJSample {
 
         System.out.println( "Result (add): " + calculator.doSometing( numberA, numberB ) );
         System.out.println( "Result (add2): " + calculator.add2( numberA, numberB ) );
+        System.out.println( "Result (sub): " + calculator.sub( numberA, numberB ) );
     }
 }
