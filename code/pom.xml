@@ -10,6 +10,7 @@
         <javaVersion>1.8</javaVersion>
         <aspectj.version>1.8.9</aspectj.version>
         <aws.version>1.11.98</aws.version>
+        <maven.test.skip>true</maven.test.skip>
     </properties>
 
     <dependencies>

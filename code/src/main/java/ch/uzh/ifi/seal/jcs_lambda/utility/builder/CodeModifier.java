@@ -8,6 +8,8 @@ import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
 import java.io.File;
 import java.io.FileWriter;
+import java.security.CodeSource;
+import java.security.ProtectionDomain;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,13 +23,53 @@ public class CodeModifier {
         String sourceCode = "package " + temporaryPackageName + "; \n \n";
         sourceCode += "public class Request { \n";
 
+        // Generate all attributes
         for(Map.Entry<String, Class> entry : parameters.entrySet() ){
             String parameterName = entry.getKey();
             Class parameterType = entry.getValue();
             sourceCode += "public " +  parameterType + " " + parameterName + "; \n";
         }
 
-        sourceCode += "}";
+        // generate getter for all attributes
+        sourceCode += "" +
+            "public Object [] getObjectArray() { \n" +
+            "       Object [] ret = {";
+
+        int i = 0;
+        for(Map.Entry<String, Class> entry : parameters.entrySet() ){
+            String parameterName = entry.getKey();
+
+            if( i>0){
+                sourceCode += ", ";
+            }
+            sourceCode += parameterName;
+            i++;
+        }
+
+        sourceCode += "" +
+            "       }; \n" +
+            "       return ret; \n" +
+            "   } \n" +
+            " \n" +
+            "   public Class [] getClassArray() { \n" +
+            "       Class [] ret = {";
+
+        int j = 0;
+        for(Map.Entry<String, Class> entry : parameters.entrySet() ){
+            Class parameterType = entry.getValue();
+
+            if( j>0){
+                sourceCode += ", ";
+            }
+            sourceCode += parameterType + ".class";
+            j++;
+        }
+
+        sourceCode += "" +
+            "       }; \n" +
+            "       return ret; \n" +
+            "   } \n" +
+            "}";
 
         File sourceFile = createFile( temporaryPackageName, "Request", sourceCode );
         compileFile( sourceFile );
@@ -40,8 +82,8 @@ public class CodeModifier {
                 "\n" +
                 "public class Response extends AbstractResponse {\n" +
                 "    public " + returnType + " returnValue;\n" +
-                "    public Response ( " + returnType + " returnValue ) {\n" +
-                "        this.returnValue = returnValue;\n" +
+                "    public Response ( Object returnValue ) {\n" +
+                "        this.returnValue = (" + returnType + ") returnValue;\n" +
                 "    }\n" +
                 "}";
 
@@ -60,11 +102,14 @@ public class CodeModifier {
                 "import org.json.simple.JSONObject;\n" +
                 "import org.json.simple.parser.JSONParser;\n" +
                 "import java.io.*;\n" +
-                "import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.JVMContext;\n" +
+                "import " + methodEntity.getPackageName() + ".*; \n" +
+
+
+                "import java.lang.reflect.Method; \n" +
+
                 "\n" +
                 "public class LambdaFunctionHandler implements RequestStreamHandler {\n" +
                 "    public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {\n" +
-                "        JVMContext.setCloudContext(); \n" +
                 "        JSONParser parser = new JSONParser();\n" +
                 "        Gson gson = new Gson();\n" +
                 "\n" +
@@ -76,7 +121,13 @@ public class CodeModifier {
                 "            System.out.println( \"Input: \" +  event.toJSONString() );\n" +
                 "            Request request = gson.fromJson( event.toJSONString() , Request.class );\n" +
                 "\n" +
-                "            response = new Response( emulateMethod( " + methodEntity.getArgumentVariableString() + " ) );\n" +
+                // TODO not hard-coded
+                "            Calculator object = new Calculator(); \n" +
+                "            Class params[] = request.getClassArray(); \n" +
+                "            Object paramsObj[] = request.getObjectArray(); \n \n" +
+                "            Method method = object.getClass().getDeclaredMethod(\"" + methodEntity.getMethodName() + "\", params ); \n" +
+                "            method.setAccessible(true); \n" +
+                "            response = new Response( method.invoke( object, paramsObj ) ); \n" +
                 "        }\n" +
                 "        catch(Exception ex) {\n" +
                 "            System.out.println( ex );\n" +
@@ -89,9 +140,6 @@ public class CodeModifier {
                 "        System.out.println( \"Output: \" +  gson.toJson(response) );\n" +
                 "    }\n" +
                 "\n" +
-                "    private " + methodEntity.getReturnType() + " emulateMethod( " + methodEntity.getArgumentsWithTypeString() + " ){\n" +
-                "       " + getMethodBody( methodEntity.getMethodSignature(), methodEntity.getClassName(), methodEntity.getPackageName() ) + "\n" +
-                "    }\n" +
                 "}";
 
         createFile( methodEntity.getTemporaryPackageName(), "LambdaFunctionHandler", sourceCode );
@@ -133,6 +181,27 @@ public class CodeModifier {
     }
 
     public static String getMethodBody ( String methodSignature, String className, String packageName ){
+        //TODO refacroting with better idea
+        /*
+        String[] relative_path_TMP = { "src/main/java/", "src/test/java/" };
+
+        File file;
+        Scanner scanner = null;
+
+        for( String path : relative_path_TMP ){
+            file = new File(path + packageName.replace( ".", "/" ) + "/" + className + ".java" );
+
+            try {
+                scanner = new Scanner(file);
+            }
+            catch ( Exception e ){
+
+            }
+
+            if( scanner != null ){
+                break;
+            }
+        }*/
 
         File file = new File(RELATIVE_PATH + packageName.replace( ".", "/" ) + "/" + className + ".java" );
 
@@ -141,7 +210,15 @@ public class CodeModifier {
         try {
             scanner = new Scanner(file);
         }
-        catch ( Exception e ){}
+        catch ( Exception e ){
+
+        }
+
+        // No source code founded
+        if( scanner == null){
+            return null;
+        }
+
 
         String source = "";
         while( scanner.hasNext() ) {

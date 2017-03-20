@@ -38,7 +38,7 @@ public class CloudMethodEntity {
 
         temporaryPackageName = TEMPORARY_PACKAGE + "." + fullQualifiedName;
 
-        createChecksum();
+        calculateChecksum();
     }
 
     public void modifyCode (){
@@ -48,11 +48,6 @@ public class CloudMethodEntity {
 
         // Create Lambda Handler for AWS
         CodeModifier.createLambdaHandler( this );
-
-        // TODO
-        // Get source code from our method
-        String sourceCode = "";
-
     }
 
     public String getFullQualifiedName (){
@@ -63,8 +58,8 @@ public class CloudMethodEntity {
         return packageName;
     }
 
-    public String getClassName (){
-        return className;
+    public String getMethodName (){
+        return methodName;
     }
 
     public String getTemporaryPackageName (){
@@ -168,12 +163,18 @@ public class CloudMethodEntity {
         return argumentsWithTypeString;
     }
 
-    private void createChecksum(){
+    private void calculateChecksum(){
         String methodSignature = getMethodSignature();
 
         String methodBody = CodeModifier.getMethodBody( methodSignature, className, packageName );
-        String sourceCode = methodSignature + " { " + methodBody + " }";
 
-        checksum = DigestUtils.sha256Hex( sourceCode );
+        if( methodBody == null ){
+            checksum = null;
+        }
+        else{
+            String sourceCode = methodSignature + " { " + methodBody + " }";
+
+            checksum = DigestUtils.sha256Hex( sourceCode );
+        }
     }
 }
