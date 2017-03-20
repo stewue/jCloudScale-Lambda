@@ -54,12 +54,12 @@ public class CloudManager {
                 needUpdate.put( method.getFullQualifiedName(), method );
             }
             // need update, because checksum isn't the same
-            else if ( !methodDescription.getChecksum().equals( method.getChecksum() ) ){
+            else if ( method.getChecksum() == null || !methodDescription.getChecksum().equals( method.getChecksum() ) ){
                 needUpdate.put( method.getFullQualifiedName(), method );
             }
         }
 
-        if( !needUpdate.isEmpty() ){
+        if( !needUpdate.isEmpty() || true ){
             JarBuilder.mvnBuild();
             File file = new File( "target/jcs_lambda-jar-with-dependencies.jar" );
 

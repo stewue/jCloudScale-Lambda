@@ -8,7 +8,6 @@ import ch.uzh.ifi.seal.jcs_lambda.management.CloudMethodEntity;
 import ch.uzh.ifi.seal.jcs_lambda.utility.Util;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -27,8 +26,6 @@ public class CloudAspect {
 
     private static CloudManager cloudManager = null;
 
-    private static long startTimestamp;
-
     // only pseudo variable, that import optimizer won't remove the startup annotation
     private static Class clazz = StartUp.class;
 
@@ -40,8 +37,8 @@ public class CloudAspect {
     @Before("@annotation(StartUp) && execution(* *(..))")
     public void startUpMethod ( JoinPoint joinPoint ) throws Throwable {
 
-        Logger.info( "@startUp" );
-        startTimestamp = System.currentTimeMillis();
+        Logger.info( "@startUp****" );
+        long startTimestamp = System.currentTimeMillis();
 
         cloudManager = CloudManager.getInstance();
 
@@ -52,33 +49,32 @@ public class CloudAspect {
         Reflections reflections = new Reflections( reflectionConfig );
         Set<Method> methods = reflections.getMethodsAnnotatedWith( CloudMethod.class );
 
-        // Register and ............ all methods with annotation
+        // Register and modify all methods with annotation
         for( Method currentMethod : methods ){
             CloudMethodEntity methodEntity = new CloudMethodEntity( currentMethod );
+
             cloudManager.registerMethod( methodEntity );
 
             methodEntity.modifyCode();
         }
 
         cloudManager.buildAndUpload();
-    }
 
-    @After("@annotation(StartUp) && execution(* *(..))")
-    public void beforeExit ( JoinPoint joinPoint ) throws Throwable {
+        // Calculate init time
         long endTimestamp = System.currentTimeMillis();
         long different = endTimestamp - startTimestamp;
 
-        Logger.info( "Time needed: " + ( different / 1000.0 ) + " sec" );
+        Logger.info( "Time needed for initialization: " + ( different / 1000.0 ) + " sec" );
     }
+
 
     @Around("@annotation(CloudMethod) && execution(* *(..))")
     public Object runMethodInCloud ( ProceedingJoinPoint joinPoint ) throws Throwable {
+            String fullQualifiedName = getFullQualifiedName(joinPoint);
+            CloudMethodEntity methodEntity = cloudManager.getMethodByName(fullQualifiedName);
 
-        String fullQualifiedName = getFullQualifiedName( joinPoint );
-        CloudMethodEntity methodEntity = cloudManager.getMethodByName( fullQualifiedName );
-
-        HashMap<String, Object> parametersWithValues = getParametersWithValue( joinPoint );
-        return methodEntity.runMethodInCloud( parametersWithValues );
+            HashMap<String, Object> parametersWithValues = getParametersWithValue(joinPoint);
+            return methodEntity.runMethodInCloud(parametersWithValues);
     }
 
     private static String getFullQualifiedName ( ProceedingJoinPoint joinPoint ){

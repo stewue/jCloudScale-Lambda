@@ -3,6 +3,10 @@ package com.demo;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.CloudMethod;
 
 public class Calculator {
+
+    // TODO a public default constructor is necessary, fix it with code transformation or so
+    public Calculator(){}
+
     public int doSometing( int a, int b ){
         return add( a, b );
     }
