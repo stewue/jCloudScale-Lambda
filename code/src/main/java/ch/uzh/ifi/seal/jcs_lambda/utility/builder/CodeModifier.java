@@ -8,8 +8,6 @@ import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
 import java.io.File;
 import java.io.FileWriter;
-import java.security.CodeSource;
-import java.security.ProtectionDomain;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,6 +16,11 @@ import java.util.Scanner;
 public class CodeModifier {
     private static final String RELATIVE_PATH = "src/main/java/";
 
+    /**
+     * create a request dto class
+     * @param temporaryPackageName package name of the new, temporary created package
+     * @param parameters hash-map with the parameters of the origin method
+     */
     public static void createRequestClass (String temporaryPackageName, HashMap<String, Class> parameters ){
 
         String sourceCode = "package " + temporaryPackageName + "; \n \n";
@@ -75,6 +78,11 @@ public class CodeModifier {
         compileFile( sourceFile );
     }
 
+    /**
+     * create a response dto class
+     * @param temporaryPackageName package name of the new, temporary created package
+     * @param returnType return type of the origin method
+     */
     public static void createResponseClass ( String temporaryPackageName, String returnType ){
         String sourceCode = "package " + temporaryPackageName + "; \n" +
                 "\n" +
@@ -91,7 +99,11 @@ public class CodeModifier {
         compileFile( sourceFile );
     }
 
-    public static void createLambdaHandler (CloudMethodEntity methodEntity){
+    /**
+     * create a new lambda handler for aws
+     * @param methodEntity current method
+     */
+    public static void createLambdaHandler ( CloudMethodEntity methodEntity ){
 
         // TODO originPackage importieren und alle imports aus dieser Klasse
         String sourceCode = "package " + methodEntity.getTemporaryPackageName() + "; \n" +
@@ -145,6 +157,13 @@ public class CodeModifier {
         createFile( methodEntity.getTemporaryPackageName(), "LambdaFunctionHandler", sourceCode );
     }
 
+    /**
+     * create a new file in the src folder
+     * @param temporaryPackageName package name of the new, temporary created package
+     * @param className class name
+     * @param sourceCode source code for the new file
+     * @return return created File
+     */
     private static File createFile (String temporaryPackageName, String className, String sourceCode ){
         // create the source
         File sourceFile = new File( RELATIVE_PATH + temporaryPackageName.replace( ".", "/" ) + "/" + className + ".java" );
@@ -160,6 +179,10 @@ public class CodeModifier {
         return sourceFile;
     }
 
+    /**
+     * compile a file on runtime and add it on runtime to the application
+     * @param sourceFile path in java environment
+     */
     private static void compileFile ( File sourceFile ){
         try {
             JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
@@ -180,6 +203,13 @@ public class CodeModifier {
         catch ( Exception e ){}
     }
 
+    /**
+     * return a string of the method body
+     * @param methodSignature method name with signature
+     * @param className class name
+     * @param packageName package name (com.xyz.demo)
+     * @return return a string with the whole method body as source code
+     */
     public static String getMethodBody ( String methodSignature, String className, String packageName ){
         //TODO refacroting with better idea
         /*

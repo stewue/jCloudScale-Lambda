@@ -31,8 +31,8 @@ public class CloudAspect {
 
     /**
      * On Startup register all methods with cloud annotation
-     * @param joinPoint
-     * @throws Throwable
+     * @param joinPoint current point of execution
+     * @throws Throwable throw all errors
      */
     @Before("@annotation(StartUp) && execution(* *(..))")
     public void startUpMethod ( JoinPoint joinPoint ) throws Throwable {
@@ -67,7 +67,12 @@ public class CloudAspect {
         Logger.info( "Time needed for initialization: " + ( different / 1000.0 ) + " sec" );
     }
 
-
+    /**
+     * Call CloudManager to get rest-endpoint, run method in cloud and handle return value
+     * @param joinPoint current point of execution
+     * @return return the return-object of the injected method
+     * @throws Throwable throw all errors
+     */
     @Around("@annotation(CloudMethod) && execution(* *(..))")
     public Object runMethodInCloud ( ProceedingJoinPoint joinPoint ) throws Throwable {
             String fullQualifiedName = getFullQualifiedName(joinPoint);
@@ -77,6 +82,11 @@ public class CloudAspect {
             return methodEntity.runMethodInCloud(parametersWithValues);
     }
 
+    /**
+     * convert jointPoint of the method into the full qualified name
+     * @param joinPoint current point of execution
+     * @return the full qualified name of the method
+     */
     private static String getFullQualifiedName ( ProceedingJoinPoint joinPoint ){
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
 
@@ -98,6 +108,11 @@ public class CloudAspect {
         return Util.getFullQualifiedName( packageName, className, methodName, parameters );
     }
 
+    /**
+     * get all parameters (value + name) of the method
+     * @param joinPoint current point of execution
+     * @return return a map with the values and parameter names of the injected method
+     */
     private static HashMap<String, Object> getParametersWithValue( ProceedingJoinPoint joinPoint ){
         HashMap<String, Object> parameters = new HashMap<>();
 

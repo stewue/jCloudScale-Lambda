@@ -18,6 +18,14 @@ import java.util.List;
 import java.util.Map;
 
 public class Util {
+    /**
+     * Get the full qualified name of the method
+     * @param packageName package as (com.xy.demo)
+     * @param className classname
+     * @param methodName method name
+     * @param parameters HashMap with all parameters
+     * @return return the full qualified name
+     */
     public static String getFullQualifiedName (String packageName, String className, String methodName, HashMap<String, Class> parameters ){
         String fullQualifiedName = packageName + "." + className + "." + methodName + "__";
 
@@ -28,6 +36,11 @@ public class Util {
         return fullQualifiedName;
     }
 
+    /**
+     * Get all parameters (name + type) of a method
+     * @param method current method
+     * @return hash-map with the parameter names and types
+     */
     public static HashMap<String, Class> getMethodParameters( Method method ){
         HashMap<String, Class> parameters = new HashMap<>();
 
@@ -49,6 +62,12 @@ public class Util {
         return parameters;
     }
 
+    /**
+     * do a http post request
+     * @param url called url
+     * @param urlParameters string what represent the body of the request
+     * @return response body of the request
+     */
     public static String doRequest ( String url, String urlParameters ){
         try {
             URL obj = new URL(url);
@@ -84,6 +103,10 @@ public class Util {
         return null;
     }
 
+    /**
+     * Get current date and time in german format
+     * @return return current date and time in german format
+     */
     public static String getCurrentDate (){
         SimpleDateFormat sdfDate = new SimpleDateFormat("HH:mm:ss dd.MM.yyyyy");
         Date now = new Date();

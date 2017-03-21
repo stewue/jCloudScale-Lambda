@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- *
+ * This method is needed for the start point (public static void main method) of the application
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
