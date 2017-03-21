@@ -1,0 +1,11 @@
+ch.uzh.ifi.seal.jcs_lambda.annotations
+ch.uzh.ifi.seal.jcs_lambda.aspects
+ch.uzh.ifi.seal.jcs_lambda.cloudprovider
+ch.uzh.ifi.seal.jcs_lambda.configuration
+ch.uzh.ifi.seal.jcs_lambda.exception
+ch.uzh.ifi.seal.jcs_lambda.logging
+ch.uzh.ifi.seal.jcs_lambda.management
+ch.uzh.ifi.seal.jcs_lambda.testing.integration
+ch.uzh.ifi.seal.jcs_lambda.utility
+ch.uzh.ifi.seal.jcs_lambda.utility.builder
+com.demo
