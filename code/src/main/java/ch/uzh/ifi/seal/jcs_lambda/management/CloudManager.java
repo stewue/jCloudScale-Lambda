@@ -18,6 +18,10 @@ public class CloudManager {
 
     }
 
+    /**
+     * get the cloud manager instance (singleton)
+     * @return cloud manager instance
+     */
     public static CloudManager getInstance(){
         if( instance == null ){
             instance = new CloudManager();
@@ -26,14 +30,26 @@ public class CloudManager {
         return instance;
     }
 
+    /**
+     * add the method to the list of registered method
+     * @param methodEntity current method entity
+     */
     public void registerMethod( CloudMethodEntity methodEntity ){
         cloudMethods.put( methodEntity.getFullQualifiedName(), methodEntity );
     }
 
+    /**
+     * get method by full qualified name
+     * @param fullQualifiedName full qualified name
+     * @return cloud method entity object
+     */
     public CloudMethodEntity getMethodByName ( String fullQualifiedName ){
         return cloudMethods.get( fullQualifiedName );
     }
 
+    /**
+     * build a jar file with all dependencies and create/update all necessary functions in the cloud
+     */
     public void buildAndUpload (){
 
         AwsCloudProvider awsCloudProvider = AwsCloudProvider.getInstance();

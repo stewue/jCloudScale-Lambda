@@ -6,28 +6,27 @@ public class MethodDescription {
     private String lastUpdate;
     private String checksum;
 
+    /**
+     * Init MethodDescription
+     * @param checksum current checksum of the method
+     */
     public MethodDescription ( String checksum ){
         this.checksum = checksum;
 
         setLastUpdateToNow();
     }
 
-    public void setLastUpdate(String lastUpdate) {
-        this.lastUpdate = lastUpdate;
-    }
-
-    public String getLastUpdate() {
-        return lastUpdate;
-    }
-
+    /**
+     * set last update to current date
+     */
     public void setLastUpdateToNow (){
         lastUpdate = Util.getCurrentDate();
     }
 
-    public void setChecksum(String checksum) {
-        this.checksum = checksum;
-    }
-
+    /**
+     * Get checksum
+     * @return checksum hash
+     */
     public String getChecksum() {
         return checksum;
     }

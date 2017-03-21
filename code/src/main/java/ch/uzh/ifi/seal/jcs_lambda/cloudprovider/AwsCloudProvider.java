@@ -233,7 +233,7 @@ public class AwsCloudProvider {
      * @param functionName the name of the function that we create
      * @param handlerName the start point of the execution
      * @param functionCode Amazon S3 id of the uploaded file
-     * @return url of rest endpoint
+     * @param description methodDescription object
      */
     public void createOrUpdateFunction ( String functionName, String handlerName, FunctionCode functionCode, MethodDescription description ){
         // Check if function name already exists

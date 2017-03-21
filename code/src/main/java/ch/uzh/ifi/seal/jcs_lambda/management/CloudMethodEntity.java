@@ -27,6 +27,10 @@ public class CloudMethodEntity {
 
     private String temporaryPackageName;
 
+    /**
+     * Init a new cloud entity
+     * @param method current method
+     */
     public CloudMethodEntity ( Method method ){
         packageName = method.getDeclaringClass().getPackage().getName();
         className = method.getDeclaringClass().getSimpleName();
@@ -39,15 +43,6 @@ public class CloudMethodEntity {
         temporaryPackageName = TEMPORARY_PACKAGE + "." + fullQualifiedName;
 
         calculateChecksum();
-    }
-
-    public void modifyCode (){
-        // Create DTO classes
-        CodeModifier.createRequestClass( temporaryPackageName, parameters );
-        CodeModifier.createResponseClass( temporaryPackageName, returnType );
-
-        // Create Lambda Handler for AWS
-        CodeModifier.createLambdaHandler( this );
     }
 
     public String getFullQualifiedName (){
@@ -66,10 +61,6 @@ public class CloudMethodEntity {
         return temporaryPackageName;
     }
 
-    public String getReturnType (){
-        return returnType;
-    }
-
     public void setUrl ( String url ){
         this.url = url;
     }
@@ -78,6 +69,23 @@ public class CloudMethodEntity {
         return checksum;
     }
 
+    /**
+     * create some trash classes for cloud deployment
+     */
+    public void modifyCode (){
+        // Create DTO classes
+        CodeModifier.createRequestClass( temporaryPackageName, parameters );
+        CodeModifier.createResponseClass( temporaryPackageName, returnType );
+
+        // Create Lambda Handler for AWS
+        CodeModifier.createLambdaHandler( this );
+    }
+
+    /**
+     * run method in cloud
+     * @param parameters captured parameters from the innvocation
+     * @return return response object from the cloud
+     */
     public Object runMethodInCloud(HashMap<String, Object> parameters ) {
         try{
             Class requestClass = Class.forName( temporaryPackageName + ".Request" );
@@ -106,6 +114,10 @@ public class CloudMethodEntity {
         return null;
     }
 
+    /**
+     * get method signature
+     * @return return method signature ( method name and parameters) as string
+     */
     public String getMethodSignature (){
         String methodSignature = methodName + " ( ";
 
@@ -126,43 +138,9 @@ public class CloudMethodEntity {
         return methodSignature;
     }
 
-    public String getArgumentVariableString (){
-        String argumentVariableString = "";
-
-        int i = 0;
-        for(Map.Entry<String, Class> entry : parameters.entrySet() ){
-            String parameterName = entry.getKey();
-
-            if( i>0 ){
-                argumentVariableString += ", ";
-            }
-
-            argumentVariableString += "request." + parameterName;
-            i++;
-        }
-
-        return argumentVariableString;
-    }
-
-    public String getArgumentsWithTypeString (){
-        String argumentsWithTypeString = "";
-
-        int i = 0;
-        for(Map.Entry<String, Class> entry : parameters.entrySet() ){
-            String parameterName = entry.getKey();
-            Class parameterType = entry.getValue();
-
-            if( i>0 ){
-                argumentsWithTypeString += ", ";
-            }
-
-            argumentsWithTypeString += parameterType + " " + parameterName;
-            i++;
-        }
-
-        return argumentsWithTypeString;
-    }
-
+    /**
+     * calculate the checksum hash from the method
+     */
     private void calculateChecksum(){
         String methodSignature = getMethodSignature();
 
