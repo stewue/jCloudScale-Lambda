@@ -88,10 +88,12 @@ public class CloudMethodEntity {
      */
     public Object runMethodInCloud(HashMap<String, Object> parameters ) {
         try{
+            // Create request dto
             Class requestClass = Class.forName( temporaryPackageName + ".Request" );
             Field[] requestFields = requestClass.getDeclaredFields();
             Object requestInstance = requestClass.newInstance();
 
+            // add all parameters to the dto
             for( Field field : requestFields ){
                 String name = field.getName();
                 Object value = parameters.get( name );
@@ -101,6 +103,7 @@ public class CloudMethodEntity {
 
             Gson gson = new Gson();
 
+            // handle request dto
             Class responseClass = Class.forName( temporaryPackageName + ".Response" );
             String returnJsonObject = Util.doRequest( url, gson.toJson( requestInstance ) );
             AbstractResponse returnObj = (AbstractResponse) gson.fromJson( returnJsonObject, responseClass );

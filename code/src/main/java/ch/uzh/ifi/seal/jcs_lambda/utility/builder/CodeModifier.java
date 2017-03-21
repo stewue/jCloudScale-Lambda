@@ -54,6 +54,8 @@ public class CodeModifier {
             "       return ret; \n" +
             "   } \n" +
             " \n" +
+
+        // generate getter for all types
             "   public Class [] getClassArray() { \n" +
             "       Class [] ret = {";
 
@@ -200,7 +202,9 @@ public class CodeModifier {
                     .call();
             fileManager.close();
         }
-        catch ( Exception e ){}
+        catch ( Exception e ){
+
+        }
     }
 
     /**

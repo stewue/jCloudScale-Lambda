@@ -11,7 +11,7 @@ public class JarBuilder {
      * Builds the maven project using maven sdk for java
      */
     public static void mvnBuild() {
-        // TODO
+        // TODO no hard coded path
         String path = "E:\\OneDrive\\Uni\\17_FS\\Bachelorarbeit\\jcs_lambda\\code";
 
         InvocationRequest request = new DefaultInvocationRequest();

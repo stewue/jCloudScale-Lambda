@@ -53,8 +53,8 @@ public class CloudManager {
     public void buildAndUpload (){
 
         AwsCloudProvider awsCloudProvider = AwsCloudProvider.getInstance();
-        // ToDo better name
-        HashMap<String, CloudMethodEntity> needUpdate = new HashMap<>();
+
+        HashMap<String, CloudMethodEntity> functionNeedUpdate = new HashMap<>();
 
         // Check if a function was updated or is new
         for( Map.Entry<String, CloudMethodEntity> entry : cloudMethods.entrySet() ) {
@@ -62,33 +62,42 @@ public class CloudManager {
 
             method.setUrl( AwsUtil.getRestEndPointUrl( method.getFullQualifiedName() ) );
 
-            // get current description for cloud
-            MethodDescription methodDescription = awsCloudProvider.getLambdaFunctionDescription( method.getFullQualifiedName() );
+            // get current description from cloud
+            FunctionDescription functionDescription = awsCloudProvider.getLambdaFunctionDescription( method.getFullQualifiedName() );
 
-            // new function, because no description exists
-            if( methodDescription == null ){
-                needUpdate.put( method.getFullQualifiedName(), method );
+            // it's a new function, because no description exists
+            if( functionDescription == null ){
+                functionNeedUpdate.put( method.getFullQualifiedName(), method );
             }
             // need update, because checksum isn't the same
-            else if ( method.getChecksum() == null || !methodDescription.getChecksum().equals( method.getChecksum() ) ){
-                needUpdate.put( method.getFullQualifiedName(), method );
+            else if ( method.getChecksum() == null || !functionDescription.getChecksum().equals( method.getChecksum() ) ){
+                functionNeedUpdate.put( method.getFullQualifiedName(), method );
+            }
+            else {
+                // no update necessary, because checksum is the same
             }
         }
 
-        if( !needUpdate.isEmpty() || true ){
+        // TODO true only temporary
+        // if at least one function need an update
+        if( !functionNeedUpdate.isEmpty() || true ){
+            // build jar file with maven
             JarBuilder.mvnBuild();
+            // get jar file
             File file = new File( "target/jcs_lambda-jar-with-dependencies.jar" );
 
+            // upload jar file to amazon s3
             FunctionCode functionCode = awsCloudProvider.uploadFile( file );
 
-            for( Map.Entry<String, CloudMethodEntity> entry : needUpdate.entrySet() ) {
+            // update each function and set new description and code ("link" to file in amazon s3)
+            for( Map.Entry<String, CloudMethodEntity> entry : functionNeedUpdate.entrySet() ) {
                 CloudMethodEntity method = entry.getValue();
 
                 String functionName = AwsUtil.convertMethodName( method.getFullQualifiedName() );
                 String handlerName = method.getTemporaryPackageName() + ".LambdaFunctionHandler::handleRequest";
-                MethodDescription methodDescription = new MethodDescription( method.getChecksum() );
+                FunctionDescription functionDescription = new FunctionDescription( method.getChecksum() );
 
-                awsCloudProvider.createOrUpdateFunction( functionName, handlerName, functionCode, methodDescription );
+                awsCloudProvider.createOrUpdateFunction( functionName, handlerName, functionCode, functionDescription);
             }
 
             // Remove buckets
