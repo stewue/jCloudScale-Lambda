@@ -83,6 +83,7 @@ public class Util {
             wr.flush();
             wr.close();
 
+            // ToDo handle response code
             // int responseCode = con.getResponseCode();
 
             BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));

@@ -2,15 +2,15 @@ package ch.uzh.ifi.seal.jcs_lambda.management;
 
 import ch.uzh.ifi.seal.jcs_lambda.utility.Util;
 
-public class MethodDescription {
+public class FunctionDescription {
     private String lastUpdate;
     private String checksum;
 
     /**
-     * Init MethodDescription
+     * Init FunctionDescription
      * @param checksum current checksum of the method
      */
-    public MethodDescription ( String checksum ){
+    public FunctionDescription(String checksum ){
         this.checksum = checksum;
 
         setLastUpdateToNow();

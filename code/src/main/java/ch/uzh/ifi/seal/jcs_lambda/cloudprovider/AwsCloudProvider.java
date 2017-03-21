@@ -2,7 +2,7 @@ package ch.uzh.ifi.seal.jcs_lambda.cloudprovider;
 
 import ch.uzh.ifi.seal.jcs_lambda.configuration.AwsConfiguration;
 import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
-import ch.uzh.ifi.seal.jcs_lambda.management.MethodDescription;
+import ch.uzh.ifi.seal.jcs_lambda.management.FunctionDescription;
 import ch.uzh.ifi.seal.jcs_lambda.utility.AwsUtil;
 import com.amazonaws.AmazonClientException;
 import com.amazonaws.AmazonServiceException;
@@ -48,7 +48,7 @@ public class AwsCloudProvider {
     private String s3Bucketname;
 
     private AWSLambda amazonLamdba;
-    private HashMap<String, MethodDescription> lambdaFunctionDescriptions = new HashMap<>();
+    private HashMap<String, FunctionDescription> lambdaFunctionDescriptions = new HashMap<>();
 
     /**
      * login to all aws services with the credential
@@ -90,7 +90,7 @@ public class AwsCloudProvider {
         ListFunctionsResult lambdaFunctions = amazonLamdba.listFunctions();
         for( FunctionConfiguration item  : lambdaFunctions.getFunctions() ){
             try {
-                MethodDescription description = gson.fromJson(item.getDescription(), MethodDescription.class);
+                FunctionDescription description = gson.fromJson(item.getDescription(), FunctionDescription.class);
 
                 if( description != null ){
                     lambdaFunctionDescriptions.put(item.getFunctionName(), description);
@@ -101,9 +101,15 @@ public class AwsCloudProvider {
             }
         }
 
+        Logger.info( "Get list of all lambda functions" );
+
         getRestApiId();
     }
 
+    /**
+     * get an instance of the cloud provider (singleton)
+     * @return aws cloud provider instance
+     */
     public static AwsCloudProvider getInstance(){
         if( instance == null ){
             instance = new AwsCloudProvider();
@@ -112,16 +118,29 @@ public class AwsCloudProvider {
         return instance;
     }
 
-    public MethodDescription getLambdaFunctionDescription ( String functionName ){
-        String awsFunctioName = AwsUtil.convertMethodName( functionName );
+    /**
+     * get the functionDescription of a cloud function
+     * @param methodName full qualified name of the method
+     * @return return functionDescription
+     */
+    public FunctionDescription getLambdaFunctionDescription (String methodName ){
+        String awsFunctioName = AwsUtil.convertMethodName( methodName );
 
         return lambdaFunctionDescriptions.get( awsFunctioName );
     }
 
+    /**
+     * get base url of rest end-points
+     * @return a string with the base url
+     */
     public String getBaseUrl (){
         return "https://" + restApiId + ".execute-api." + AwsConfiguration.AWS_REGION.getName() + ".amazonaws.com/" + AwsConfiguration.AWS_API_GATEWAY_STAGE_NAME + "/";
     }
 
+    /**
+     * Get the rest api id
+     * if no rest api exists, then create one
+     */
     private void getRestApiId (){
         // Get the id of the restAPI
         if( restApiId == null ){
@@ -235,7 +254,7 @@ public class AwsCloudProvider {
      * @param functionCode Amazon S3 id of the uploaded file
      * @param description methodDescription object
      */
-    public void createOrUpdateFunction ( String functionName, String handlerName, FunctionCode functionCode, MethodDescription description ){
+    public void createOrUpdateFunction ( String functionName, String handlerName, FunctionCode functionCode, FunctionDescription description ){
         // Check if function name already exists
         GetFunctionRequest getFunctionRequest = new GetFunctionRequest();
         getFunctionRequest.setFunctionName( functionName );
@@ -367,13 +386,12 @@ public class AwsCloudProvider {
         amazonApiGateway.putIntegrationResponse( putIntegrationResponseRequest );
 
         // Create new deployment stage
-        // ToDo do this step only once after all changes
         CreateDeploymentRequest createDeploymentRequest = new CreateDeploymentRequest();
         createDeploymentRequest.setRestApiId( restApiId );
         createDeploymentRequest.setStageName( AwsConfiguration.AWS_API_GATEWAY_STAGE_NAME );
-        CreateDeploymentResult createDeploymentResult = amazonApiGateway.createDeployment( createDeploymentRequest );
+        amazonApiGateway.createDeployment( createDeploymentRequest );
 
-        Logger.info( "API Gateway for Lambda Function '" + functionName + "' created" );
+        Logger.info( "API Gateway for Lambda Function '" + functionName + "' created and rest api new deployment stage released" );
     }
 
     /**
@@ -418,12 +436,15 @@ public class AwsCloudProvider {
 
                 Logger.info( "IAM role '" + AwsConfiguration.AWS_ROLE_NAME + "' created and policy set" );
             }
-
         }
 
         return roleARN;
     }
 
+    /**
+     * output a detail error message from the amazon api
+     * @param e an amazon exception
+     */
     private void logException ( Exception e ){
         if( e instanceof AmazonServiceException ) {
             AmazonServiceException ase = (AmazonServiceException) e;
