@@ -96,10 +96,10 @@ public class CloudAspect {
 
         Class[] parameterTypes = signature.getParameterTypes();
         String [] parameterNames = signature.getParameterNames();
-        HashMap<String, Class> parameters = new HashMap<>();
+        HashMap<String, String> parameters = new HashMap<>();
 
         for( int i=0; i<parameterTypes.length; i++ ){
-            Class parameterType = parameterTypes[i];
+            String parameterType = parameterTypes[i].getName();
             String parameterName = parameterNames[i];
 
             parameters.put( parameterName, parameterType );

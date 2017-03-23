@@ -9,8 +9,9 @@ public class AspectJSample {
     public static void main ( String [] args ){
         Calculator calculator = new Calculator();
 
-        int numberA = 0;
-        int numberB = 0;
+        int numberA;
+        int numberB;
+        String string;
 
         Scanner in = new Scanner(System.in);
 
@@ -20,8 +21,21 @@ public class AspectJSample {
         System.out.println("Enter the second number:");
         numberB = in.nextInt();
 
+        System.out.println("Enter a string:");
+        string = in.next();
+
         System.out.println( "Result (add): " + calculator.doSometing( numberA, numberB ) );
         System.out.println( "Result (add2): " + calculator.add2( numberA, numberB ) );
         System.out.println( "Result (sub): " + calculator.sub( numberA, numberB ) );
+
+        /*InObject inObject = new InObject();
+        inObject.setA( numberA );
+        inObject.setB( numberB );
+        inObject.setC( string );
+
+        OutObject outObject = calculator.complex( inObject );
+
+        System.out.println( "Result (complex): e => " + outObject.getE() + " & f => " + outObject.getF() );*/
+
     }
 }

@@ -242,9 +242,8 @@ public class AwsCloudProvider {
         }
         catch ( Exception e ){
             logException( e );
+            return null;
         }
-
-        return null;
     }
 
     /**
@@ -462,5 +461,7 @@ public class AwsCloudProvider {
             Logger.error("Caught an AmazonClientException, which means the client encountered a serious internal problem while trying to communicate with, such as not being able to access the network." );
             Logger.error("Error Message: " + ace.getMessage() );
         }
+
+        System.exit( -1 );
     }
 }

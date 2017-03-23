@@ -1,10 +1,5 @@
 package ch.uzh.ifi.seal.jcs_lambda.testing.integration;
 
-import ch.uzh.ifi.seal.jcs_lambda.annotations.*;
-import ch.uzh.ifi.seal.jcs_lambda.aspects.CloudAspect;
-import org.junit.Assert;
-import org.junit.Test;
-
 public class TestPrimitiveTypes {
 /*
     @Test

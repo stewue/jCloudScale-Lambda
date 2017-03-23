@@ -80,7 +80,7 @@ public class CloudManager {
 
         // TODO true only temporary
         // if at least one function need an update
-        if( !functionNeedUpdate.isEmpty() || true ){
+        if( !functionNeedUpdate.isEmpty() ){
             // build jar file with maven
             JarBuilder.mvnBuild();
             // get jar file

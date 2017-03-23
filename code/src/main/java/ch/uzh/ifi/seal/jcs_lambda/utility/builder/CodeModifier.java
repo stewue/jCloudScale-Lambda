@@ -21,15 +21,15 @@ public class CodeModifier {
      * @param temporaryPackageName package name of the new, temporary created package
      * @param parameters hash-map with the parameters of the origin method
      */
-    public static void createRequestClass (String temporaryPackageName, HashMap<String, Class> parameters ){
+    public static void createRequestClass (String temporaryPackageName, HashMap<String, String> parameters ){
 
         String sourceCode = "package " + temporaryPackageName + "; \n \n";
         sourceCode += "public class Request { \n";
 
         // Generate all attributes
-        for(Map.Entry<String, Class> entry : parameters.entrySet() ){
+        for(Map.Entry<String, String> entry : parameters.entrySet() ){
             String parameterName = entry.getKey();
-            Class parameterType = entry.getValue();
+            String parameterType = entry.getValue();
             sourceCode += "public " +  parameterType + " " + parameterName + "; \n";
         }
 
@@ -39,7 +39,7 @@ public class CodeModifier {
             "       Object [] ret = {";
 
         int i = 0;
-        for(Map.Entry<String, Class> entry : parameters.entrySet() ){
+        for(Map.Entry<String, String> entry : parameters.entrySet() ){
             String parameterName = entry.getKey();
 
             if( i>0){
@@ -60,8 +60,8 @@ public class CodeModifier {
             "       Class [] ret = {";
 
         int j = 0;
-        for(Map.Entry<String, Class> entry : parameters.entrySet() ){
-            Class parameterType = entry.getValue();
+        for(Map.Entry<String, String> entry : parameters.entrySet() ){
+            String parameterType = entry.getValue();
 
             if( j>0){
                 sourceCode += ", ";
