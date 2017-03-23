@@ -13,9 +13,10 @@ public class Calculator {
 
     @CloudMethod
     private int add( int a, int b ){
-        return a + b;
+        return b + a;
     }
 
+    @CloudMethod
     public int add2( int a, int b ){
         return a + b + returnInt();
     }
@@ -28,4 +29,13 @@ public class Calculator {
     public int sub( int a, int b ){
         return a - b;
     }
+/*
+    @CloudMethod
+    public OutObject complex( InObject inObject ){
+        OutObject outObject = new OutObject();
+        outObject.setE( inObject.getA() + inObject.getB() );
+        outObject.setF( inObject.getC() + "###" );
+
+        return outObject;
+    }*/
 }

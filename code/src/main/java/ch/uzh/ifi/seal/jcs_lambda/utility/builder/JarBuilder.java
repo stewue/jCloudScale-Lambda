@@ -1,9 +1,12 @@
 package ch.uzh.ifi.seal.jcs_lambda.utility.builder;
 
 import ch.uzh.ifi.seal.jcs_lambda.configuration.JcsConfiguration;
+import ch.uzh.ifi.seal.jcs_lambda.exception.MavenBuildException;
 import org.apache.maven.shared.invoker.*;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 
 public class JarBuilder {
@@ -11,11 +14,13 @@ public class JarBuilder {
      * Builds the maven project using maven sdk for java
      */
     public static void mvnBuild() {
-        // TODO no hard coded path
-        String path = "E:\\OneDrive\\Uni\\17_FS\\Bachelorarbeit\\jcs_lambda\\code";
+
+        // get absolute project path (folder where pom.xml is)
+        Path currentRelativePath = Paths.get("");
+        String absolutePath = currentRelativePath.toAbsolutePath().toString();
 
         InvocationRequest request = new DefaultInvocationRequest();
-        request.setPomFile(new File(path));
+        request.setPomFile(new File(absolutePath));
         request.setGoals(Arrays.asList("clean", "install"));
 
         Invoker invoker = new DefaultInvoker();
@@ -26,11 +31,14 @@ public class JarBuilder {
 
             InvocationResult result = invoker.execute(request);
 
-            if (result.getExitCode() == 0){
-
+            // error during building process
+            if (result.getExitCode() != 0){
+                throw result.getExecutionException();
             }
-        } catch (MavenInvocationException e) {
+        } catch (Exception e) {
             e.printStackTrace();
+
+            throw new MavenBuildException();
         }
     }
 }

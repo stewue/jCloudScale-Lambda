@@ -1,5 +1,6 @@
 package ch.uzh.ifi.seal.jcs_lambda.utility;
 
+import ch.uzh.ifi.seal.jcs_lambda.exception.CloudRuntimeException;
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodParameterNamesScanner;
 import org.reflections.util.ClasspathHelper;
@@ -26,11 +27,11 @@ public class Util {
      * @param parameters HashMap with all parameters
      * @return return the full qualified name
      */
-    public static String getFullQualifiedName (String packageName, String className, String methodName, HashMap<String, Class> parameters ){
+    public static String getFullQualifiedName (String packageName, String className, String methodName, HashMap<String, String> parameters ){
         String fullQualifiedName = packageName + "." + className + "." + methodName + "__";
 
-        for( Map.Entry<String, Class> entry : parameters.entrySet()) {
-            fullQualifiedName += "_" + entry.getValue().getSimpleName();
+        for( Map.Entry<String, String> entry : parameters.entrySet()) {
+            fullQualifiedName += "_" + entry.getValue();
         }
 
         return fullQualifiedName;
@@ -41,22 +42,22 @@ public class Util {
      * @param method current method
      * @return hash-map with the parameter names and types
      */
-    public static HashMap<String, Class> getMethodParameters( Method method ){
-        HashMap<String, Class> parameters = new HashMap<>();
+    public static HashMap<String, String> getMethodParameters( Method method ){
+        HashMap<String, String> parameters = new HashMap<>();
 
         ConfigurationBuilder reflectionConfig = new ConfigurationBuilder()
                 .setUrls(ClasspathHelper.forPackage("") )
                 .setScanners( new MethodParameterNamesScanner() );
-        Reflections reflections2 = new Reflections( reflectionConfig );
-        List<String> parameterNames = reflections2.getMethodParamNames( method );
+        Reflections reflections = new Reflections( reflectionConfig );
+        List<String> parameterNames = reflections.getMethodParamNames( method );
 
         Class [] parameterTypes = method.getParameterTypes();
 
-        for( int i=0; i<parameterNames.size(); i++ ){
+        for( int i=0; i< parameterTypes.length; i++ ){
             String parameterName = parameterNames.get( i );
             Class parameterType = parameterTypes[ i ];
 
-            parameters.put( parameterName, parameterType );
+            parameters.put( parameterName, parameterType.getName() );
         }
 
         return parameters;
@@ -83,8 +84,10 @@ public class Util {
             wr.flush();
             wr.close();
 
-            // ToDo handle response code
-            // int responseCode = con.getResponseCode();
+            // Check if error occurred in cloud
+            if( con.getResponseCode() != 200 ){
+                throw new CloudRuntimeException( "An error occurred in the cloud. Please check the log file from aws cloud watch" );
+            }
 
             BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
             String inputLine;
@@ -98,10 +101,8 @@ public class Util {
             return response.toString();
         }
         catch ( Exception e ){
-
+            throw new RuntimeException( "Unable to create a request or interpret the response" );
         }
-
-        return null;
     }
 
     /**

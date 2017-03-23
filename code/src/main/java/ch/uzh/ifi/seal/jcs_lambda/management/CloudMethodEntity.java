@@ -19,7 +19,7 @@ public class CloudMethodEntity {
     private String packageName;
     private String className;
     private String methodName;
-    private HashMap<String, Class> parameters;
+    private HashMap<String, String> parameters;
     private String returnType;
 
     private String url;
@@ -36,7 +36,7 @@ public class CloudMethodEntity {
         className = method.getDeclaringClass().getSimpleName();
         methodName = method.getName();
         parameters = Util.getMethodParameters( method );
-        returnType = method.getReturnType().getSimpleName();
+        returnType = method.getReturnType().getName();
 
         fullQualifiedName = Util.getFullQualifiedName( packageName, className, methodName, parameters );
 
@@ -86,7 +86,7 @@ public class CloudMethodEntity {
      * @param parameters captured parameters from the innvocation
      * @return return response object from the cloud
      */
-    public Object runMethodInCloud(HashMap<String, Object> parameters ) {
+    public Object runMethodInCloud( HashMap<String, Object> parameters ) {
         try{
             // Create request dto
             Class requestClass = Class.forName( temporaryPackageName + ".Request" );
@@ -106,15 +106,16 @@ public class CloudMethodEntity {
             // handle request dto
             Class responseClass = Class.forName( temporaryPackageName + ".Response" );
             String returnJsonObject = Util.doRequest( url, gson.toJson( requestInstance ) );
+
+            // ToDo reference types not working
             AbstractResponse returnObj = (AbstractResponse) gson.fromJson( returnJsonObject, responseClass );
 
             return returnObj.returnValue;
         }
         catch ( Exception e ){
-            //TODO
+            e.printStackTrace();
+            throw new RuntimeException( "Unable to create request/response dto or to get or set the value" );
         }
-
-        return null;
     }
 
     /**
@@ -125,9 +126,9 @@ public class CloudMethodEntity {
         String methodSignature = methodName + " ( ";
 
         int i = 0;
-        for(Map.Entry<String, Class> entry : parameters.entrySet() ){
+        for(Map.Entry<String, String> entry : parameters.entrySet() ){
             String parameterName = entry.getKey();
-            Class parameterType = entry.getValue();
+            String parameterType = entry.getValue();
 
             if( i>0 ){
                 methodSignature += ", ";
