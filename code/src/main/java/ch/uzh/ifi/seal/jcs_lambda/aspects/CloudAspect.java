@@ -6,6 +6,7 @@ import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
 import ch.uzh.ifi.seal.jcs_lambda.management.CloudManager;
 import ch.uzh.ifi.seal.jcs_lambda.management.CloudMethodEntity;
 import ch.uzh.ifi.seal.jcs_lambda.utility.Util;
+import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeModifier;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -59,6 +60,8 @@ public class CloudAspect {
         }
 
         cloudManager.buildAndUpload();
+
+        CodeModifier.removeTemporaryClasses();
 
         // Calculate init time
         long endTimestamp = System.currentTimeMillis();

@@ -107,7 +107,6 @@ public class CodeModifier {
      */
     public static void createLambdaHandler ( CloudMethodEntity methodEntity ){
 
-        // TODO originPackage importieren und alle imports aus dieser Klasse
         String sourceCode = "package " + methodEntity.getTemporaryPackageName() + "; \n" +
                 "\n" +
                 "import com.amazonaws.services.lambda.runtime.Context;\n" +
@@ -145,6 +144,7 @@ public class CodeModifier {
                 "        }\n" +
                 "        catch(Exception ex) {\n" +
                 "            System.out.println( ex );\n" +
+                "            ex.printStackTrace(); \n" +
                 "        }\n" +
                 "\n" +
                 "        OutputStreamWriter writer = new OutputStreamWriter(outputStream, \"UTF-8\");\n" +
@@ -205,6 +205,10 @@ public class CodeModifier {
         catch ( Exception e ){
 
         }
+    }
+
+    public static void removeTemporaryClasses(){
+        //TODO
     }
 
     /**

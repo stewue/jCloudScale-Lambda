@@ -21,8 +21,8 @@ public class AspectJSample {
         System.out.println("Enter the second number:");
         numberB = in.nextInt();
 
-        System.out.println("Enter a string:");
-        string = in.next();
+        /*System.out.println("Enter a string:");
+        string = in.next();*/
 
         System.out.println( "Result (add): " + calculator.doSometing( numberA, numberB ) );
         System.out.println( "Result (add2): " + calculator.add2( numberA, numberB ) );
@@ -36,6 +36,5 @@ public class AspectJSample {
         OutObject outObject = calculator.complex( inObject );
 
         System.out.println( "Result (complex): e => " + outObject.getE() + " & f => " + outObject.getF() );*/
-
     }
 }

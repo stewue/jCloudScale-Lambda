@@ -8,7 +8,7 @@
 
     <properties>
         <javaVersion>1.8</javaVersion>
-        <aspectj.version>1.8.9</aspectj.version>
+        <aspectj.version>1.8.10</aspectj.version>
         <aws.version>1.11.98</aws.version>
         <maven.test.skip>true</maven.test.skip>
     </properties>
@@ -84,6 +84,45 @@
                     <target>${javaVersion}</target>
                 </configuration>
             </plugin>
+
+            <!-- Specifying that aspectJ should weave aspects in compile-time -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>aspectj-maven-plugin</artifactId>
+                <version>1.4</version>
+                <configuration>
+                    <source>${javaVersion}</source>
+                    <target>${javaVersion}</target>
+                    <complianceLevel>${javaVersion}</complianceLevel>
+                    <verbose>true</verbose>
+                    <weaveWithAspectsInMainSourceFolder>true</weaveWithAspectsInMainSourceFolder>
+                    <!-- <excludes> <exclude>**/StateEventAspect.java</exclude> </excludes> -->
+                </configuration>
+                <executions>
+                    <execution>
+                        <configuration>
+                            <XnoInline>true</XnoInline>
+                        </configuration>
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>test-compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.aspectj</groupId>
+                        <artifactId>aspectjrt</artifactId>
+                        <version>${aspectj.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.aspectj</groupId>
+                        <artifactId>aspectjtools</artifactId>
+                        <version>${aspectj.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
             <!-- Maven Assembly Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
