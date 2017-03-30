@@ -40,7 +40,7 @@ public class CloudAspect {
     @Before("@annotation(StartUp) && execution(* *(..))")
     public void startUpMethod ( JoinPoint joinPoint ) throws Throwable {
 
-        Logger.info( "@startUp" );
+        Logger.info( "@startUp*" );
         long startTimestamp = System.currentTimeMillis();
 
         cloudManager = CloudManager.getInstance();
@@ -107,10 +107,10 @@ public class CloudAspect {
 
         Class[] parameterTypes = signature.getParameterTypes();
         String [] parameterNames = signature.getParameterNames();
-        HashMap<String, String> parameters = new HashMap<>();
+        HashMap<String, Class> parameters = new HashMap<>();
 
         for( int i=0; i<parameterTypes.length; i++ ){
-            String parameterType = parameterTypes[i].getName();
+            Class parameterType = parameterTypes[i];
             String parameterName = parameterNames[i];
 
             parameters.put( parameterName, parameterType );

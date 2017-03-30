@@ -26,15 +26,15 @@ public class CodeModifier {
      * @param temporaryPackageName package name of the new, temporary created package
      * @param parameters hash-map with the parameters of the origin method
      */
-    public static void createRequestClass (String temporaryPackageName, HashMap<String, String> parameters ){
+    public static void createRequestClass (String temporaryPackageName, HashMap<String, Class> parameters ){
 
         String sourceCode = "package " + temporaryPackageName + "; \n \n";
         sourceCode += "public class Request { \n";
 
         // Generate all attributes
-        for(Map.Entry<String, String> entry : parameters.entrySet() ){
+        for(Map.Entry<String, Class> entry : parameters.entrySet() ){
             String parameterName = entry.getKey();
-            String parameterType = entry.getValue();
+            String parameterType = entry.getValue().getName();
             sourceCode += "public " +  parameterType + " " + parameterName + "; \n";
         }
 
@@ -44,7 +44,7 @@ public class CodeModifier {
             "       Object [] ret = {";
 
         int i = 0;
-        for(Map.Entry<String, String> entry : parameters.entrySet() ){
+        for(Map.Entry<String, Class> entry : parameters.entrySet() ){
             String parameterName = entry.getKey();
 
             if( i>0){
@@ -65,8 +65,8 @@ public class CodeModifier {
             "       Class [] ret = {";
 
         int j = 0;
-        for(Map.Entry<String, String> entry : parameters.entrySet() ){
-            String parameterType = entry.getValue();
+        for(Map.Entry<String, Class> entry : parameters.entrySet() ){
+            String parameterType = entry.getValue().getName();
 
             if( j>0){
                 sourceCode += ", ";
@@ -93,9 +93,7 @@ public class CodeModifier {
     public static void createResponseClass ( String temporaryPackageName, String returnType ){
         String sourceCode = "package " + temporaryPackageName + "; \n" +
                 "\n" +
-                "import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.AbstractResponse; \n" +
-                "\n" +
-                "public class Response extends AbstractResponse {\n" +
+                "public class Response {\n" +
                 "    public " + returnType + " returnValue;\n" +
                 "    public Response ( Object returnValue ) {\n" +
                 "        this.returnValue = (" + returnType + ") returnValue;\n" +
@@ -110,7 +108,7 @@ public class CodeModifier {
      * create a new lambda handler for aws
      * @param methodEntity current method
      */
-    public static void createLambdaHandler ( CloudMethodEntity methodEntity ){
+    public static void createLambdaFunctionHandler ( CloudMethodEntity methodEntity ){
 
         String sourceCode = "package " + methodEntity.getTemporaryPackageName() + "; \n" +
                 "\n" +
@@ -127,7 +125,7 @@ public class CodeModifier {
                 "import java.lang.reflect.Method; \n" +
 
                 "\n" +
-                "public class LambdaFunctionHandler implements RequestStreamHandler {\n" +
+                "public class Endpoint implements RequestStreamHandler {\n" +
                 "    public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {\n" +
                 "        JVMContext.setServerContext(); \n" +
                 "        JSONParser parser = new JSONParser();\n" +
@@ -141,7 +139,6 @@ public class CodeModifier {
                 "            System.out.println( \"Input: \" +  event.toJSONString() );\n" +
                 "            Request request = gson.fromJson( event.toJSONString() , Request.class );\n" +
                 "\n" +
-                // TODO not hard-coded (testen)
                              methodEntity.getClassName() + " object = new " + methodEntity.getClassName() + "(); \n" +
                 "            Class params[] = request.getClassArray(); \n" +
                 "            Object paramsObj[] = request.getObjectArray(); \n \n" +
@@ -163,7 +160,7 @@ public class CodeModifier {
                 "\n" +
                 "}";
 
-        createFile( methodEntity.getTemporaryPackageName(), "LambdaFunctionHandler", sourceCode );
+        createFile( methodEntity.getTemporaryPackageName(), "Endpoint", sourceCode );
     }
 
     /**
@@ -221,7 +218,8 @@ public class CodeModifier {
         File directory = new File( RELATIVE_PATH + TEMPORARY_PACKAGE );
 
         try{
-           FileUtils.deleteDirectory( directory );
+            //TODO only tmp
+          // FileUtils.deleteDirectory( directory );
         }
         catch ( Exception e ){
             Logger.error( "Unable to remove temporary created files" );

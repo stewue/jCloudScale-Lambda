@@ -1,6 +1,6 @@
 package ch.uzh.ifi.seal.jcs_lambda.management;
 
-import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.AbstractResponse;
+import ch.uzh.ifi.seal.jcs_lambda.utility.AwsUtil;
 import ch.uzh.ifi.seal.jcs_lambda.utility.Util;
 import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeModifier;
 import com.google.gson.Gson;
@@ -16,7 +16,7 @@ public class CloudMethodEntity {
     private String packageName;
     private String className;
     private String methodName;
-    private HashMap<String, String> parameters;
+    private HashMap<String, Class> parameters;
     private String returnType;
 
     private String url;
@@ -37,6 +37,8 @@ public class CloudMethodEntity {
         fullQualifiedName = Util.getFullQualifiedName( packageName, className, methodName, parameters );
 
         temporaryPackageName = CodeModifier.TEMPORARY_PACKAGE + "." + fullQualifiedName;
+
+        url = AwsUtil.getRestEndPointUrl( fullQualifiedName );
     }
 
     public String getFullQualifiedName (){
@@ -57,10 +59,6 @@ public class CloudMethodEntity {
         return temporaryPackageName;
     }
 
-    public void setUrl ( String url ){
-        this.url = url;
-    }
-
     /**
      * create some trash classes for cloud deployment
      */
@@ -69,8 +67,8 @@ public class CloudMethodEntity {
         CodeModifier.createRequestClass( temporaryPackageName, parameters );
         CodeModifier.createResponseClass( temporaryPackageName, returnType );
 
-        // Create Lambda Handler for AWS
-        CodeModifier.createLambdaHandler( this );
+        // Create Lambda Function Handler for AWS
+        CodeModifier.createLambdaFunctionHandler( this );
     }
 
     /**
@@ -99,10 +97,11 @@ public class CloudMethodEntity {
             Class responseClass = Class.forName( temporaryPackageName + ".Response" );
             String returnJsonObject = Util.doRequest( url, gson.toJson( requestInstance ) );
 
-            // ToDo reference types not working
-            AbstractResponse returnObj = (AbstractResponse) gson.fromJson( returnJsonObject, responseClass );
+            Object returnObj = gson.fromJson( returnJsonObject, responseClass );
 
-            return returnObj.returnValue;
+            // cast returnObj and get the return value
+            Field field = responseClass.getField("returnValue" );
+            return field.get( responseClass.cast(returnObj) );
         }
         catch ( Exception e ){
             e.printStackTrace();
@@ -118,9 +117,9 @@ public class CloudMethodEntity {
         String methodSignature = methodName + " ( ";
 
         int i = 0;
-        for(Map.Entry<String, String> entry : parameters.entrySet() ){
+        for(Map.Entry<String, Class> entry : parameters.entrySet() ){
             String parameterName = entry.getKey();
-            String parameterType = entry.getValue();
+            String parameterType = entry.getValue().getSimpleName();
 
             if( i>0 ){
                 methodSignature += ", ";

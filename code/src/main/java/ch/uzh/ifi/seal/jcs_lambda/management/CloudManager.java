@@ -55,15 +55,22 @@ public class CloudManager {
 
         AwsCloudProvider awsCloudProvider = AwsCloudProvider.getInstance();
 
-        for( Map.Entry<String, CloudMethodEntity> entry : cloudMethods.entrySet() ) {
-            CloudMethodEntity method = entry.getValue();
-
-            method.setUrl( AwsUtil.getRestEndPointUrl( method.getFullQualifiedName() ) );
-        }
-
+        // check if code is modified
         boolean updateNecessary = CodeModifier.isModified();
 
-        // if a function not exists or project was updated
+        // if code isn't modified, check if each function in the cloud exists
+        if( !updateNecessary ){
+            for( Map.Entry<String, CloudMethodEntity> entry : cloudMethods.entrySet() ) {
+                CloudMethodEntity method = entry.getValue();
+
+                // check if function already exists
+                if( !awsCloudProvider.existsFunction( method.getFullQualifiedName() ) ){
+                    updateNecessary = true;
+                }
+            }
+
+        }
+
         if( updateNecessary ){
             // build jar file with maven
             JarBuilder.mvnBuild();
@@ -79,7 +86,7 @@ public class CloudManager {
                 CloudMethodEntity method = entry.getValue();
 
                 String functionName = AwsUtil.convertMethodName( method.getFullQualifiedName() );
-                String handlerName = method.getTemporaryPackageName() + ".LambdaFunctionHandler::handleRequest";
+                String handlerName = method.getTemporaryPackageName() + ".Endpoint::handleRequest";
                 FunctionDescription functionDescription = new FunctionDescription( method.getFullQualifiedName() );
 
                 awsCloudProvider.createOrUpdateFunction( functionName, handlerName, functionCode, functionDescription);
