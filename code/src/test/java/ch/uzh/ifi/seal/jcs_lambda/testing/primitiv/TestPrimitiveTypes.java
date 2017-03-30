@@ -1,4 +1,4 @@
-package ch.uzh.ifi.seal.jcs_lambda.testing;
+package ch.uzh.ifi.seal.jcs_lambda.testing.primitiv;
 
 import ch.uzh.ifi.seal.jcs_lambda.annotations.CloudMethod;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.StartUp;

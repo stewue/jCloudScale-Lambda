@@ -41,5 +41,5 @@ $RECYCLE.BIN/
 !.idea/runConfigurations/
 /out/
 
-/src/main/java/tmp_jcs/
+/src/test/java/tmp_jcs/
 lastModified.txt
