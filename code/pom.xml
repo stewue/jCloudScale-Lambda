@@ -99,7 +99,7 @@
                 <configuration>
                     <!-- get all project dependencies and tests -->
                     <descriptors>
-                        <descriptor>src/main/resources/assemblies/myassembly.xml</descriptor>
+                        <descriptor>src/main/resources/assemblies/buildJarWithDependenciesAndTests.xml</descriptor>
                     </descriptors>
                     <finalName>jcs_lambda</finalName>
                 </configuration>
