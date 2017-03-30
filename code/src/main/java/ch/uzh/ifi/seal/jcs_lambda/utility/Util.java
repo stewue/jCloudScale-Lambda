@@ -27,11 +27,11 @@ public class Util {
      * @param parameters HashMap with all parameters
      * @return return the full qualified name
      */
-    public static String getFullQualifiedName (String packageName, String className, String methodName, HashMap<String, String> parameters ){
+    public static String getFullQualifiedName (String packageName, String className, String methodName, HashMap<String, Class> parameters ){
         String fullQualifiedName = packageName + "." + className + "." + methodName + "__";
 
-        for( Map.Entry<String, String> entry : parameters.entrySet()) {
-            fullQualifiedName += "_" + entry.getValue();
+        for( Map.Entry<String, Class> entry : parameters.entrySet()) {
+            fullQualifiedName += "_" + entry.getValue().getSimpleName();
         }
 
         return fullQualifiedName;
@@ -42,8 +42,8 @@ public class Util {
      * @param method current method
      * @return hash-map with the parameter names and types
      */
-    public static HashMap<String, String> getMethodParameters( Method method ){
-        HashMap<String, String> parameters = new HashMap<>();
+    public static HashMap<String, Class> getMethodParameters( Method method ){
+        HashMap<String, Class> parameters = new HashMap<>();
 
         ConfigurationBuilder reflectionConfig = new ConfigurationBuilder()
                 .setUrls(ClasspathHelper.forPackage("") )
@@ -57,7 +57,7 @@ public class Util {
             String parameterName = parameterNames.get( i );
             Class parameterType = parameterTypes[ i ];
 
-            parameters.put( parameterName, parameterType.getName() );
+            parameters.put( parameterName, parameterType );
         }
 
         return parameters;

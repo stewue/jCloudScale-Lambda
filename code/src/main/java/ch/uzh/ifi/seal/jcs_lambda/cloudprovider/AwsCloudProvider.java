@@ -121,14 +121,14 @@ public class AwsCloudProvider {
     }
 
     /**
-     * get the functionDescription of a cloud function
+     * check if a method in the cloud already exists
      * @param methodName full qualified name of the method
-     * @return return functionDescription
+     * @return return status
      */
-    public FunctionDescription getLambdaFunctionDescription (String methodName ){
-        String awsFunctioName = AwsUtil.convertMethodName( methodName );
+    public boolean existsFunction(String methodName ){
+        String awsFunctionName = AwsUtil.convertMethodName( methodName );
 
-        return lambdaFunctionDescriptions.get( awsFunctioName );
+        return lambdaFunctionDescriptions.get( awsFunctionName ) != null;
     }
 
     /**
