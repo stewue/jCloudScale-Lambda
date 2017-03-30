@@ -1,15 +1,16 @@
 package ch.uzh.ifi.seal.jcs_lambda.utility;
 
 import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.AwsCloudProvider;
+import org.apache.commons.codec.digest.DigestUtils;
 
 public class AwsUtil {
     /**
-     * convert method name in a aws compatible name
+     * convert method name in a hash name
      * @param methodName full qualified method name
      * @return aws compatible function name
      */
     public static String convertMethodName ( String methodName ){
-        return methodName.replace(".", "--");
+        return DigestUtils.sha1Hex( methodName );
     }
 
     /**

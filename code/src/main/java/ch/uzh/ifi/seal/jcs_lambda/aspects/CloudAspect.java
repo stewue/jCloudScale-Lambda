@@ -2,6 +2,7 @@ package ch.uzh.ifi.seal.jcs_lambda.aspects;
 
 import ch.uzh.ifi.seal.jcs_lambda.annotations.CloudMethod;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.StartUp;
+import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.JVMContext;
 import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
 import ch.uzh.ifi.seal.jcs_lambda.management.CloudManager;
 import ch.uzh.ifi.seal.jcs_lambda.management.CloudMethodEntity;
@@ -39,7 +40,7 @@ public class CloudAspect {
     @Before("@annotation(StartUp) && execution(* *(..))")
     public void startUpMethod ( JoinPoint joinPoint ) throws Throwable {
 
-        Logger.info( "@startUp**" );
+        Logger.info( "@startUp" );
         long startTimestamp = System.currentTimeMillis();
 
         cloudManager = CloudManager.getInstance();
@@ -81,11 +82,15 @@ public class CloudAspect {
      */
     @Around("@annotation(CloudMethod) && execution(* *(..))")
     public Object runMethodInCloud ( ProceedingJoinPoint joinPoint ) throws Throwable {
-            String fullQualifiedName = getFullQualifiedName(joinPoint);
-            CloudMethodEntity methodEntity = cloudManager.getMethodByName(fullQualifiedName);
+            if( JVMContext.getContext() == true){
+                return joinPoint.proceed();
+            }else {
+                String fullQualifiedName = getFullQualifiedName(joinPoint);
+                CloudMethodEntity methodEntity = cloudManager.getMethodByName(fullQualifiedName);
 
-            HashMap<String, Object> parametersWithValues = getParametersWithValue(joinPoint);
-            return methodEntity.runMethodInCloud(parametersWithValues);
+                HashMap<String, Object> parametersWithValues = getParametersWithValue(joinPoint);
+                return methodEntity.runMethodInCloud(parametersWithValues);
+            }
     }
 
     /**
