@@ -12,8 +12,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CloudMethodEntity {
-    private static final String TEMPORARY_PACKAGE = "tmp_jcs";
-
     private String fullQualifiedName;
 
     private String packageName;
@@ -23,7 +21,6 @@ public class CloudMethodEntity {
     private String returnType;
 
     private String url;
-    private String checksum;
 
     private String temporaryPackageName;
 
@@ -40,9 +37,7 @@ public class CloudMethodEntity {
 
         fullQualifiedName = Util.getFullQualifiedName( packageName, className, methodName, parameters );
 
-        temporaryPackageName = TEMPORARY_PACKAGE + "." + fullQualifiedName;
-
-        calculateChecksum();
+        temporaryPackageName = CodeModifier.TEMPORARY_PACKAGE + "." + fullQualifiedName;
     }
 
     public String getFullQualifiedName (){
@@ -57,16 +52,14 @@ public class CloudMethodEntity {
         return methodName;
     }
 
+    public String getClassName () { return className; }
+
     public String getTemporaryPackageName (){
         return temporaryPackageName;
     }
 
     public void setUrl ( String url ){
         this.url = url;
-    }
-
-    public String getChecksum (){
-        return checksum;
     }
 
     /**
@@ -140,23 +133,5 @@ public class CloudMethodEntity {
         methodSignature += " )";
 
         return methodSignature;
-    }
-
-    /**
-     * calculate the checksum hash from the method
-     */
-    private void calculateChecksum(){
-        String methodSignature = getMethodSignature();
-
-        String methodBody = CodeModifier.getMethodBody( methodSignature, className, packageName );
-
-        if( methodBody == null ){
-            checksum = null;
-        }
-        else{
-            String sourceCode = methodSignature + " { " + methodBody + " }";
-
-            checksum = DigestUtils.sha256Hex( sourceCode );
-        }
     }
 }

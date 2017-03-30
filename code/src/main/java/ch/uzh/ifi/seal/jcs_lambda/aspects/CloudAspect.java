@@ -7,6 +7,7 @@ import ch.uzh.ifi.seal.jcs_lambda.management.CloudManager;
 import ch.uzh.ifi.seal.jcs_lambda.management.CloudMethodEntity;
 import ch.uzh.ifi.seal.jcs_lambda.utility.Util;
 import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeModifier;
+import org.aspectj.apache.bcel.classfile.Code;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -38,7 +39,7 @@ public class CloudAspect {
     @Before("@annotation(StartUp) && execution(* *(..))")
     public void startUpMethod ( JoinPoint joinPoint ) throws Throwable {
 
-        Logger.info( "@startUp****" );
+        Logger.info( "@startUp**" );
         long startTimestamp = System.currentTimeMillis();
 
         cloudManager = CloudManager.getInstance();
@@ -62,6 +63,8 @@ public class CloudAspect {
         cloudManager.buildAndUpload();
 
         CodeModifier.removeTemporaryClasses();
+
+        CodeModifier.updateLastModified();
 
         // Calculate init time
         long endTimestamp = System.currentTimeMillis();

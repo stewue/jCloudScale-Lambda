@@ -1,6 +1,10 @@
 package ch.uzh.ifi.seal.jcs_lambda.utility.builder;
 
+import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
 import ch.uzh.ifi.seal.jcs_lambda.management.CloudMethodEntity;
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
+import org.codehaus.plexus.util.FileUtils;
 
 import javax.tools.JavaCompiler;
 import javax.tools.StandardJavaFileManager;
@@ -8,13 +12,14 @@ import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
 import java.io.File;
 import java.io.FileWriter;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class CodeModifier {
-    private static final String RELATIVE_PATH = "src/main/java/";
+    private static final String RELATIVE_PATH = "src/test/java/";
+    public static final String TEMPORARY_PACKAGE = "tmp_jcs";
 
     /**
      * create a request dto class
@@ -134,8 +139,8 @@ public class CodeModifier {
                 "            System.out.println( \"Input: \" +  event.toJSONString() );\n" +
                 "            Request request = gson.fromJson( event.toJSONString() , Request.class );\n" +
                 "\n" +
-                // TODO not hard-coded
-                "            Calculator object = new Calculator(); \n" +
+                // TODO not hard-coded (testen)
+                             methodEntity.getClassName() + " object = new " + methodEntity.getClassName() + "(); \n" +
                 "            Class params[] = request.getClassArray(); \n" +
                 "            Object paramsObj[] = request.getObjectArray(); \n \n" +
                 "            Method method = object.getClass().getDeclaredMethod(\"" + methodEntity.getMethodName() + "\", params ); \n" +
@@ -207,107 +212,81 @@ public class CodeModifier {
         }
     }
 
-    public static void removeTemporaryClasses(){
-        //TODO
-    }
-
     /**
-     * return a string of the method body
-     * @param methodSignature method name with signature
-     * @param className class name
-     * @param packageName package name (com.xyz.demo)
-     * @return return a string with the whole method body as source code
+     *
      */
-    public static String getMethodBody ( String methodSignature, String className, String packageName ){
-        //TODO refacroting with better idea
-        /*
-        String[] relative_path_TMP = { "src/main/java/", "src/test/java/" };
+    public static void removeTemporaryClasses(){
+        File directory = new File( RELATIVE_PATH + TEMPORARY_PACKAGE );
 
-        File file;
-        Scanner scanner = null;
-
-        for( String path : relative_path_TMP ){
-            file = new File(path + packageName.replace( ".", "/" ) + "/" + className + ".java" );
-
-            try {
-                scanner = new Scanner(file);
-            }
-            catch ( Exception e ){
-
-            }
-
-            if( scanner != null ){
-                break;
-            }
-        }*/
-
-        File file = new File(RELATIVE_PATH + packageName.replace( ".", "/" ) + "/" + className + ".java" );
-
-        Scanner scanner = null;
-
-        try {
-            scanner = new Scanner(file);
+        try{
+            FileUtils.deleteDirectory( directory );
         }
         catch ( Exception e ){
+            Logger.error( "Unable to remove temporary created files" );
+        }
+    }
 
+    public static boolean isModified(){
+        long lastModified = getLastModified();
+
+        long lastDeployed = 0;
+
+        try {
+            String content = Files.toString(new File("lastModified.txt"), Charsets.UTF_8);
+            content = content.replace("\n", "").replace("\r", "");
+            lastDeployed = Long.valueOf( content );
+        }
+        catch ( Exception e ){
         }
 
-        // No source code founded
-        if( scanner == null){
-            return null;
+        return lastDeployed < lastModified;
+    }
+
+    public static void updateLastModified(){
+        try{
+            PrintWriter writer = new PrintWriter("lastModified.txt", "UTF-8");
+            writer.print( getLastModified() );
+            writer.close();
+        } catch (IOException e) {
+            System.exit( -1 );
+        }
+    }
+
+    private static long getLastModified() {
+        File directory = new File("src" );
+
+        return getLastModifiedRecursively( directory.getAbsolutePath() );
+    }
+
+    private static long getLastModifiedRecursively ( String path ){
+        File root = new File( path );
+        File[] list = root.listFiles();
+
+        // folder is empty
+        if (list == null){
+            return 0;
         }
 
+        long highestLastModified = 0;
 
-        String source = "";
-        while( scanner.hasNext() ) {
-            source += " "+ scanner.next();
-        }
+        for ( File file : list ) {
+            long lastModified = 0;
 
-        // extract code using the method signature
-        methodSignature = methodSignature.trim();
-        source = source.trim();
-
-        //appending { to differentiate from argument as it can be matched also if in the same file
-        methodSignature = methodSignature+"{";
-
-        //making sure we find what we are looking for
-        methodSignature = methodSignature.replaceAll("\\s*[(]\\s*", "(");
-        methodSignature = methodSignature.replaceAll("\\s*[)]\\s*", ")");
-        methodSignature = methodSignature.replaceAll("\\s*[,]\\s*", ",");
-        methodSignature = methodSignature.replaceAll("\\s+", " ");
-
-
-        source =source.replaceAll("\\s*[(]\\s*", "(");
-        source = source.replaceAll("\\s*[)]\\s*", ")");
-        source = source.replaceAll("\\s*[,]\\s*", ",");
-        source = source.replaceAll("\\s+", " ");
-
-
-        if(!source.contains(methodSignature)) return null;
-
-        // trimming all text in method signature
-        source = source.substring(source.indexOf(methodSignature) );
-
-        //getting last index, a methods ends when there are matching pairs of these {}
-        int lastIndex = 0;
-
-        int rightBraceCount = 0;
-        int leftBraceCount = 0;
-
-        char [] remainingSource = source.toCharArray();
-        for (int i = 0; i < remainingSource.length ; i++) {
-            if(remainingSource[i] == '}'){
-                rightBraceCount++;
-                if(rightBraceCount == leftBraceCount){
-                    lastIndex = i;
-                    break;
+            if ( file.isDirectory() ) {
+                lastModified = getLastModifiedRecursively( file.getAbsolutePath() );
+            }
+            else {
+                // check if its not a temporary file
+                if( !file.getAbsoluteFile().toString().contains( (RELATIVE_PATH + TEMPORARY_PACKAGE).replace("/", "\\" ) ) ){
+                    lastModified = file.lastModified();
                 }
             }
-            else if(remainingSource[i] == '{'){
-                leftBraceCount++;
+
+            if( lastModified > highestLastModified ){
+                highestLastModified = lastModified;
             }
         }
 
-        return source.substring( methodSignature.length(), lastIndex );
+        return highestLastModified;
     }
 }

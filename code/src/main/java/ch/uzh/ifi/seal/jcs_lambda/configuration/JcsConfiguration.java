@@ -6,4 +6,5 @@ public class JcsConfiguration {
     public static final LogLevel LOG_LEVEL = LogLevel.DEBUG;
 
     public static final String MAVEN_HOME = "C:\\Program Files\\apache-maven-3.3.9";
+    //public static final String MAVEN_HOME = "C:\\Program Files\\apache-maven\\apache-maven-3.3.9";
 }
