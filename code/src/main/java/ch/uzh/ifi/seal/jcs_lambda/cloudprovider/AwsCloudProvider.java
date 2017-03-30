@@ -50,6 +50,8 @@ public class AwsCloudProvider {
     private AWSLambda amazonLamdba;
     private HashMap<String, FunctionDescription> lambdaFunctionDescriptions = new HashMap<>();
 
+    private boolean releaseNewDeploymentStage =  false;
+
     /**
      * login to all aws services with the credential
      */
@@ -384,15 +386,25 @@ public class AwsCloudProvider {
         putIntegrationResponseRequest.setStatusCode( "200" );
         amazonApiGateway.putIntegrationResponse( putIntegrationResponseRequest );
 
-        // Create new deployment stage
-        CreateDeploymentRequest createDeploymentRequest = new CreateDeploymentRequest();
-        createDeploymentRequest.setRestApiId( restApiId );
-        createDeploymentRequest.setStageName( AwsConfiguration.AWS_API_GATEWAY_STAGE_NAME );
-        amazonApiGateway.createDeployment( createDeploymentRequest );
+        releaseNewDeploymentStage = true;
 
-        Logger.info( "API Gateway for Lambda Function '" + functionName + "' created and rest api new deployment stage released" );
+        Logger.info( "API Gateway for Lambda Function '" + functionName + "' created" );
     }
 
+    /**
+     * Release new deployment stage if a new rest end point was added
+     */
+    public void releaseDeploymentStage(){
+        if( releaseNewDeploymentStage ) {
+            // Create new deployment stage
+            CreateDeploymentRequest createDeploymentRequest = new CreateDeploymentRequest();
+            createDeploymentRequest.setRestApiId(restApiId);
+            createDeploymentRequest.setStageName(AwsConfiguration.AWS_API_GATEWAY_STAGE_NAME);
+            amazonApiGateway.createDeployment(createDeploymentRequest);
+
+            Logger.info("API Gateway: new deployment stage released");
+        }
+    }
     /**
      * create a role and set the policy, that the role has only access to aws lambda
      * @return the arn of the role
