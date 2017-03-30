@@ -4,7 +4,7 @@ import ch.uzh.ifi.seal.jcs_lambda.annotations.CloudMethod;
 
 public class Calculator {
 
-    // TODO a public default constructor is necessary, fix it with code transformation or so
+    // TODO add to documentation
     public Calculator(){}
 
     public int doSometing( int a, int b ){

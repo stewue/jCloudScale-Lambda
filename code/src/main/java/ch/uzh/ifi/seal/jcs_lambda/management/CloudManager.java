@@ -2,6 +2,7 @@ package ch.uzh.ifi.seal.jcs_lambda.management;
 
 import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.AwsCloudProvider;
 import ch.uzh.ifi.seal.jcs_lambda.utility.AwsUtil;
+import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeModifier;
 import ch.uzh.ifi.seal.jcs_lambda.utility.builder.JarBuilder;
 import com.amazonaws.services.lambda.model.FunctionCode;
 
@@ -54,33 +55,10 @@ public class CloudManager {
 
         AwsCloudProvider awsCloudProvider = AwsCloudProvider.getInstance();
 
-        HashMap<String, CloudMethodEntity> functionNeedUpdate = new HashMap<>();
+        boolean updateNecessary = CodeModifier.isModified();
 
-        // Check if a function was updated or is new
-        for( Map.Entry<String, CloudMethodEntity> entry : cloudMethods.entrySet() ) {
-            CloudMethodEntity method = entry.getValue();
-
-            method.setUrl( AwsUtil.getRestEndPointUrl( method.getFullQualifiedName() ) );
-
-            // get current description from cloud
-            FunctionDescription functionDescription = awsCloudProvider.getLambdaFunctionDescription( method.getFullQualifiedName() );
-
-            // it's a new function, because no description exists
-            if( functionDescription == null ){
-                functionNeedUpdate.put( method.getFullQualifiedName(), method );
-            }
-            // need update, because checksum isn't the same
-            else if ( method.getChecksum() == null || !functionDescription.getChecksum().equals( method.getChecksum() ) ){
-                functionNeedUpdate.put( method.getFullQualifiedName(), method );
-            }
-            else {
-                // no update necessary, because checksum is the same
-            }
-        }
-
-        // TODO true only temporary
-        // if at least one function need an update
-        if( !functionNeedUpdate.isEmpty() ){
+        // if a function not exists or project was updated
+        if( updateNecessary ){
             // build jar file with maven
             JarBuilder.mvnBuild();
             // get jar file
@@ -90,12 +68,12 @@ public class CloudManager {
             FunctionCode functionCode = awsCloudProvider.uploadFile( file );
 
             // update each function and set new description and code ("link" to file in amazon s3)
-            for( Map.Entry<String, CloudMethodEntity> entry : functionNeedUpdate.entrySet() ) {
+            for( Map.Entry<String, CloudMethodEntity> entry : cloudMethods.entrySet() ) {
                 CloudMethodEntity method = entry.getValue();
 
                 String functionName = AwsUtil.convertMethodName( method.getFullQualifiedName() );
                 String handlerName = method.getTemporaryPackageName() + ".LambdaFunctionHandler::handleRequest";
-                FunctionDescription functionDescription = new FunctionDescription( method.getChecksum() );
+                FunctionDescription functionDescription = new FunctionDescription();
 
                 awsCloudProvider.createOrUpdateFunction( functionName, handlerName, functionCode, functionDescription);
             }
