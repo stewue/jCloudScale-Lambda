@@ -55,14 +55,21 @@ public class CloudManager {
 
         AwsCloudProvider awsCloudProvider = AwsCloudProvider.getInstance();
 
+        for( Map.Entry<String, CloudMethodEntity> entry : cloudMethods.entrySet() ) {
+            CloudMethodEntity method = entry.getValue();
+
+            method.setUrl( AwsUtil.getRestEndPointUrl( method.getFullQualifiedName() ) );
+        }
+
         boolean updateNecessary = CodeModifier.isModified();
 
         // if a function not exists or project was updated
         if( updateNecessary ){
             // build jar file with maven
             JarBuilder.mvnBuild();
+
             // get jar file
-            File file = new File( "target/jcs_lambda-jar-with-dependencies.jar" );
+            File file = new File( "target/jcs_lambda-tests.jar" );
 
             // upload jar file to amazon s3
             FunctionCode functionCode = awsCloudProvider.uploadFile( file );
@@ -73,10 +80,13 @@ public class CloudManager {
 
                 String functionName = AwsUtil.convertMethodName( method.getFullQualifiedName() );
                 String handlerName = method.getTemporaryPackageName() + ".LambdaFunctionHandler::handleRequest";
-                FunctionDescription functionDescription = new FunctionDescription();
+                FunctionDescription functionDescription = new FunctionDescription( method.getFullQualifiedName() );
 
                 awsCloudProvider.createOrUpdateFunction( functionName, handlerName, functionCode, functionDescription);
             }
+
+            // Release new deployment stage
+            awsCloudProvider.releaseDeploymentStage();
 
             // Remove buckets
             awsCloudProvider.removeAllTemporaryCreatedBuckets();

@@ -1,15 +1,15 @@
-package ch.uzh.ifi.seal.jcs_lambda.testing.integration;
+package ch.uzh.ifi.seal.jcs_lambda.testing;
+
+import ch.uzh.ifi.seal.jcs_lambda.annotations.CloudMethod;
+import ch.uzh.ifi.seal.jcs_lambda.annotations.StartUp;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class TestPrimitiveTypes {
-/*
-    @Test
-    public void test(){
 
-        try {
-            CloudAspect cloudAspect = new CloudAspect();
-            cloudAspect.startUpMethod(null);
-        }
-        catch ( Throwable t ){}
+    @Test
+    @StartUp
+    public void test(){
 
         int a = 5;
         int b = 7;
@@ -23,6 +23,4 @@ public class TestPrimitiveTypes {
     private int sum( int a, int b ){
         return a + b;
     }
-
-    */
 }

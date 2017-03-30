@@ -114,6 +114,7 @@ public class CodeModifier {
 
         String sourceCode = "package " + methodEntity.getTemporaryPackageName() + "; \n" +
                 "\n" +
+                "import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.JVMContext; \n" +
                 "import com.amazonaws.services.lambda.runtime.Context;\n" +
                 "import com.amazonaws.services.lambda.runtime.RequestStreamHandler;\n" +
                 "import com.google.gson.Gson;\n" +
@@ -128,6 +129,7 @@ public class CodeModifier {
                 "\n" +
                 "public class LambdaFunctionHandler implements RequestStreamHandler {\n" +
                 "    public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {\n" +
+                "        JVMContext.setServerContext(); \n" +
                 "        JSONParser parser = new JSONParser();\n" +
                 "        Gson gson = new Gson();\n" +
                 "\n" +
@@ -219,7 +221,7 @@ public class CodeModifier {
         File directory = new File( RELATIVE_PATH + TEMPORARY_PACKAGE );
 
         try{
-            FileUtils.deleteDirectory( directory );
+           FileUtils.deleteDirectory( directory );
         }
         catch ( Exception e ){
             Logger.error( "Unable to remove temporary created files" );

@@ -42,4 +42,4 @@ $RECYCLE.BIN/
 /out/
 
 /src/main/java/tmp_jcs/
-!lastModified.txt
+lastModified.txt

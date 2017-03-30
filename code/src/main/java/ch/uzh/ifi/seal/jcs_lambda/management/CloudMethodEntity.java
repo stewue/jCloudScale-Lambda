@@ -4,7 +4,6 @@ import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.AbstractResponse;
 import ch.uzh.ifi.seal.jcs_lambda.utility.Util;
 import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeModifier;
 import com.google.gson.Gson;
-import org.apache.commons.codec.digest.DigestUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;

@@ -86,7 +86,7 @@ public class Util {
 
             // Check if error occurred in cloud
             if( con.getResponseCode() != 200 ){
-                throw new CloudRuntimeException( "An error occurred in the cloud. Please check the log file from aws cloud watch" );
+                throw new CloudRuntimeException( "An error occurred in the cloud method '" + url + "'. Please check the log file from aws cloud watch" );
             }
 
             BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
@@ -101,6 +101,7 @@ public class Util {
             return response.toString();
         }
         catch ( Exception e ){
+            e.printStackTrace();
             throw new RuntimeException( "Unable to create a request or interpret the response" );
         }
     }
