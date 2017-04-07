@@ -26,7 +26,7 @@ public class CodeModifier {
      * @param temporaryPackageName package name of the new, temporary created package
      * @param parameters hash-map with the parameters of the origin method
      */
-    public static void createRequestClass (String temporaryPackageName, HashMap<String, Class> parameters ){
+    public static void createRequestClass (String temporaryPackageName, Map<String, Class> parameters ){
 
         String sourceCode = "package " + temporaryPackageName + "; \n \n";
         sourceCode += "public class Request { \n";
@@ -123,6 +123,7 @@ public class CodeModifier {
 
 
                 "import java.lang.reflect.Method; \n" +
+                "import java.lang.reflect.Field; \n" +
 
                 "\n" +
                 "public class Endpoint implements RequestStreamHandler {\n" +
@@ -139,12 +140,7 @@ public class CodeModifier {
                 "            System.out.println( \"Input: \" +  event.toJSONString() );\n" +
                 "            Request request = gson.fromJson( event.toJSONString() , Request.class );\n" +
                 "\n" +
-                             methodEntity.getClassName() + " object = new " + methodEntity.getClassName() + "(); \n" +
-                "            Class params[] = request.getClassArray(); \n" +
-                "            Object paramsObj[] = request.getObjectArray(); \n \n" +
-                "            Method method = object.getClass().getDeclaredMethod(\"" + methodEntity.getMethodName() + "\", params ); \n" +
-                "            method.setAccessible(true); \n" +
-                "            response = new Response( method.invoke( object, paramsObj ) ); \n" +
+                "            response = invoke( request );\n" +
                 "        }\n" +
                 "        catch(Exception ex) {\n" +
                 "            System.out.println( ex );\n" +
@@ -156,6 +152,32 @@ public class CodeModifier {
                 "        writer.close();\n" +
                 "        \n" +
                 "        System.out.println( \"Output: \" +  gson.toJson(response) );\n" +
+                "    }\n" +
+                "\n" +
+                "    private Response invoke( Request request ) throws Exception {\n" +
+                "        " + methodEntity.getClassName() + " object = new " + methodEntity.getClassName() + "(); \n" +
+                "        Class params[] = request.getClassArray(); \n" +
+                "        Object paramsObj[] = request.getObjectArray(); \n" +
+                "\n" +
+                "        Method method = object.getClass().getDeclaredMethod(\"" + methodEntity.getMethodName() + "\", params ); \n" +
+                "        method.setAccessible(true); \n" +
+                "\n" +
+                "        Field field; \n" +
+                "\n";
+
+        /*
+                for(Map.Entry<String, Class> entry : methodEntity.getClassVariables().entrySet() ){
+                    String name = entry.getKey();
+                    sourceCode +=
+                            "        field = object.getClass().getDeclaredField(\""+ name + "\" ); \n" +
+                            "        field.setAccessible(true); \n" +
+                            "        field.set( object, request." + name + " ); \n" +
+                            "\n";
+                }
+        */
+
+                sourceCode +=
+                "        return new Response( method.invoke( object, paramsObj ) ); \n" +
                 "    }\n" +
                 "\n" +
                 "}";

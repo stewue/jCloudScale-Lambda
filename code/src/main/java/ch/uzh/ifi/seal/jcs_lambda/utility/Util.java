@@ -27,7 +27,7 @@ public class Util {
      * @param parameters HashMap with all parameters
      * @return return the full qualified name
      */
-    public static String getFullQualifiedName (String packageName, String className, String methodName, HashMap<String, Class> parameters ){
+    public static String getFullQualifiedName (String packageName, String className, String methodName, Map<String, Class> parameters ){
         String fullQualifiedName = packageName + "." + className + "." + methodName + "__";
 
         for( Map.Entry<String, Class> entry : parameters.entrySet()) {

@@ -21,6 +21,8 @@ public class TestPrimitiveTypes {
 
     @CloudMethod
     private int sum( int a, int b ){
+        System.out.println("Cloud only");
+
         return a + b;
     }
 }
