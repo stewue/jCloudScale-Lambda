@@ -2,6 +2,7 @@ package ch.uzh.ifi.seal.jcs_lambda.management;
 
 import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.AwsCloudProvider;
 import ch.uzh.ifi.seal.jcs_lambda.utility.AwsUtil;
+import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeLastModified;
 import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeModifier;
 import ch.uzh.ifi.seal.jcs_lambda.utility.builder.JarBuilder;
 import com.amazonaws.services.lambda.model.FunctionCode;
@@ -56,7 +57,7 @@ public class CloudManager {
         AwsCloudProvider awsCloudProvider = AwsCloudProvider.getInstance();
 
         // check if code is modified
-        boolean updateNecessary = CodeModifier.isModified();
+        boolean updateNecessary = CodeLastModified.isModified();
 
         // if code isn't modified, check if each function in the cloud exists
         if( !updateNecessary ){

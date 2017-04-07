@@ -18,7 +18,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class CodeModifier {
-    private static final String RELATIVE_PATH = "src/test/java/";
+    public static final String RELATIVE_PATH = "src/test/java/";
     public static final String TEMPORARY_PACKAGE = "tmp_jcs";
 
     /**
@@ -248,67 +248,5 @@ public class CodeModifier {
         }
     }
 
-    public static boolean isModified(){
-        long lastModified = getLastModified();
 
-        long lastDeployed = 0;
-
-        try {
-            String content = Files.toString(new File("lastModified.txt"), Charsets.UTF_8);
-            content = content.replace("\n", "").replace("\r", "");
-            lastDeployed = Long.valueOf( content );
-        }
-        catch ( Exception e ){
-        }
-
-        return lastDeployed < lastModified;
-    }
-
-    public static void updateLastModified(){
-        try{
-            PrintWriter writer = new PrintWriter("lastModified.txt", "UTF-8");
-            writer.print( getLastModified() );
-            writer.close();
-        } catch (IOException e) {
-            System.exit( -1 );
-        }
-    }
-
-    private static long getLastModified() {
-        File directory = new File("src" );
-
-        return getLastModifiedRecursively( directory.getAbsolutePath() );
-    }
-
-    private static long getLastModifiedRecursively ( String path ){
-        File root = new File( path );
-        File[] list = root.listFiles();
-
-        // folder is empty
-        if (list == null){
-            return 0;
-        }
-
-        long highestLastModified = 0;
-
-        for ( File file : list ) {
-            long lastModified = 0;
-
-            if ( file.isDirectory() ) {
-                lastModified = getLastModifiedRecursively( file.getAbsolutePath() );
-            }
-            else {
-                // check if its not a temporary file
-                if( !file.getAbsoluteFile().toString().contains( (RELATIVE_PATH + TEMPORARY_PACKAGE).replace("/", "\\" ) ) ){
-                    lastModified = file.lastModified();
-                }
-            }
-
-            if( lastModified > highestLastModified ){
-                highestLastModified = lastModified;
-            }
-        }
-
-        return highestLastModified;
-    }
 }
