@@ -1,6 +1,8 @@
 package ch.uzh.ifi.seal.jcs_lambda.cloudprovider;
 
 import ch.uzh.ifi.seal.jcs_lambda.configuration.AwsConfiguration;
+import ch.uzh.ifi.seal.jcs_lambda.configuration.AwsCredentials;
+import ch.uzh.ifi.seal.jcs_lambda.exception.InvalidCredentialsException;
 import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
 import ch.uzh.ifi.seal.jcs_lambda.management.FunctionDescription;
 import ch.uzh.ifi.seal.jcs_lambda.utility.AwsUtil;
@@ -57,7 +59,7 @@ public class AwsCloudProvider {
      */
     private AwsCloudProvider (){
         // Create AWS Credentials
-        basicAWSCredentials = new BasicAWSCredentials( AwsConfiguration.AWS_ACCESS_KEY_ID, AwsConfiguration.AWS_SECRET_KEY_ID );
+        basicAWSCredentials = new BasicAWSCredentials( AwsCredentials.AWS_ACCESS_KEY_ID, AwsCredentials.AWS_SECRET_KEY_ID );
         Logger.info( "Init AWS Credentials" );
 
         // Create IAM (Identity and Access Management) Object
@@ -88,18 +90,21 @@ public class AwsCloudProvider {
             .build();
         Logger.info( "Init AWS Lambda Credentials" );
 
+        ListFunctionsResult lambdaFunctions = null;
         // Get all lambda functions (and their descriptions) and save them as a hash-map
-        ListFunctionsResult lambdaFunctions = amazonLamdba.listFunctions();
+        try {
+            lambdaFunctions = amazonLamdba.listFunctions();
+        }
+        catch ( Exception e ){
+            throw new InvalidCredentialsException();
+        }
+
+        // save for each function the description
         for( FunctionConfiguration item  : lambdaFunctions.getFunctions() ){
-            try {
-                FunctionDescription description = gson.fromJson(item.getDescription(), FunctionDescription.class);
+            FunctionDescription description = gson.fromJson(item.getDescription(), FunctionDescription.class);
 
-                if( description != null ){
-                    lambdaFunctionDescriptions.put(item.getFunctionName(), description);
-                }
-            }
-            catch ( Exception e ){
-
+            if( description != null ){
+                lambdaFunctionDescriptions.put(item.getFunctionName(), description);
             }
         }
 
