@@ -1,5 +1,6 @@
 package ch.uzh.ifi.seal.jcs_lambda.management;
 
+import ch.uzh.ifi.seal.jcs_lambda.exception.IllegalDefinitionException;
 import ch.uzh.ifi.seal.jcs_lambda.utility.AwsUtil;
 import ch.uzh.ifi.seal.jcs_lambda.utility.Util;
 import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeModifier;
@@ -39,6 +40,10 @@ public class CloudMethodEntity {
         temporaryPackageName = CodeModifier.TEMPORARY_PACKAGE + "." + fullQualifiedName;
 
         url = AwsUtil.getRestEndPointUrl( fullQualifiedName );
+
+        if( returnType.equals("void" ) ){
+            throw new IllegalDefinitionException( "Return type void isn't valid!");
+        }
     }
 
     public String getFullQualifiedName (){
@@ -76,7 +81,7 @@ public class CloudMethodEntity {
      * @param parameters captured parameters from the innvocation
      * @return return response object from the cloud
      */
-    public Object runMethodInCloud( HashMap<String, Object> parameters ) {
+    public Object runMethodInCloud( Map<String, Object> parameters ) {
         try{
             // Create request dto
             Class requestClass = Class.forName( temporaryPackageName + ".Request" );

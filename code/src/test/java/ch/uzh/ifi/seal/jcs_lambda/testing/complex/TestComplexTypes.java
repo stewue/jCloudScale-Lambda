@@ -45,6 +45,7 @@ public class TestComplexTypes {
 
     @CloudMethod
     private OutObject modify( InObject inObject ){
+        System.out.println("Cloud only");
 
         OutObject outObject = new OutObject();
         outObject.setE( inObject.getA() + inObject.getB() );
