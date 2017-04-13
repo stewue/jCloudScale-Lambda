@@ -43,7 +43,7 @@ public class TestComplexTypes {
         Assert.assertEquals( result.getG().z.size(), z_size + 1 );
     }
 
-    @CloudMethod
+    @CloudMethod( memory = 256, timeout = 5 )
     private OutObject modify( InObject inObject ){
         System.out.println("Cloud only");
 

@@ -264,7 +264,7 @@ public class AwsCloudProvider {
      * @param functionCode Amazon S3 id of the uploaded file
      * @param description methodDescription object
      */
-    public void createOrUpdateFunction ( String functionName, String handlerName, FunctionCode functionCode, FunctionDescription description ){
+    public void createOrUpdateFunction ( String functionName, String handlerName, FunctionCode functionCode, FunctionDescription description, int memory, int timeout ){
         // Check if function name already exists
         GetFunctionRequest getFunctionRequest = new GetFunctionRequest();
         getFunctionRequest.setFunctionName( functionName );
@@ -294,8 +294,8 @@ public class AwsCloudProvider {
                 functionConfigurationRequest.setDescription( gson.toJson( description ) );
                 functionConfigurationRequest.setHandler(handlerName);
                 functionConfigurationRequest.setRole(getRole());
-                functionConfigurationRequest.setTimeout(AwsConfiguration.AWS_TIMEOUT);
-                functionConfigurationRequest.setMemorySize(AwsConfiguration.AWS_DEFAULT_MEMORY_SIZE);
+                functionConfigurationRequest.setTimeout( timeout );
+                functionConfigurationRequest.setMemorySize( memory );
                 amazonLamdba.updateFunctionConfiguration(functionConfigurationRequest);
 
                 Logger.info("Lambda Function '" + functionName + "' updated");
@@ -309,8 +309,8 @@ public class AwsCloudProvider {
                 createFunctionRequest.setPublish(true);
                 createFunctionRequest.setRole(getRole());
                 createFunctionRequest.setRuntime(Runtime.Java8);
-                createFunctionRequest.setTimeout(AwsConfiguration.AWS_TIMEOUT);
-                createFunctionRequest.setMemorySize(AwsConfiguration.AWS_DEFAULT_MEMORY_SIZE);
+                createFunctionRequest.setTimeout( timeout );
+                createFunctionRequest.setMemorySize( memory );
                 createFunctionResult = amazonLamdba.createFunction(createFunctionRequest);
 
                 // Set Permission for gateway api
