@@ -1,6 +1,7 @@
 package ch.uzh.ifi.seal.jcs_lambda.utility;
 
 import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.AwsCloudProvider;
+import ch.uzh.ifi.seal.jcs_lambda.configuration.AwsConfiguration;
 import org.apache.commons.codec.digest.DigestUtils;
 
 public class AwsUtil {
@@ -22,7 +23,7 @@ public class AwsUtil {
         AwsCloudProvider awsCloudProvider = AwsCloudProvider.getInstance();
 
         String baseUrl = awsCloudProvider.getBaseUrl();
-        String pathName = convertMethodName( methodName );
+        String pathName = AwsConfiguration.AWS_FUNCTION_PREFIX + convertMethodName( methodName );
 
         return baseUrl + pathName;
     }
