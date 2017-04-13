@@ -82,22 +82,24 @@ public class CloudAspect {
      */
     @Around("@annotation(CloudMethod) && execution(* *(..))")
     public Object runMethodInCloud ( ProceedingJoinPoint joinPoint ) throws Throwable {
-            if( JVMContext.getContext() == true){
-                return joinPoint.proceed();
-            }else {
-
-                // application need a start up point with a annotation
-                if( cloudManager == null ){
-                    throw new MissingStartUpException();
-                }
-
-                String fullQualifiedName = AspectUtil.getFullQualifiedName(joinPoint);
-                CloudMethodEntity methodEntity = cloudManager.getMethodByName(fullQualifiedName);
-
-                Map<String, Object> parametersWithValues = AspectUtil.getParametersWithValue( joinPoint, methodEntity );
-                Map<String, Object> classVariablesWithValue = AspectUtil.getClassVariablesValues( joinPoint );
-
-                return methodEntity.runMethodInCloud( parametersWithValues, classVariablesWithValue );
+        // In Cloud run "normal" code
+        if( JVMContext.getContext() == true){
+            return joinPoint.proceed();
+        }
+        // Local call proxy
+        else {
+            // application need a start up point with a annotation
+            if( cloudManager == null ){
+                throw new MissingStartUpException();
             }
+
+            String fullQualifiedName = AspectUtil.getFullQualifiedName(joinPoint);
+            CloudMethodEntity methodEntity = cloudManager.getMethodByName(fullQualifiedName);
+
+            Map<String, Object> parametersWithValues = AspectUtil.getParametersWithValue( joinPoint, methodEntity );
+            Map<String, Object> classVariablesWithValue = AspectUtil.getClassVariablesValues( joinPoint );
+
+            return methodEntity.runMethodInCloud( parametersWithValues, classVariablesWithValue );
+        }
     }
 }

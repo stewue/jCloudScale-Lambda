@@ -1,6 +1,7 @@
 package ch.uzh.ifi.seal.jcs_lambda.management;
 
 import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.AwsCloudProvider;
+import ch.uzh.ifi.seal.jcs_lambda.configuration.AwsConfiguration;
 import ch.uzh.ifi.seal.jcs_lambda.utility.AwsUtil;
 import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeLastModified;
 import ch.uzh.ifi.seal.jcs_lambda.utility.builder.JarBuilder;
@@ -71,6 +72,7 @@ public class CloudManager {
 
         }
 
+        // check if a function is new or code is modified
         if( updateNecessary ){
             // build jar file with maven
             JarBuilder.mvnBuild();
@@ -85,11 +87,11 @@ public class CloudManager {
             for( Map.Entry<String, CloudMethodEntity> entry : cloudMethods.entrySet() ) {
                 CloudMethodEntity method = entry.getValue();
 
-                String functionName = AwsUtil.convertMethodName( method.getFullQualifiedName() );
+                String functionNameWithPrefix = AwsConfiguration.AWS_FUNCTION_PREFIX + AwsUtil.convertMethodName( method.getFullQualifiedName() );
                 String handlerName = method.getTemporaryPackageName() + ".Endpoint::handleRequest";
                 FunctionDescription functionDescription = new FunctionDescription( method.getFullQualifiedName() );
 
-                awsCloudProvider.createOrUpdateFunction( functionName, handlerName, functionCode, functionDescription);
+                awsCloudProvider.createOrUpdateFunction( functionNameWithPrefix, handlerName, functionCode, functionDescription);
             }
 
             // Release new deployment stage
