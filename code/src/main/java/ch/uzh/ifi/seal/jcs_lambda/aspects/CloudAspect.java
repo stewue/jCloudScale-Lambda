@@ -3,9 +3,11 @@ package ch.uzh.ifi.seal.jcs_lambda.aspects;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.CloudMethod;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.StartUp;
 import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.JVMContext;
+import ch.uzh.ifi.seal.jcs_lambda.exception.MissingStartUpException;
 import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
 import ch.uzh.ifi.seal.jcs_lambda.management.CloudManager;
 import ch.uzh.ifi.seal.jcs_lambda.management.CloudMethodEntity;
+import ch.uzh.ifi.seal.jcs_lambda.utility.AspectUtil;
 import ch.uzh.ifi.seal.jcs_lambda.utility.Util;
 import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeLastModified;
 import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeModifier;
@@ -23,6 +25,7 @@ import org.reflections.util.ConfigurationBuilder;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 @Aspect
@@ -86,59 +89,19 @@ public class CloudAspect {
             if( JVMContext.getContext() == true){
                 return joinPoint.proceed();
             }else {
-                String fullQualifiedName = getFullQualifiedName(joinPoint);
+
+                // application need a start up point with a annotation
+                if( cloudManager == null ){
+                    throw new MissingStartUpException();
+                }
+
+                String fullQualifiedName = AspectUtil.getFullQualifiedName(joinPoint);
                 CloudMethodEntity methodEntity = cloudManager.getMethodByName(fullQualifiedName);
 
-                HashMap<String, Object> parametersWithValues = getParametersWithValue(joinPoint);
-                return methodEntity.runMethodInCloud(parametersWithValues);
+                Map<String, Object> parametersWithValues = AspectUtil.getParametersWithValue( joinPoint, methodEntity );
+                Map<String, Object> classVariablesWithValue = AspectUtil.getClassVariablesValues( joinPoint );
+
+                return methodEntity.runMethodInCloud( parametersWithValues, classVariablesWithValue );
             }
-    }
-
-    /**
-     * convert jointPoint of the method into the full qualified name
-     * @param joinPoint current point of execution
-     * @return the full qualified name of the method
-     */
-    private static String getFullQualifiedName ( ProceedingJoinPoint joinPoint ){
-        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-
-        String packageName = signature.getMethod().getDeclaringClass().getPackage().getName();
-        String className = signature.getMethod().getDeclaringClass().getSimpleName();
-        String methodName = signature.getMethod().getName();
-
-        Class[] parameterTypes = signature.getParameterTypes();
-        String [] parameterNames = signature.getParameterNames();
-        HashMap<String, Class> parameters = new HashMap<>();
-
-        for( int i=0; i<parameterTypes.length; i++ ){
-            Class parameterType = parameterTypes[i];
-            String parameterName = parameterNames[i];
-
-            parameters.put( parameterName, parameterType );
-        }
-
-        return Util.getFullQualifiedName( packageName, className, methodName, parameters );
-    }
-
-    /**
-     * get all parameters (value + name) of the method
-     * @param joinPoint current point of execution
-     * @return return a map with the values and parameter names of the injected method
-     */
-    private static HashMap<String, Object> getParametersWithValue( ProceedingJoinPoint joinPoint ){
-        HashMap<String, Object> parameters = new HashMap<>();
-
-        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-        String [] parameterNames = signature.getParameterNames();
-        Object [] arguments = joinPoint.getArgs();
-
-        for( int i=0; i<arguments.length; i++ ){
-            Object parameterValue = arguments[i];
-            String parameterName =  parameterNames[i];
-
-            parameters.put( parameterName, parameterValue );
-        }
-
-        return parameters;
     }
 }
