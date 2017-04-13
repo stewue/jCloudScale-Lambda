@@ -103,8 +103,12 @@ public class AwsCloudProvider {
         for( FunctionConfiguration item  : lambdaFunctions.getFunctions() ){
             FunctionDescription description = gson.fromJson(item.getDescription(), FunctionDescription.class);
 
-            if( description != null ){
-                lambdaFunctionDescriptions.put(item.getFunctionName(), description);
+            String functionNameWithPrefix = item.getFunctionName();
+            if( description != null && functionNameWithPrefix.startsWith( AwsConfiguration.AWS_FUNCTION_PREFIX ) ){
+                // remove prefix
+                String functionName = functionNameWithPrefix.substring( AwsConfiguration.AWS_FUNCTION_PREFIX.length() );
+
+                lambdaFunctionDescriptions.put( functionName, description);
             }
         }
 
@@ -230,7 +234,7 @@ public class AwsCloudProvider {
             // check if already a temporary bucket, for uploading the files, exists
             if( s3Bucketname == null ){
                 // bucket name must be unique over all users
-                s3Bucketname = AwsConfiguration.AWS_BUCKET_PREFIX + "-" + UUID.randomUUID();
+                s3Bucketname = AwsConfiguration.AWS_BUCKET_PREFIX + UUID.randomUUID();
 
                 // create a new bucket
                 amazonS3.createBucket( s3Bucketname );
