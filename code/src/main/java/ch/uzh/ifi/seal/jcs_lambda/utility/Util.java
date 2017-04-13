@@ -2,10 +2,6 @@ package ch.uzh.ifi.seal.jcs_lambda.utility;
 
 import ch.uzh.ifi.seal.jcs_lambda.annotations.ReadOnly;
 import ch.uzh.ifi.seal.jcs_lambda.exception.CloudRuntimeException;
-import org.reflections.Reflections;
-import org.reflections.scanners.MethodParameterNamesScanner;
-import org.reflections.util.ClasspathHelper;
-import org.reflections.util.ConfigurationBuilder;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.BufferedReader;
@@ -19,7 +15,6 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class Util {

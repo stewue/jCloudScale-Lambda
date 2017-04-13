@@ -3,7 +3,6 @@ package ch.uzh.ifi.seal.jcs_lambda.management;
 import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.AwsCloudProvider;
 import ch.uzh.ifi.seal.jcs_lambda.utility.AwsUtil;
 import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeLastModified;
-import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeModifier;
 import ch.uzh.ifi.seal.jcs_lambda.utility.builder.JarBuilder;
 import com.amazonaws.services.lambda.model.FunctionCode;
 

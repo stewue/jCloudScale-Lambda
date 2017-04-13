@@ -8,23 +8,19 @@ import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
 import ch.uzh.ifi.seal.jcs_lambda.management.CloudManager;
 import ch.uzh.ifi.seal.jcs_lambda.management.CloudMethodEntity;
 import ch.uzh.ifi.seal.jcs_lambda.utility.AspectUtil;
-import ch.uzh.ifi.seal.jcs_lambda.utility.Util;
 import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeLastModified;
 import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeModifier;
-import org.aspectj.apache.bcel.classfile.Code;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
-import org.aspectj.lang.reflect.MethodSignature;
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 
 import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
