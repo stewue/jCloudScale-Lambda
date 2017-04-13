@@ -2,8 +2,6 @@ package ch.uzh.ifi.seal.jcs_lambda.utility.builder;
 
 import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
 import ch.uzh.ifi.seal.jcs_lambda.management.CloudMethodEntity;
-import com.google.common.base.Charsets;
-import com.google.common.io.Files;
 import org.codehaus.plexus.util.FileUtils;
 
 import javax.tools.JavaCompiler;
@@ -12,10 +10,8 @@ import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
 import java.io.File;
 import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Map;
 
 public class CodeModifier {
     public static final String RELATIVE_PATH = "src/test/java/";
