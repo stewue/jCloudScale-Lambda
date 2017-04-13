@@ -18,6 +18,6 @@ If you would like to change the default settings from JCS Lambda, then checkout 
 
 | Variable                  | Description   | 
 | -------------             |:-------------:| 
-| AWS_REGION                | AWS infrastructure services are hosted in multiple locations world-wide. These regions are logically isolated from each other. So it is necessary to choose one. A list with all regions can be found [here](http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/regions/Regions.html) |
-| AWS_TIMEOUT               | All calls made to AWS Lambda must complete execution within 300 seconds. The default timeout is 3 seconds, but you can set the timeout to any value between 1 and 300 seconds. |
-| AWS_DEFAULT_MEMORY_SIZE   | In the AWS Lambda resource model, you choose the amount of memory you want for your function, and are allocated proportional CPU power and other resources. Minimum value of 128. Maximum value of 1536. The value must be a multiple of 64 MB |
+| *AWS_REGION*              | AWS infrastructure services are hosted in multiple locations world-wide. These regions are logically isolated from each other. So it is necessary to choose one. A list with all regions can be found [here](http://docs.aws.amazon.com/AWSJavaSDK/latest/javadoc/com/amazonaws/regions/Regions.html) |
+| *AWS_TIMEOUT*             | All calls made to AWS Lambda must complete execution within 300 seconds. The default timeout is 3 seconds, but you can set the timeout to any value between 1 and 300 seconds. |
+| *AWS_DEFAULT_MEMORY_SIZE* | In the AWS Lambda resource model, you choose the amount of memory you want for your function, and are allocated proportional CPU power and other resources. Minimum value of 128. Maximum value of 1536. The value must be a multiple of 64 MB |
