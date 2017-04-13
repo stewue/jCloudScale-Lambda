@@ -26,7 +26,7 @@ public class CodeModifier {
      * @param temporaryPackageName package name of the new, temporary created package
      * @param parameters hash-map with the parameters of the origin method
      */
-    public static void createRequestClass (String temporaryPackageName, Map<String, Class> parameters ){
+    public static void createRequestClass (String temporaryPackageName, Map<String, Class> parameters, Map<String, Class> classVariables ){
 
         String sourceCode = "package " + temporaryPackageName + "; \n \n";
         sourceCode += "public class Request { \n";
@@ -36,6 +36,18 @@ public class CodeModifier {
             String parameterName = entry.getKey();
             String parameterType = entry.getValue().getName();
             sourceCode += "public " +  parameterType + " " + parameterName + "; \n";
+        }
+
+        // Generate class variables
+        sourceCode += "/* class variables */ \n";
+        for(Map.Entry<String, Class> entry : classVariables.entrySet() ){
+            String classVariableName = entry.getKey();
+            String classVarianleType = entry.getValue().getName();
+
+            // only add class variable to dto if not already a parameter with the same name exists
+            if( parameters.get( classVariableName ) == null ){
+                sourceCode += "public " +  classVarianleType + " " + classVariableName + "; \n";
+            }
         }
 
         // generate getter for all attributes
@@ -165,7 +177,6 @@ public class CodeModifier {
                 "        Field field; \n" +
                 "\n";
 
-        /*
                 for(Map.Entry<String, Class> entry : methodEntity.getClassVariables().entrySet() ){
                     String name = entry.getKey();
                     sourceCode +=
@@ -174,7 +185,6 @@ public class CodeModifier {
                             "        field.set( object, request." + name + " ); \n" +
                             "\n";
                 }
-        */
 
                 sourceCode +=
                 "        return new Response( method.invoke( object, paramsObj ) ); \n" +
@@ -234,14 +244,13 @@ public class CodeModifier {
     }
 
     /**
-     *
+     * Remove temporary created classes (dto and lambda handler)
      */
     public static void removeTemporaryClasses(){
         File directory = new File( RELATIVE_PATH + TEMPORARY_PACKAGE );
 
         try{
-            //TODO only tmp
-          // FileUtils.deleteDirectory( directory );
+            FileUtils.deleteDirectory( directory );
         }
         catch ( Exception e ){
             Logger.error( "Unable to remove temporary created files" );

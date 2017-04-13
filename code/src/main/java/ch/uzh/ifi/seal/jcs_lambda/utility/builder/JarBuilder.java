@@ -33,7 +33,7 @@ public class JarBuilder {
 
             // error during building process
             if (result.getExitCode() != 0){
-                throw result.getExecutionException();
+                throw new Exception();
             }
         } catch (Exception e) {
             e.printStackTrace();

@@ -1,5 +1,6 @@
 package ch.uzh.ifi.seal.jcs_lambda.utility;
 
+import ch.uzh.ifi.seal.jcs_lambda.annotations.ReadOnly;
 import ch.uzh.ifi.seal.jcs_lambda.exception.CloudRuntimeException;
 import org.reflections.Reflections;
 import org.reflections.scanners.MethodParameterNamesScanner;
@@ -10,7 +11,10 @@ import javax.net.ssl.HttpsURLConnection;
 import java.io.BufferedReader;
 import java.io.DataOutputStream;
 import java.io.InputStreamReader;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -19,6 +23,33 @@ import java.util.List;
 import java.util.Map;
 
 public class Util {
+    /**
+     * Get all class variables as map
+     * @param method method object from that we need the variables
+     * @return map with all variables
+     */
+    public static Map<String, Class> getClassVariables( Method method ){
+        Map<String, Class> classVariables = new HashMap<>();
+
+        Class clazz = method.getDeclaringClass();
+        Field[] fields = clazz.getDeclaredFields();
+
+        for( Field field : fields ){
+            Annotation[] annotations = field.getAnnotations();
+
+            for( Annotation annotation : annotations ){
+                if( annotation.annotationType().equals( ReadOnly.class ) ){
+                    String name = field.getName();
+                    Class type = field.getType();
+
+                    classVariables.put( name, type );
+                }
+            }
+        }
+
+        return classVariables;
+    }
+
     /**
      * Get the full qualified name of the method
      * @param packageName package as (com.xy.demo)
@@ -45,22 +76,33 @@ public class Util {
     public static HashMap<String, Class> getMethodParameters( Method method ){
         HashMap<String, Class> parameters = new HashMap<>();
 
-        ConfigurationBuilder reflectionConfig = new ConfigurationBuilder()
-                .setUrls(ClasspathHelper.forPackage("") )
-                .setScanners( new MethodParameterNamesScanner() );
-        Reflections reflections = new Reflections( reflectionConfig );
-        List<String> parameterNames = reflections.getMethodParamNames( method );
+        Parameter [] methodParameters = method.getParameters();
 
-        Class [] parameterTypes = method.getParameterTypes();
-
-        for( int i=0; i< parameterTypes.length; i++ ){
-            String parameterName = parameterNames.get( i );
-            Class parameterType = parameterTypes[ i ];
+        for( Parameter parameter : methodParameters ){
+            String parameterName = parameter.getName();
+            Class parameterType = parameter.getType();
 
             parameters.put( parameterName, parameterType );
         }
 
+
         return parameters;
+    }
+
+    /**
+     *
+     * @param method
+     * @return
+     */
+    public static boolean isMethodParameterNamePresent( Method method ){
+        Parameter [] methodParameters = method.getParameters();
+
+        if( methodParameters.length == 0 ){
+            return false;
+        }
+        else{
+            return  methodParameters[0].isNamePresent();
+        }
     }
 
     /**

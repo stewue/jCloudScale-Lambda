@@ -8,6 +8,7 @@ import com.google.gson.Gson;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,6 +20,9 @@ public class CloudMethodEntity {
     private String methodName;
     private HashMap<String, Class> parameters;
     private String returnType;
+
+    private Map<String, Class> classVariables;
+    private boolean isParameterNamePresent;
 
     private String url;
 
@@ -34,6 +38,9 @@ public class CloudMethodEntity {
         methodName = method.getName();
         parameters = Util.getMethodParameters( method );
         returnType = method.getReturnType().getName();
+
+        classVariables = Util.getClassVariables( method );
+        isParameterNamePresent = Util.isMethodParameterNamePresent( method );
 
         fullQualifiedName = Util.getFullQualifiedName( packageName, className, methodName, parameters );
 
@@ -58,10 +65,24 @@ public class CloudMethodEntity {
         return methodName;
     }
 
-    public String getClassName () { return className; }
+    public String getClassName () {
+        return className;
+    }
 
     public String getTemporaryPackageName (){
         return temporaryPackageName;
+    }
+
+    public Map<String, Class> getClassVariables (){
+        return classVariables;
+    }
+
+    public boolean isParameterNamePresent(){
+        return isParameterNamePresent;
+    }
+
+    public void setParameterNamePresent( boolean isParameterNamePresent ){
+        this.isParameterNamePresent = isParameterNamePresent;
     }
 
     /**
@@ -69,7 +90,7 @@ public class CloudMethodEntity {
      */
     public void modifyCode (){
         // Create DTO classes
-        CodeModifier.createRequestClass( temporaryPackageName, parameters );
+        CodeModifier.createRequestClass( temporaryPackageName, parameters, classVariables );
         CodeModifier.createResponseClass( temporaryPackageName, returnType );
 
         // Create Lambda Function Handler for AWS
@@ -81,17 +102,26 @@ public class CloudMethodEntity {
      * @param parameters captured parameters from the innvocation
      * @return return response object from the cloud
      */
-    public Object runMethodInCloud( Map<String, Object> parameters ) {
+    public Object runMethodInCloud( Map<String, Object> parameters,  Map<String, Object> classVariables ) {
         try{
             // Create request dto
             Class requestClass = Class.forName( temporaryPackageName + ".Request" );
             Field[] requestFields = requestClass.getDeclaredFields();
             Object requestInstance = requestClass.newInstance();
 
-            // add all parameters to the dto
+            // add all parameter and class variable values to the dto
             for( Field field : requestFields ){
                 String name = field.getName();
-                Object value = parameters.get( name );
+                Object value;
+
+                // check if its a parameter
+                if( parameters.get( name ) != null ){
+                    value = parameters.get( name );
+                }
+                // else it is a class variable
+                else {
+                    value = classVariables.get( name );
+                }
 
                 field.set( requestInstance, value );
             }
@@ -112,29 +142,5 @@ public class CloudMethodEntity {
             e.printStackTrace();
             throw new RuntimeException( "Unable to create request/response dto or to get or set the value" );
         }
-    }
-
-    /**
-     * get method signature
-     * @return return method signature ( method name and parameters) as string
-     */
-    public String getMethodSignature (){
-        String methodSignature = methodName + " ( ";
-
-        int i = 0;
-        for(Map.Entry<String, Class> entry : parameters.entrySet() ){
-            String parameterName = entry.getKey();
-            String parameterType = entry.getValue().getSimpleName();
-
-            if( i>0 ){
-                methodSignature += ", ";
-            }
-
-            methodSignature += parameterType + " " + parameterName;
-            i++;
-        }
-        methodSignature += " )";
-
-        return methodSignature;
     }
 }
