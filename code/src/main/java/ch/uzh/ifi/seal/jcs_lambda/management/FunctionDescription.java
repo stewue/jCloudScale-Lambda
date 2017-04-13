@@ -21,8 +21,4 @@ public class FunctionDescription {
     public void setLastUpdateToNow (){
         lastUpdate = Util.getCurrentDate();
     }
-
-    public String getFullQualifiedName () {
-        return fullQualifiedName;
-    }
 }

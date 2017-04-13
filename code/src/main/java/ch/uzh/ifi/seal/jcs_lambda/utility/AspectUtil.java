@@ -13,6 +13,11 @@ import java.util.Map;
 
 public class AspectUtil {
 
+    /**
+     * Get all class variables as map
+     * @param joinPoint invoke joint point, what we can get the current class
+     * @return map with all variables
+     */
     public static Map<String, Object> getClassVariablesValues( ProceedingJoinPoint joinPoint ){
         Map<String, Object> classVariableValues = new HashMap<>();
 
@@ -20,11 +25,13 @@ public class AspectUtil {
         Field[] fields = clazz.getDeclaredFields();
 
         try {
+            // iterate over all class variables
             for (Field field : fields) {
                 Annotation[] annotations = field.getAnnotations();
 
                 for (Annotation annotation : annotations) {
-                    if (annotation.annotationType().equals(ReadOnly.class)) {
+                    // check if its the read only annotation
+                    if ( annotation.annotationType().equals(ReadOnly.class) ) {
 
                         Object value;
                         field.setAccessible(true);
