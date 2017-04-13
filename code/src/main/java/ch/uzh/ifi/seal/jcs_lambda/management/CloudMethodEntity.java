@@ -1,5 +1,6 @@
 package ch.uzh.ifi.seal.jcs_lambda.management;
 
+import ch.uzh.ifi.seal.jcs_lambda.annotations.CloudMethod;
 import ch.uzh.ifi.seal.jcs_lambda.exception.IllegalDefinitionException;
 import ch.uzh.ifi.seal.jcs_lambda.utility.AwsUtil;
 import ch.uzh.ifi.seal.jcs_lambda.utility.Util;
@@ -25,6 +26,9 @@ public class CloudMethodEntity {
 
     private String url;
 
+    private int memory;
+    private int timeout;
+
     private String temporaryPackageName;
 
     /**
@@ -46,6 +50,11 @@ public class CloudMethodEntity {
         temporaryPackageName = CodeModifier.TEMPORARY_PACKAGE + "." + fullQualifiedName;
 
         url = AwsUtil.getRestEndPointUrl( fullQualifiedName );
+
+        // get value from method annotation
+        CloudMethod annotation = method.getAnnotation( CloudMethod.class );
+        memory = AwsUtil.returnValidMemory( annotation.memory() );
+        timeout = AwsUtil.returnValidTimeout( annotation.timeout() );
 
         if( returnType.equals("void" ) ){
             throw new IllegalDefinitionException( "Return type void isn't valid!");
@@ -74,6 +83,14 @@ public class CloudMethodEntity {
 
     public Map<String, Class> getClassVariables (){
         return classVariables;
+    }
+
+    public int getMemory(){
+        return memory;
+    }
+
+    public int getTimeout(){
+        return timeout;
     }
 
     public boolean isParameterNamePresent(){

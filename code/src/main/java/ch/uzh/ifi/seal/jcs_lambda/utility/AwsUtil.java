@@ -27,4 +27,58 @@ public class AwsUtil {
 
         return baseUrl + pathName;
     }
+
+    /**
+     *
+     * @param memory
+     * @return
+     */
+    public static boolean isValidMemory( int memory ){
+        if( memory < 128 || memory > 1536 ){
+            return false;
+        }
+
+        return memory % 64 == 0;
+    }
+
+    /**
+     *
+     * @param memory
+     * @return
+     */
+    public static int returnValidMemory ( int memory ){
+        if( isValidMemory(memory) ){
+            return memory;
+        }
+        else {
+            return AwsConfiguration.AWS_DEFAULT_MEMORY_SIZE;
+        }
+    }
+
+    /**
+     *
+     * @param timeout
+     * @return
+     */
+    public static boolean isValidTimeout ( int timeout ){
+        if( timeout < 1 || timeout > 300 ){
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     *
+     * @param timeout
+     * @return
+     */
+    public static int returnValidTimeout ( int timeout ){
+        if( isValidTimeout(timeout) ){
+            return timeout;
+        }
+        else {
+            return AwsConfiguration.AWS_TIMEOUT;
+        }
+    }
 }

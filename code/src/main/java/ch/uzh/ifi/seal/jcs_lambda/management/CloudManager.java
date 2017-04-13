@@ -91,7 +91,7 @@ public class CloudManager {
                 String handlerName = method.getTemporaryPackageName() + ".Endpoint::handleRequest";
                 FunctionDescription functionDescription = new FunctionDescription( method.getFullQualifiedName() );
 
-                awsCloudProvider.createOrUpdateFunction( functionNameWithPrefix, handlerName, functionCode, functionDescription);
+                awsCloudProvider.createOrUpdateFunction( functionNameWithPrefix, handlerName, functionCode, functionDescription, method.getMemory(), method.getTimeout() );
             }
 
             // Release new deployment stage
