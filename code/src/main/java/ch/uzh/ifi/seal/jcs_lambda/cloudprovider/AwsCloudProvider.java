@@ -40,7 +40,6 @@ public class AwsCloudProvider {
     private BasicAWSCredentials basicAWSCredentials;
 
     private AmazonIdentityManagement awsIAM;
-    private String roleARN;
 
     private AmazonApiGateway amazonApiGateway;
     private String restApiId;
@@ -293,7 +292,7 @@ public class AwsCloudProvider {
                 functionConfigurationRequest.setFunctionName(functionName);
                 functionConfigurationRequest.setDescription( gson.toJson( description ) );
                 functionConfigurationRequest.setHandler(handlerName);
-                functionConfigurationRequest.setRole(getRole());
+                functionConfigurationRequest.setRole( AwsConfiguration.AWS_ROLE_ARN );
                 functionConfigurationRequest.setTimeout( timeout );
                 functionConfigurationRequest.setMemorySize( memory );
                 amazonLamdba.updateFunctionConfiguration(functionConfigurationRequest);
@@ -307,7 +306,7 @@ public class AwsCloudProvider {
                 createFunctionRequest.setCode(functionCode);
                 createFunctionRequest.setHandler(handlerName);
                 createFunctionRequest.setPublish(true);
-                createFunctionRequest.setRole(getRole());
+                createFunctionRequest.setRole( AwsConfiguration.AWS_ROLE_ARN );
                 createFunctionRequest.setRuntime(Runtime.Java8);
                 createFunctionRequest.setTimeout( timeout );
                 createFunctionRequest.setMemorySize( memory );
@@ -413,52 +412,6 @@ public class AwsCloudProvider {
 
             Logger.info("API Gateway: new deployment stage released");
         }
-    }
-    /**
-     * create a role and set the policy, that the role has only access to aws lambda
-     * @return the arn of the role
-     */
-    private String getRole (){
-        if( roleARN == null ){
-            // Check if role already exists
-            GetRoleRequest getRoleRequest = new GetRoleRequest();
-            getRoleRequest.setRoleName( AwsConfiguration.AWS_ROLE_NAME );
-
-            GetRoleResult getRoleResult = null;
-            try {
-                getRoleResult = awsIAM.getRole( getRoleRequest );
-            }
-            catch ( NoSuchEntityException ex ){
-
-            }
-
-            if( getRoleResult != null ){
-                // save only roleARN
-                roleARN = getRoleResult.getRole().getArn();
-
-                Logger.info( "IAM role '" + AwsConfiguration.AWS_ROLE_NAME + "' loaded" );
-            }
-            else{
-
-                // create a new role
-                CreateRoleRequest createRoleRequest = new CreateRoleRequest();
-                createRoleRequest.setAssumeRolePolicyDocument( "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"lambda.amazonaws.com\"},\"Action\":\"sts:AssumeRole\"}]}" );
-                createRoleRequest.setRoleName( AwsConfiguration.AWS_ROLE_NAME );
-                CreateRoleResult createRoleResult = awsIAM.createRole( createRoleRequest );
-
-                roleARN = createRoleResult.getRole().getArn();
-
-                // set policy for role
-                AttachRolePolicyRequest attachRolePolicyRequest = new AttachRolePolicyRequest();
-                attachRolePolicyRequest.setRoleName( AwsConfiguration.AWS_ROLE_NAME );
-                attachRolePolicyRequest.setPolicyArn( "arn:aws:iam::aws:policy/AWSLambdaFullAccess" );
-                awsIAM.attachRolePolicy( attachRolePolicyRequest );
-
-                Logger.info( "IAM role '" + AwsConfiguration.AWS_ROLE_NAME + "' created and policy set" );
-            }
-        }
-
-        return roleARN;
     }
 
     /**
