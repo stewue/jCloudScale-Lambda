@@ -97,10 +97,6 @@ public class CloudMethodEntity {
         return isParameterNamePresent;
     }
 
-    public void setParameterNamePresent( boolean isParameterNamePresent ){
-        this.isParameterNamePresent = isParameterNamePresent;
-    }
-
     /**
      * create some trash classes for cloud deployment
      */
