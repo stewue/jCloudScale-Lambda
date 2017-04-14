@@ -12,6 +12,7 @@ import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeLastModified;
 import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeModifier;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -20,6 +21,7 @@ import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Set;
@@ -101,5 +103,19 @@ public class CloudAspect {
 
             return methodEntity.runMethodInCloud( parametersWithValues, classVariablesWithValue );
         }
+    }
+
+    @Around("get(!final !transient * *.*.*)")
+    public Object getValueFromClient( ProceedingJoinPoint thisJoinPoint ) throws Throwable {
+        return 123;
+    }
+
+    @After("set(!final !transient * *.*.*)")
+    public void setValueToClient( JoinPoint thisJoinPoint ) throws Throwable{
+        String fieldName = thisJoinPoint.getSignature().getName();
+        Field f = thisJoinPoint.getSignature().getDeclaringType().getDeclaredField( fieldName );
+        f.setAccessible(true);
+        Object value = f.get( thisJoinPoint.getTarget() );
+        System.out.println( fieldName + "###" + value );
     }
 }
