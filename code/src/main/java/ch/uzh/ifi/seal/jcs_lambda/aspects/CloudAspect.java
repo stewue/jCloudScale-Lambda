@@ -1,5 +1,6 @@
 package ch.uzh.ifi.seal.jcs_lambda.aspects;
 
+import ch.uzh.ifi.seal.jcs_lambda.annotations.ByReference;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.CloudMethod;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.StartUp;
 import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.JVMContext;
@@ -32,7 +33,7 @@ public class CloudAspect {
     private static CloudManager cloudManager = null;
 
     // only pseudo variable, that import optimizer won't remove the startup annotation
-    private static Class clazz = StartUp.class;
+    private static Class [] annotation = new Class[]{ StartUp.class, ByReference.class };
 
     /**
      * On Startup register all methods with cloud annotation
@@ -105,17 +106,17 @@ public class CloudAspect {
         }
     }
 
-    @Around("get(!final !transient * *.*.*)")
-    public Object getValueFromClient( ProceedingJoinPoint thisJoinPoint ) throws Throwable {
+    @Around("get(!final !transient * *.*.*) && @annotation(ByReference)")
+    public Object getValueFromClient( ProceedingJoinPoint joinPoint ) throws Throwable {
         return 123;
     }
 
-    @After("set(!final !transient * *.*.*)")
-    public void setValueToClient( JoinPoint thisJoinPoint ) throws Throwable{
-        String fieldName = thisJoinPoint.getSignature().getName();
-        Field f = thisJoinPoint.getSignature().getDeclaringType().getDeclaredField( fieldName );
+    @After("set(!final !transient * *.*.*) && @annotation(ByReference)")
+    public void joinPoint(JoinPoint joinPoint ) throws Throwable{
+        String fieldName = joinPoint.getSignature().getName();
+        Field f = joinPoint.getSignature().getDeclaringType().getDeclaredField( fieldName );
         f.setAccessible(true);
-        Object value = f.get( thisJoinPoint.getTarget() );
+        Object value = f.get( joinPoint.getTarget() );
         System.out.println( fieldName + "###" + value );
     }
 }
