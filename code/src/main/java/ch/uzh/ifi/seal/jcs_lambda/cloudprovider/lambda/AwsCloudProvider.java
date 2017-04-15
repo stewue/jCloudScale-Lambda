@@ -56,15 +56,38 @@ public class AwsCloudProvider {
      * login to all aws services with the credential
      */
     private AwsCloudProvider (){
+        initCredentials();
+
+        loadAllLambdaFunctions();
+
+        getRestApiId();
+    }
+
+    /**
+     * get an instance of the cloud provider (singleton)
+     * @return aws cloud provider instance
+     */
+    public static AwsCloudProvider getInstance(){
+        if( instance == null ){
+            instance = new AwsCloudProvider();
+        }
+
+        return instance;
+    }
+
+    /**
+     *
+     */
+    private void initCredentials (){
         // Create AWS Credentials
         basicAWSCredentials = new BasicAWSCredentials( AwsCredentials.AWS_ACCESS_KEY_ID, AwsCredentials.AWS_SECRET_KEY_ID );
         Logger.info( "Init AWS Credentials" );
 
         // Create IAM (Identity and Access Management) Object
         awsIAM = AmazonIdentityManagementClientBuilder.standard()
-            .withCredentials( new AWSStaticCredentialsProvider(basicAWSCredentials) )
-            .withRegion( AwsConfiguration.AWS_REGION )
-            .build();
+                .withCredentials( new AWSStaticCredentialsProvider(basicAWSCredentials) )
+                .withRegion( AwsConfiguration.AWS_REGION )
+                .build();
         Logger.info( "Init IAM Credentials" );
 
         // Create ApiGateway Object
@@ -76,18 +99,20 @@ public class AwsCloudProvider {
 
         // Create Amazon S3 Object
         amazonS3 = AmazonS3ClientBuilder.standard()
-            .withCredentials( new AWSStaticCredentialsProvider(basicAWSCredentials) )
-            .withRegion( AwsConfiguration.AWS_REGION )
-            .build();
+                .withCredentials( new AWSStaticCredentialsProvider(basicAWSCredentials) )
+                .withRegion( AwsConfiguration.AWS_REGION )
+                .build();
         Logger.info( "Init Amazon S3 Credentials" );
 
         // Create Amazon Lambda Object
         amazonLamdba = AWSLambdaClientBuilder.standard()
-            .withCredentials( new AWSStaticCredentialsProvider(basicAWSCredentials) )
-            .withRegion( AwsConfiguration.AWS_REGION )
-            .build();
+                .withCredentials( new AWSStaticCredentialsProvider(basicAWSCredentials) )
+                .withRegion( AwsConfiguration.AWS_REGION )
+                .build();
         Logger.info( "Init AWS Lambda Credentials" );
+    }
 
+    private void loadAllLambdaFunctions () {
         ListFunctionsResult lambdaFunctions = null;
         // Get all lambda functions (and their descriptions) and save them as a hash-map
         try {
@@ -111,20 +136,6 @@ public class AwsCloudProvider {
         }
 
         Logger.info( "Get list of all lambda functions" );
-
-        getRestApiId();
-    }
-
-    /**
-     * get an instance of the cloud provider (singleton)
-     * @return aws cloud provider instance
-     */
-    public static AwsCloudProvider getInstance(){
-        if( instance == null ){
-            instance = new AwsCloudProvider();
-        }
-
-        return instance;
     }
 
     /**
@@ -170,7 +181,6 @@ public class AwsCloudProvider {
             CreateRestApiResult createRestApiResult = amazonApiGateway.createRestApi( createRestApiRequest );
             restApiId = createRestApiResult.getId();
         }
-
     }
 
     /**
