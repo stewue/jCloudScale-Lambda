@@ -114,6 +114,9 @@ public class Util {
             //add request header
             con.setRequestMethod("POST");
 
+            // set timeout to timeout from aws
+            con.setConnectTimeout( 5 * 60 * 1000 );
+
             // Send post request
             con.setDoOutput(true);
             DataOutputStream wr = new DataOutputStream( con.getOutputStream() );
