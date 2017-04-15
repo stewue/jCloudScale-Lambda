@@ -32,7 +32,7 @@ public class CloudAspect {
 
     private static CloudManager cloudManager = null;
 
-    // only pseudo variable, that import optimizer won't remove the startup annotation
+    // only pseudo variable, that import optimizer won't remove the startup and ByReference annotation
     private static Class [] annotation = new Class[]{ StartUp.class, ByReference.class };
 
     /**
@@ -106,11 +106,22 @@ public class CloudAspect {
         }
     }
 
+    /**
+     * Invoke all gets from a ByReference field
+     * @param joinPoint current point of execution
+     * @return return the local value of the variable
+     * @throws Throwable throw all errors
+     */
     @Around("get(!final !transient * *.*.*) && @annotation(ByReference)")
     public Object getValueFromClient( ProceedingJoinPoint joinPoint ) throws Throwable {
         return 123;
     }
 
+    /**
+     * Invoke all sets from a ByReference field
+     * @param joinPoint current point of execution
+     * @throws Throwable throw all errors
+     */
     @After("set(!final !transient * *.*.*) && @annotation(ByReference)")
     public void joinPoint(JoinPoint joinPoint ) throws Throwable{
         String fieldName = joinPoint.getSignature().getName();
