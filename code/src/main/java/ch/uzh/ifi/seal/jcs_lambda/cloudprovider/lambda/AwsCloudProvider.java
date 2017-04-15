@@ -1,4 +1,4 @@
-package ch.uzh.ifi.seal.jcs_lambda.cloudprovider;
+package ch.uzh.ifi.seal.jcs_lambda.cloudprovider.lambda;
 
 import ch.uzh.ifi.seal.jcs_lambda.configuration.AwsConfiguration;
 import ch.uzh.ifi.seal.jcs_lambda.configuration.AwsCredentials;

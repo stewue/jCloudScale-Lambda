@@ -1,6 +1,6 @@
 package ch.uzh.ifi.seal.jcs_lambda.management;
 
-import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.AwsCloudProvider;
+import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.lambda.AwsCloudProvider;
 import ch.uzh.ifi.seal.jcs_lambda.configuration.AwsConfiguration;
 import ch.uzh.ifi.seal.jcs_lambda.utility.AwsUtil;
 import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeLastModified;
