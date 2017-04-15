@@ -13,7 +13,6 @@ import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeLastModified;
 import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeModifier;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -114,7 +113,15 @@ public class CloudAspect {
      */
     @Around("get(!final !transient * *.*.*) && @annotation(ByReference)")
     public Object getValueFromClient( ProceedingJoinPoint joinPoint ) throws Throwable {
-        return 123;
+        // local run "normal" code
+        if( JVMContext.getContext() == false ){
+            return joinPoint.proceed();
+        }
+        // in cloud get value from local application
+        else {
+            // TODO
+            return 123;
+        }
     }
 
     /**
@@ -122,12 +129,20 @@ public class CloudAspect {
      * @param joinPoint current point of execution
      * @throws Throwable throw all errors
      */
-    @After("set(!final !transient * *.*.*) && @annotation(ByReference)")
-    public void joinPoint(JoinPoint joinPoint ) throws Throwable{
-        String fieldName = joinPoint.getSignature().getName();
-        Field f = joinPoint.getSignature().getDeclaringType().getDeclaredField( fieldName );
-        f.setAccessible(true);
-        Object value = f.get( joinPoint.getTarget() );
-        System.out.println( fieldName + "###" + value );
+    @Around("set(!final !transient * *.*.*) && @annotation(ByReference)")
+    public void joinPoint( ProceedingJoinPoint joinPoint ) throws Throwable {
+        // local run "normal" code
+        if( JVMContext.getContext() == false ){
+            joinPoint.proceed();
+        }
+        // in cloud get value from local application
+        else {
+            // TODO
+            String fieldName = joinPoint.getSignature().getName();
+            Field f = joinPoint.getSignature().getDeclaringType().getDeclaredField( fieldName );
+            f.setAccessible(true);
+            Object value = f.get( joinPoint.getTarget() );
+            System.out.println( fieldName + "###" + value );
+        }
     }
 }
