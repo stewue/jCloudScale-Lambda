@@ -17,7 +17,6 @@ public class CloudManager {
     private HashMap<String, CloudMethodEntity> cloudMethods = new HashMap<>();
 
     private CloudManager (){
-
     }
 
     /**

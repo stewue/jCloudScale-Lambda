@@ -252,6 +252,4 @@ public class CodeModifier {
             Logger.error( "Unable to remove temporary created files" );
         }
     }
-
-
 }
