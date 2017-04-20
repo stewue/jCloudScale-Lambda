@@ -1,8 +1,8 @@
-package ch.uzh.ifi.seal.jcs_lambda.cloudprovider.queue.dto;
+package ch.uzh.ifi.seal.jcs_lambda.cloudprovider.byReference.dto;
 
 public class QueueItem {
     public String senderId;
-    public String recieverId;
+    public String receiverId;
     public QueueType queueType;
     public InvokeType invokeType;
     public String variable;
