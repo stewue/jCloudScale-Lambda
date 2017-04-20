@@ -1,8 +1,10 @@
 package ch.uzh.ifi.seal.jcs_lambda.management;
 
 import ch.uzh.ifi.seal.jcs_lambda.annotations.CloudMethod;
+import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.byReference.JcsMessageQueue;
 import ch.uzh.ifi.seal.jcs_lambda.exception.IllegalDefinitionException;
 import ch.uzh.ifi.seal.jcs_lambda.utility.AwsUtil;
+import ch.uzh.ifi.seal.jcs_lambda.utility.ByReferenceUtil;
 import ch.uzh.ifi.seal.jcs_lambda.utility.Util;
 import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeModifier;
 import com.google.gson.Gson;
@@ -114,8 +116,21 @@ public class CloudMethodEntity {
      * @param parameters captured parameters from the innvocation
      * @return return response object from the cloud
      */
-    public Object runMethodInCloud( Map<String, Object> parameters,  Map<String, Object> classVariables ) {
+    public Object runMethodInCloud( Object context, Map<String, Object> parameters,  Map<String, Object> classVariables ) {
+        JcsMessageQueue messageQueue = JcsMessageQueue.getInstance();
+
+        boolean hasAReferenceVariable = ByReferenceUtil.checkIfClassHasAReferenceVariable( context.getClass() );
+
         try{
+            // TODO auslagern
+            if( hasAReferenceVariable ){
+                String uuid = ByReferenceUtil.getUUID( context );
+
+                messageQueue.registerObject( uuid, context );
+                messageQueue.increasePendingCloudCalculation();
+                messageQueue.startAsyncReceiving();
+            }
+
             // Create request dto
             Class requestClass = Class.forName( temporaryPackageName + ".Request" );
             Field[] requestFields = requestClass.getDeclaredFields();
@@ -146,8 +161,12 @@ public class CloudMethodEntity {
 
             Object returnObj = gson.fromJson( returnJsonObject, responseClass );
 
+            if( hasAReferenceVariable ){
+                messageQueue.decreasePendingCloudCalculation();
+            }
+
             // cast returnObj and get the return value
-            Field field = responseClass.getField("returnValue" );
+            Field field = responseClass.getDeclaredField("returnValue" );
             return field.get( responseClass.cast(returnObj) );
         }
         catch ( Exception e ){
