@@ -1,6 +1,6 @@
 package ch.uzh.ifi.seal.jcs_lambda.utility;
 
-import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.lambda.AwsCloudProvider;
+import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.lambdaFunction.AmazonLambda;
 import ch.uzh.ifi.seal.jcs_lambda.configuration.AwsConfiguration;
 import org.apache.commons.codec.digest.DigestUtils;
 
@@ -20,7 +20,7 @@ public class AwsUtil {
      * @return url to the rest end-point
      */
     public static String getRestEndPointUrl ( String methodName ){
-        AwsCloudProvider awsCloudProvider = AwsCloudProvider.getInstance();
+        AmazonLambda awsCloudProvider = AmazonLambda.getInstance();
 
         String baseUrl = awsCloudProvider.getBaseUrl();
         String pathName = AwsConfiguration.AWS_FUNCTION_PREFIX + convertMethodName( methodName );

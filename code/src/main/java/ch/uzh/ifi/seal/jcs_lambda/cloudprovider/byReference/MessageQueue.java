@@ -1,14 +1,11 @@
 package ch.uzh.ifi.seal.jcs_lambda.cloudprovider.byReference;
 
+import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.AmazonWebService;
 import ch.uzh.ifi.seal.jcs_lambda.configuration.AwsConfiguration;
-import ch.uzh.ifi.seal.jcs_lambda.configuration.AwsCredentials;
-import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.sqs.*;
-import com.amazonaws.services.sqs.buffered.AmazonSQSBufferedAsyncClient;
+import com.amazonaws.services.sqs.AmazonSQS;
+import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
-import com.amazonaws.services.sqs.model.SendMessageResult;
 
 public class MessageQueue {
     protected static MessageQueue instance = null;
@@ -21,13 +18,11 @@ public class MessageQueue {
      *
      */
     protected MessageQueue (){
-        BasicAWSCredentials basicAWSCredentials = new BasicAWSCredentials( AwsCredentials.AWS_ACCESS_KEY_ID, AwsCredentials.AWS_SECRET_KEY_ID );
-
         long startTimestamp = System.currentTimeMillis();
 
         AmazonSQSClientBuilder xyz = AmazonSQSClientBuilder.standard();
         System.out.println("A3 " + ( ( System.currentTimeMillis() - startTimestamp ) / 1000.0 ) + " sec" );
-        xyz = xyz.withCredentials( new AWSStaticCredentialsProvider(basicAWSCredentials) );
+        xyz = xyz.withCredentials( new AWSStaticCredentialsProvider( AmazonWebService.getCredentials() ) );
         System.out.println("A4 " + ( ( System.currentTimeMillis() - startTimestamp ) / 1000.0 ) + " sec" );
         xyz = xyz.withRegion( AwsConfiguration.AWS_REGION );
         System.out.println("A5 " + ( ( System.currentTimeMillis() - startTimestamp ) / 1000.0 ) + " sec" );

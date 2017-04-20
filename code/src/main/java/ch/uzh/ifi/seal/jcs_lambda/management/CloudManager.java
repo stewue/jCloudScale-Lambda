@@ -1,6 +1,8 @@
 package ch.uzh.ifi.seal.jcs_lambda.management;
 
-import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.lambda.AwsCloudProvider;
+import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.lambdaFunction.AmazonApiGateway;
+import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.lambdaFunction.AmazonLambda;
+import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.lambdaFunction.AmazonSimpleStorageService;
 import ch.uzh.ifi.seal.jcs_lambda.configuration.AwsConfiguration;
 import ch.uzh.ifi.seal.jcs_lambda.utility.AwsUtil;
 import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeLastModified;
@@ -53,7 +55,7 @@ public class CloudManager {
      */
     public void buildAndUpload (){
 
-        AwsCloudProvider awsCloudProvider = AwsCloudProvider.getInstance();
+        AmazonLambda awsCloudProvider = AmazonLambda.getInstance();
 
         // check if code is modified
         boolean updateNecessary = CodeLastModified.isModified();
@@ -79,8 +81,10 @@ public class CloudManager {
             // get jar file
             File file = new File( "target/jcs_lambda-tests.jar" );
 
+            AmazonSimpleStorageService amazonS3 = AmazonSimpleStorageService.getInstance();
+
             // upload jar file to amazon s3
-            FunctionCode functionCode = awsCloudProvider.uploadFile( file );
+            FunctionCode functionCode = amazonS3.uploadFile( file );
 
             // update each function and set new description and code ("link" to file in amazon s3)
             for( Map.Entry<String, CloudMethodEntity> entry : cloudMethods.entrySet() ) {
@@ -94,10 +98,10 @@ public class CloudManager {
             }
 
             // Release new deployment stage
-            awsCloudProvider.releaseDeploymentStage();
+            AmazonApiGateway.getInstance().releaseDeploymentStage();
 
             // Remove buckets
-            awsCloudProvider.removeAllTemporaryCreatedBuckets();
+            amazonS3.removeAllTemporaryCreatedBuckets();
         }
     }
 }

@@ -1,16 +1,11 @@
 package ch.uzh.ifi.seal.jcs_lambda.testing.byReferenceValue;
 
-import ch.uzh.ifi.seal.jcs_lambda.annotations.ByReference;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.StartUp;
 import org.junit.Assert;
 import org.junit.Test;
 
-import javax.xml.crypto.dsig.Reference;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 public class TestByReferenceVariable {
     @Test
