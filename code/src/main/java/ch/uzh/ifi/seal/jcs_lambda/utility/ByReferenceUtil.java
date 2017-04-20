@@ -1,7 +1,6 @@
 package ch.uzh.ifi.seal.jcs_lambda.utility;
 
 import ch.uzh.ifi.seal.jcs_lambda.annotations.ByReference;
-import ch.uzh.ifi.seal.jcs_lambda.annotations.ReadOnly;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;

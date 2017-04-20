@@ -2,7 +2,6 @@ package ch.uzh.ifi.seal.jcs_lambda.testing.byReferenceValue;
 
 import ch.uzh.ifi.seal.jcs_lambda.annotations.ByReference;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.CloudMethod;
-import ch.uzh.ifi.seal.jcs_lambda.annotations.Local;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.ReadOnly;
 
 import java.util.UUID;
