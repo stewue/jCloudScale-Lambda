@@ -5,6 +5,7 @@ import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.byReference.JcsMessageQueue;
 import ch.uzh.ifi.seal.jcs_lambda.exception.IllegalDefinitionException;
 import ch.uzh.ifi.seal.jcs_lambda.utility.AwsUtil;
 import ch.uzh.ifi.seal.jcs_lambda.utility.ByReferenceUtil;
+import ch.uzh.ifi.seal.jcs_lambda.utility.ReflectionUtil;
 import ch.uzh.ifi.seal.jcs_lambda.utility.Util;
 import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeModifier;
 import com.google.gson.Gson;
@@ -41,11 +42,11 @@ public class CloudMethodEntity {
         packageName = method.getDeclaringClass().getPackage().getName();
         className = method.getDeclaringClass().getSimpleName();
         methodName = method.getName();
-        parameters = Util.getMethodParameters( method );
+        parameters = ReflectionUtil.getMethodParameters( method );
         returnType = method.getReturnType().getName();
 
-        classVariables = Util.getClassVariables( method );
-        isParameterNamePresent = Util.isMethodParameterNamePresent( method );
+        classVariables = ReflectionUtil.getClassVariables( method );
+        isParameterNamePresent = ReflectionUtil.isMethodParameterNamePresent( method );
 
         fullQualifiedName = Util.getFullQualifiedName( packageName, className, methodName, parameters );
 

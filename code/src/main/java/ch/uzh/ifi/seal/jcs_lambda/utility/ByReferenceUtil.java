@@ -10,6 +10,11 @@ import java.util.Map;
 public class ByReferenceUtil {
     private static Map<Class,Boolean> classHasAReferenceVariable = new HashMap<>();
 
+    /**
+     *
+     * @param clazz
+     * @return
+     */
     public static boolean checkIfClassHasAReferenceVariable( Class clazz ){
 
         if( classHasAReferenceVariable.containsKey( clazz ) ){
@@ -35,6 +40,11 @@ public class ByReferenceUtil {
         return foundAnnoationInClass;
     }
 
+    /**
+     *
+     * @param context
+     * @return
+     */
     public static String getUUID( Object context ){
         try {
             Field uuidField = context.getClass().getDeclaredField("_uuid_" );
