@@ -1,21 +1,19 @@
-package ch.uzh.ifi.seal.jcs_lambda.cloudprovider.queue;
+package ch.uzh.ifi.seal.jcs_lambda.cloudprovider.byReference;
 
 import ch.uzh.ifi.seal.jcs_lambda.configuration.AwsConfiguration;
 import ch.uzh.ifi.seal.jcs_lambda.configuration.AwsCredentials;
+import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.sqs.AmazonSQSAsync;
-import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
+import com.amazonaws.services.sqs.*;
 import com.amazonaws.services.sqs.buffered.AmazonSQSBufferedAsyncClient;
 import com.amazonaws.services.sqs.model.SendMessageRequest;
 import com.amazonaws.services.sqs.model.SendMessageResult;
 
-import java.util.UUID;
-
 public class MessageQueue {
     protected static MessageQueue instance = null;
 
-    protected AmazonSQSAsync bufferedSqs;
+    protected AmazonSQS bufferedSqs;
 
     protected String url;
 
@@ -25,18 +23,22 @@ public class MessageQueue {
     protected MessageQueue (){
         BasicAWSCredentials basicAWSCredentials = new BasicAWSCredentials( AwsCredentials.AWS_ACCESS_KEY_ID, AwsCredentials.AWS_SECRET_KEY_ID );
 
-        AmazonSQSAsync sqsAsync = AmazonSQSAsyncClientBuilder.standard()
-                .withCredentials( new AWSStaticCredentialsProvider(basicAWSCredentials) )
-                .withRegion( AwsConfiguration.AWS_REGION )
-                .build();
+        long startTimestamp = System.currentTimeMillis();
 
-        // Create the buffered client
-        bufferedSqs = new AmazonSQSBufferedAsyncClient(sqsAsync);
+        AmazonSQSClientBuilder xyz = AmazonSQSClientBuilder.standard();
+        System.out.println("A3 " + ( ( System.currentTimeMillis() - startTimestamp ) / 1000.0 ) + " sec" );
+        xyz = xyz.withCredentials( new AWSStaticCredentialsProvider(basicAWSCredentials) );
+        System.out.println("A4 " + ( ( System.currentTimeMillis() - startTimestamp ) / 1000.0 ) + " sec" );
+        xyz = xyz.withRegion( AwsConfiguration.AWS_REGION );
+        System.out.println("A5 " + ( ( System.currentTimeMillis() - startTimestamp ) / 1000.0 ) + " sec" );
+        bufferedSqs = xyz.build();
+
+        System.out.println("A6 " + ( ( System.currentTimeMillis() - startTimestamp ) / 1000.0 ) + " sec" );
     }
 
     /**
      * get an instance of the the message queue (singleton)
-     * @return aws cloud provider instance
+     * @return message queue instance
      */
     public static MessageQueue getInstance(){
         if( instance == null ){
@@ -56,15 +58,6 @@ public class MessageQueue {
 
     /**
      *
-     */
-    public void create(){
-        String url = AwsConfiguration.AWS_QUEUE_PREFIX + UUID.randomUUID();
-
-        connect( url );
-    }
-
-    /**
-     *
      * @param body
      */
     public void sendMessage ( String body ){
@@ -72,6 +65,6 @@ public class MessageQueue {
         request.setMessageBody( body );
         request.setQueueUrl( url );
 
-        SendMessageResult sendResult = bufferedSqs.sendMessage( request );
+        bufferedSqs.sendMessage( request );
     }
 }
