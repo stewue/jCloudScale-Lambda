@@ -25,7 +25,8 @@ public class CodeModifier {
     public static void createRequestClass (String temporaryPackageName, Map<String, Class> parameters, Map<String, Class> classVariables ){
 
         String sourceCode = "package " + temporaryPackageName + "; \n \n";
-        sourceCode += "public class Request { \n";
+        sourceCode += "public class Request { \n"
+                    + " public String _uuid_; \n";
 
         // Generate all attributes
         for(Map.Entry<String, Class> entry : parameters.entrySet() ){
@@ -163,6 +164,7 @@ public class CodeModifier {
                 "    }\n" +
                 "\n" +
                 "    private Response invoke( Request request ) throws Exception {\n" +
+                "        JVMContext.setContextId( request._uuid_ ); \n" +
                 "        " + methodEntity.getClassName() + " object = new " + methodEntity.getClassName() + "(); \n" +
                 "        Class params[] = request.getClassArray(); \n" +
                 "        Object paramsObj[] = request.getObjectArray(); \n" +

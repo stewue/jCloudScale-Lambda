@@ -12,5 +12,6 @@ public class AwsConfiguration {
     public static final String AWS_API_GATEWAY_NAME = "JCS Lambda REST API";
     public static final String AWS_API_GATEWAY_STAGE_NAME = "prod";
     public static final String AWS_FUNCTION_PREFIX = "jcs-lambda-";
-    public static final String AWS_QUEUE_PREFIX = "jcs-lambda-";
+
+    public static final String AWS_QUEUE_URL = "https://sqs.eu-central-1.amazonaws.com/805292539032/SimpleQueue";
 }
