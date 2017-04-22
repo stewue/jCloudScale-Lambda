@@ -184,8 +184,18 @@ public class CodeModifier {
                             "\n";
                 }
 
+                // handle void return type
+                if( methodEntity.isReturnTypeVoid() ){
+                    sourceCode +=
+                            "        method.invoke( object, paramsObj ); \n" +
+                            "        return new Response( \"\" ); \n";
+                }
+                else {
+                    sourceCode +=
+                        "        return new Response( method.invoke( object, paramsObj ) ); \n";
+                }
+
                 sourceCode +=
-                "        return new Response( method.invoke( object, paramsObj ) ); \n" +
                 "    }\n" +
                 "\n" +
                 "}";

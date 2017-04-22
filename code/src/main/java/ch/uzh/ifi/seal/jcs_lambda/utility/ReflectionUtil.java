@@ -73,4 +73,37 @@ public class ReflectionUtil {
             return  methodParameters[0].isNamePresent();
         }
     }
+
+    public static Class getClassFromString ( String classname ) throws ClassNotFoundException {
+        Class clazz;
+        if( classname.equals("byte") ){
+            clazz = byte.class;
+        }
+        else if( classname.equals("short") ){
+            clazz = short.class;
+        }
+        else if( classname.equals("int") ){
+            clazz = int.class;
+        }
+        else if( classname.equals("long") ){
+            clazz = long.class;
+        }
+        else if( classname.equals("float") ){
+            clazz = float.class;
+        }
+        else if( classname.equals("double") ){
+            clazz = double.class;
+        }
+        else if( classname.equals("boolean") ){
+            clazz = boolean.class;
+        }
+        else if( classname.equals("char") ){
+            clazz = char.class;
+        }
+        else{
+            clazz = Class.forName( classname );
+        }
+
+        return clazz;
+    }
 }
