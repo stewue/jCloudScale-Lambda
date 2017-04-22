@@ -2,6 +2,7 @@ package ch.uzh.ifi.seal.jcs_lambda.cloudprovider.byReference;
 
 import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.AmazonWebService;
 import ch.uzh.ifi.seal.jcs_lambda.configuration.AwsConfiguration;
+import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.services.sqs.AmazonSQS;
 import com.amazonaws.services.sqs.AmazonSQSClientBuilder;
@@ -10,7 +11,7 @@ import com.amazonaws.services.sqs.model.SendMessageRequest;
 public class MessageQueue {
     protected static MessageQueue instance = null;
 
-    protected AmazonSQS bufferedSqs;
+    protected AmazonSQS amazonSQS;
 
     protected String url;
 
@@ -26,7 +27,7 @@ public class MessageQueue {
         System.out.println("A4 " + ( ( System.currentTimeMillis() - startTimestamp ) / 1000.0 ) + " sec" );
         xyz = xyz.withRegion( AwsConfiguration.AWS_REGION );
         System.out.println("A5 " + ( ( System.currentTimeMillis() - startTimestamp ) / 1000.0 ) + " sec" );
-        bufferedSqs = xyz.build();
+        amazonSQS = xyz.build();
 
         System.out.println("A6 " + ( ( System.currentTimeMillis() - startTimestamp ) / 1000.0 ) + " sec" );
     }
@@ -60,6 +61,8 @@ public class MessageQueue {
         request.setMessageBody( body );
         request.setQueueUrl( url );
 
-        bufferedSqs.sendMessage( request );
+        amazonSQS.sendMessage( request );
+
+        Logger.debug( "Message sent with body: " + body );
     }
 }

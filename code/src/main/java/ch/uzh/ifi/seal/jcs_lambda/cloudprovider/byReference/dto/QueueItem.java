@@ -8,4 +8,8 @@ public class QueueItem {
     public String variable;
     public String variableType;
     public String body;
+
+    public String toString(){
+        return "senderId: " + senderId + ", queueType: " + queueType + ", invokeType: " + invokeType + ", variable: " + variable + ", body: " + body;
+    }
 }

@@ -2,7 +2,6 @@ package ch.uzh.ifi.seal.jcs_lambda.management;
 
 import ch.uzh.ifi.seal.jcs_lambda.annotations.CloudMethod;
 import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.byReference.JcsMessageQueue;
-import ch.uzh.ifi.seal.jcs_lambda.exception.IllegalDefinitionException;
 import ch.uzh.ifi.seal.jcs_lambda.utility.AwsUtil;
 import ch.uzh.ifi.seal.jcs_lambda.utility.ByReferenceUtil;
 import ch.uzh.ifi.seal.jcs_lambda.utility.ReflectionUtil;
@@ -23,6 +22,7 @@ public class CloudMethodEntity {
     private String methodName;
     private HashMap<String, Class> parameters;
     private String returnType;
+    private boolean isReturnTypeVoid;
 
     private Map<String, Class> classVariables;
     private boolean isParameterNamePresent;
@@ -60,8 +60,10 @@ public class CloudMethodEntity {
         timeout = AwsUtil.returnValidTimeout( annotation.timeout() );
 
         if( returnType.equals("void" ) ){
-            throw new IllegalDefinitionException( "Return type void isn't valid!");
+            isReturnTypeVoid = true;
+            returnType = "String";
         }
+
     }
 
     public String getFullQualifiedName (){
@@ -100,6 +102,9 @@ public class CloudMethodEntity {
         return isParameterNamePresent;
     }
 
+    public boolean isReturnTypeVoid(){
+        return isReturnTypeVoid;
+    }
     /**
      * create some trash classes for cloud deployment
      */
@@ -166,9 +171,14 @@ public class CloudMethodEntity {
                 messageQueue.decreasePendingCloudCalculation();
             }
 
-            // cast returnObj and get the return value
-            Field field = responseClass.getDeclaredField("returnValue" );
-            return field.get( responseClass.cast(returnObj) );
+            if( isReturnTypeVoid ){
+                return null;
+            }
+            else{
+                // cast returnObj and get the return value
+                Field field = responseClass.getDeclaredField("returnValue" );
+                return field.get( responseClass.cast(returnObj) );
+            }
         }
         catch ( Exception e ){
             e.printStackTrace();

@@ -1,11 +1,13 @@
 package ch.uzh.ifi.seal.jcs_lambda.cloudprovider.byReference;
 
+import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.JVMContext;
 import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.byReference.dto.InvokeType;
 import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.byReference.dto.QueueItem;
 import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.byReference.dto.QueueType;
 import ch.uzh.ifi.seal.jcs_lambda.configuration.AwsConfiguration;
 import ch.uzh.ifi.seal.jcs_lambda.exception.RuntimeVariableReferenceException;
 import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
+import ch.uzh.ifi.seal.jcs_lambda.utility.ReflectionUtil;
 import com.amazonaws.services.sqs.model.*;
 import com.google.gson.Gson;
 
@@ -26,6 +28,11 @@ public class JcsMessageQueue extends MessageQueue {
     private JcsMessageQueue(){
         super();
         connect( AwsConfiguration.AWS_QUEUE_URL );
+
+        // local instance try to clean queue
+        if( !JVMContext.getContext() ){
+            purgeQueue();
+        }
     }
 
     /**
@@ -38,6 +45,19 @@ public class JcsMessageQueue extends MessageQueue {
         }
 
         return (JcsMessageQueue) instance;
+    }
+
+    public void purgeQueue (){
+        try {
+            PurgeQueueRequest purgeQueueRequest = new PurgeQueueRequest();
+            purgeQueueRequest.setQueueUrl(url);
+            amazonSQS.purgeQueue(purgeQueueRequest);
+
+            Logger.info("Purge SQS ");
+        }
+        catch ( Exception e ){
+
+        }
     }
 
     /**
@@ -82,16 +102,12 @@ public class JcsMessageQueue extends MessageQueue {
                         ReceiveMessageRequest receiveRq = new ReceiveMessageRequest()
                                 .withQueueUrl( url );
 
-                        /*Future<ReceiveMessageResult> asyncReceiving = bufferedSqs.receiveMessageAsync(receiveRq);
-                        List<Message> messages = asyncReceiving.get().getMessages();*/
-
-                        ReceiveMessageResult receiving = bufferedSqs.receiveMessage(receiveRq);
+                        ReceiveMessageResult receiving = amazonSQS.receiveMessage(receiveRq);
                         List<Message> messages = receiving.getMessages();
 
 
-                        System.out.println( "SIZE: " + messages.size() );
+                        Logger.debug( "Async receiver has " + messages.size() + " messages received" );
                         for (Message message : messages ) {
-                            System.out.println( message.toString() );
                             QueueItem queueItem = gson.fromJson( message.getBody(), QueueItem.class );
 
                             String messageReceiptHandle = message.getReceiptHandle();
@@ -99,18 +115,13 @@ public class JcsMessageQueue extends MessageQueue {
                             if( registeredObjects.containsKey( queueItem.receiverId ) ){
                                 asyncHandleItemFromQueue( queueItem );
 
-                                System.out.println( "done****" );
+                                Logger.debug( "Handle queue item: " + queueItem.toString() );
                                 // remove message
-                                bufferedSqs.deleteMessage(new DeleteMessageRequest( url, messageReceiptHandle ) );
+                                amazonSQS.deleteMessage(new DeleteMessageRequest( url, messageReceiptHandle ) );
                             }
                             else
                             {
-                                ChangeMessageVisibilityRequest visibilityRequest = new ChangeMessageVisibilityRequest();
-                                visibilityRequest.setReceiptHandle( messageReceiptHandle );
-                                visibilityRequest.setQueueUrl( url );
-                                visibilityRequest.setVisibilityTimeout( 0 );
-                                bufferedSqs.changeMessageVisibility( visibilityRequest );
-                                System.out.println( "done" );
+                                releaseMessage( messageReceiptHandle );
                             }
                         }
                     }
@@ -129,25 +140,23 @@ public class JcsMessageQueue extends MessageQueue {
                     .withMaxNumberOfMessages(10)
                     .withQueueUrl( url );
 
-            ReceiveMessageResult receiving = bufferedSqs.receiveMessage(receiveRq);
+            ReceiveMessageResult receiving = amazonSQS.receiveMessage(receiveRq);
             List<Message> messages = receiving.getMessages();
 
-            System.out.println( "SIZE: " + messages.size() );
+            Logger.debug( "Sync receiver has " + messages.size() + " messages received" );
             for (Message message : messages ) {
                 try {
                     QueueItem queueItem = gson.fromJson(message.getBody(), QueueItem.class);
 
                     String messageReceiptHandle = message.getReceiptHandle();
                     if (queueItem.receiverId.equals(responseSenderId)) {
+                        Logger.debug( "Handle queue item: " + queueItem.toString() );
+
                         // remove message
-                        bufferedSqs.deleteMessage(new DeleteMessageRequest(url, messageReceiptHandle));
+                        amazonSQS.deleteMessage(new DeleteMessageRequest(url, messageReceiptHandle));
                         return queueItem;
                     } else {
-                        ChangeMessageVisibilityRequest visibilityRequest = new ChangeMessageVisibilityRequest();
-                        visibilityRequest.setReceiptHandle(messageReceiptHandle);
-                        visibilityRequest.setQueueUrl(url);
-                        visibilityRequest.setVisibilityTimeout(0);
-                        bufferedSqs.changeMessageVisibility(visibilityRequest);
+                        releaseMessage( messageReceiptHandle );
                     }
                 }
                 catch ( Exception e ){
@@ -157,6 +166,18 @@ public class JcsMessageQueue extends MessageQueue {
         }
 
         throw new RuntimeVariableReferenceException( "Unknown error while receiving message from client" );
+    }
+
+    /**
+     *
+     * @param messageReceiptHandle
+     */
+    private void releaseMessage( String messageReceiptHandle ){
+        ChangeMessageVisibilityRequest visibilityRequest = new ChangeMessageVisibilityRequest();
+        visibilityRequest.setReceiptHandle( messageReceiptHandle );
+        visibilityRequest.setQueueUrl(url);
+        visibilityRequest.setVisibilityTimeout(0);
+        amazonSQS.changeMessageVisibility(visibilityRequest);
     }
 
     /**
@@ -195,7 +216,7 @@ public class JcsMessageQueue extends MessageQueue {
 
         try{
             // decode string-body to object with specified type
-            Class clazz = Class.forName( queueItem.variableType );
+            Class clazz = ReflectionUtil.getClassFromString( queueItem.variableType );
             Object setObject = gson.fromJson( queueItem.body, clazz );
 
             // get field and set value

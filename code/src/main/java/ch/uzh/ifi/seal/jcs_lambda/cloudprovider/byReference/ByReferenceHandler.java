@@ -6,6 +6,7 @@ import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.byReference.dto.QueueItem;
 import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.byReference.dto.QueueType;
 import ch.uzh.ifi.seal.jcs_lambda.configuration.AwsConfiguration;
 import ch.uzh.ifi.seal.jcs_lambda.exception.RuntimeVariableReferenceException;
+import ch.uzh.ifi.seal.jcs_lambda.utility.ReflectionUtil;
 import com.google.gson.Gson;
 import org.aspectj.lang.ProceedingJoinPoint;
 
@@ -55,7 +56,7 @@ public class ByReferenceHandler {
             QueueItem responseItem = messageQueue.receiveSyncMessage( queueItem.senderId );
             messageQueue.decreasePendingCloudCalculation();
 
-            Class clazzVariableType = Class.forName( responseItem.variableType );
+            Class clazzVariableType = ReflectionUtil.getClassFromString( responseItem.variableType );
             return gson.fromJson( responseItem.body, clazzVariableType );
         }
         catch ( Exception e ){
@@ -65,26 +66,29 @@ public class ByReferenceHandler {
     }
 
     public void setVariable( ProceedingJoinPoint joinPoint ){
-        // Send request
-        QueueItem queueItem = new QueueItem();
-        queueItem.senderId = UUID.randomUUID().toString();
-        queueItem.receiverId = JVMContext.getContextId();
-        queueItem.queueType = QueueType.REQUEST;
-        queueItem.invokeType = InvokeType.SET;
-        queueItem.variable = joinPoint.getSignature().getName();
-        queueItem.variableType = joinPoint.getSignature().getDeclaringType().getName();
-
         try {
-            Field f = joinPoint.getSignature().getDeclaringType().getDeclaredField(queueItem.variable);
-            f.setAccessible(true);
-            queueItem.body = gson.toJson( f.get(joinPoint.getTarget()) );
+            // Send request
+            QueueItem queueItem = new QueueItem();
+            queueItem.senderId = UUID.randomUUID().toString();
+            queueItem.receiverId = JVMContext.getContextId();
+            queueItem.queueType = QueueType.REQUEST;
+            queueItem.invokeType = InvokeType.SET;
+            queueItem.variable = joinPoint.getSignature().getName();
+
+            Object context = joinPoint.getThis();
+            Class clazz = context.getClass();
+            Field field = clazz.getDeclaredField( queueItem.variable );
+            field.setAccessible( true );
+            queueItem.variableType = field.getType().getName();
+            queueItem.body = gson.toJson( joinPoint.getArgs()[0] );
+
+            messageQueue.increasePendingCloudCalculation();
+            messageQueue.sendMessage( gson.toJson( queueItem ) );
+            messageQueue.decreasePendingCloudCalculation();
         }
         catch ( Exception e ){
-
+            e.printStackTrace();
+            throw new RuntimeVariableReferenceException( "invalid casting" );
         }
-
-        messageQueue.increasePendingCloudCalculation();
-        messageQueue.sendMessage( gson.toJson( queueItem ) );
-        messageQueue.decreasePendingCloudCalculation();
     }
 }
