@@ -47,15 +47,12 @@ public class AmazonSimpleStorageService {
      */
     public FunctionCode uploadFile(File file ){
         try {
-            // check if already a temporary bucket, for uploading the files, exists
-            if( s3Bucketname == null ){
-                // bucket name must be unique over all users
-                s3Bucketname = AwsConfiguration.AWS_BUCKET_PREFIX + UUID.randomUUID();
+            // bucket name must be unique over all users
+            s3Bucketname = AwsConfiguration.AWS_BUCKET_PREFIX + UUID.randomUUID();
 
-                // create a new bucket
-                amazonS3.createBucket( s3Bucketname );
-                Logger.info( "Create a bucket '" + s3Bucketname + "' in Amazon S3 " );
-            }
+            // create a new bucket
+            amazonS3.createBucket( s3Bucketname );
+            Logger.info( "Create a bucket '" + s3Bucketname + "' in Amazon S3 " );
 
             // upload file
             amazonS3.putObject( new PutObjectRequest( s3Bucketname, file.getName(), file ) );
