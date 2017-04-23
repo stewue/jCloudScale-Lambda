@@ -10,16 +10,16 @@ Download the JCloudScale Lambda project, go to the *src/main/java/ch/uzh/ifi/sea
 If you not already installed [Maven](https://maven.apache.org/download.cgi) and [Java 8 SDK](https://docs.oracle.com/javase/8/docs/technotes/guides/install/install_overview.html), then it is now time.
 
 It is necessary that you set the following environment variable:
-* *JAVA_HOME*
-* *MAVEN_HOME* (or you just set the maven home in the *AwsConfiguration.java* file in *src/main/java/ch/uzh/ifi/seal/jcs_lambda/configuration* file)
++ *JAVA_HOME*
++ *MAVEN_HOME* (or you just set the maven home in the *AwsConfiguration.java* file in *src/main/java/ch/uzh/ifi/seal/jcs_lambda/configuration* file)
 
 ## Step 3: Create a role
 Login into your Amazon Web Service account, go to the [Identity and Access Management](https://console.aws.amazon.com/iam/home).
-* Choose "Roles" in the menu
-* Use "create new role"
-* Select as role type "AWS Lambda"
-* As role you choose "AWSLambdaFullAccess" and "AmazonSQSFullAccess"
-* After the creation you should save the role ARN for Step 5]
++ Choose "Roles" in the menu
++ Use "create new role"
++ Select as role type "AWS Lambda"
++ As role you choose "AWSLambdaFullAccess" and "AmazonSQSFullAccess"
++ After the creation you should save the role ARN for Step 5]
 
 ## Step 4: Create a Simple Queue
 Login into your Amazon Web Service account, go to the [Simple Queue Service](https://console.aws.amazon.com/sqs/home).
