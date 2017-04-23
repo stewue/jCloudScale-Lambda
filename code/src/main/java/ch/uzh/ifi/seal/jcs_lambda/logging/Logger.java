@@ -58,6 +58,11 @@ public class Logger {
      * @param msg log message
      */
     private static void output( String msg ){
+        // if no color is set, then us white
+        if( !LogMessage.hasColor( msg ) ){
+            msg = LogMessage.white( msg );
+        }
+
         System.out.println( msg );
     }
 }
