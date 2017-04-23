@@ -126,6 +126,7 @@ public class CodeModifier {
         String sourceCode = "package " + methodEntity.getTemporaryPackageName() + "; \n" +
                 "\n" +
                 "import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.JVMContext; \n" +
+                "import ch.uzh.ifi.seal.jcs_lambda.logging.Logger; \n" +
                 "import com.amazonaws.services.lambda.runtime.Context;\n" +
                 "import com.amazonaws.services.lambda.runtime.RequestStreamHandler;\n" +
                 "import com.google.gson.Gson;\n" +
@@ -150,13 +151,13 @@ public class CodeModifier {
                 "\n" +
                 "        try {\n" +
                 "            JSONObject event = (JSONObject) parser.parse(reader);\n" +
-                "            System.out.println( \"Input: \" +  event.toJSONString() );\n" +
+                "            Logger.info( \"Input: \" +  event.toJSONString() );\n" +
                 "            Request request = gson.fromJson( event.toJSONString() , Request.class );\n" +
                 "\n" +
                 "            response = invoke( request );\n" +
                 "        }\n" +
                 "        catch(Exception ex) {\n" +
-                "            System.out.println( ex );\n" +
+                "            Logger.info( ex.getMessage() );\n" +
                 "            ex.printStackTrace(); \n" +
                 "            response = new Response( ex.getStackTrace() ); \n" +
                 "        }\n" +
@@ -165,7 +166,7 @@ public class CodeModifier {
                 "        writer.write( gson.toJson(response) );\n" +
                 "        writer.close();\n" +
                 "        \n" +
-                "        System.out.println( \"Output: \" +  gson.toJson(response) );\n" +
+                "        Logger.info( \"Output: \" +  gson.toJson(response) );\n" +
                 "    }\n" +
                 "\n" +
                 "    private Response invoke( Request request ) throws Exception {\n" +

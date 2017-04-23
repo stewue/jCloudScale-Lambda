@@ -3,6 +3,7 @@ package ch.uzh.ifi.seal.jcs_lambda.testing.byReferenceValue;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.ByReference;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.CloudMethod;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.ReadOnly;
+import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
 
 import java.util.UUID;
 
@@ -22,7 +23,7 @@ public class TestObject {
 
     @CloudMethod( timeout = 15, memory = 512 )
     public int doSomething(){
-        System.out.println("Cloud only");
+        Logger.info("Cloud only");
 
         b.y = "Modified";
         b = new Complex();

@@ -21,15 +21,12 @@ public class MessageQueue {
     protected MessageQueue (){
         long startTimestamp = System.currentTimeMillis();
 
-        AmazonSQSClientBuilder xyz = AmazonSQSClientBuilder.standard();
-        System.out.println("A3 " + ( ( System.currentTimeMillis() - startTimestamp ) / 1000.0 ) + " sec" );
-        xyz = xyz.withCredentials( new AWSStaticCredentialsProvider( AmazonWebService.getCredentials() ) );
-        System.out.println("A4 " + ( ( System.currentTimeMillis() - startTimestamp ) / 1000.0 ) + " sec" );
-        xyz = xyz.withRegion( AwsConfiguration.AWS_REGION );
-        System.out.println("A5 " + ( ( System.currentTimeMillis() - startTimestamp ) / 1000.0 ) + " sec" );
-        amazonSQS = xyz.build();
+        AmazonSQSClientBuilder clientBuilder = AmazonSQSClientBuilder.standard();
+        clientBuilder = clientBuilder.withCredentials( new AWSStaticCredentialsProvider( AmazonWebService.getCredentials() ) );
+        clientBuilder = clientBuilder.withRegion( AwsConfiguration.AWS_REGION );
+        amazonSQS = clientBuilder.build();
 
-        System.out.println("A6 " + ( ( System.currentTimeMillis() - startTimestamp ) / 1000.0 ) + " sec" );
+        Logger.debug( "Time to init message queue: " + ( ( System.currentTimeMillis() - startTimestamp ) / 1000.0 ) + " sec" );
     }
 
     /**

@@ -2,6 +2,7 @@ package ch.uzh.ifi.seal.jcs_lambda.testing.complex;
 
 import ch.uzh.ifi.seal.jcs_lambda.annotations.CloudMethod;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.StartUp;
+import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -45,7 +46,7 @@ public class TestComplexTypes {
 
     @CloudMethod( memory = 256, timeout = 5 )
     private OutObject modify( InObject inObject ){
-        System.out.println("Cloud only");
+        Logger.info("Cloud only");
 
         OutObject outObject = new OutObject();
         outObject.setE( inObject.getA() + inObject.getB() );
