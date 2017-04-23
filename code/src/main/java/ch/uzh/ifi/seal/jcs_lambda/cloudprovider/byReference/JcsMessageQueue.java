@@ -5,7 +5,7 @@ import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.byReference.dto.InvokeType;
 import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.byReference.dto.QueueItem;
 import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.byReference.dto.QueueType;
 import ch.uzh.ifi.seal.jcs_lambda.configuration.AwsConfiguration;
-import ch.uzh.ifi.seal.jcs_lambda.exception.RuntimeVariableReferenceException;
+import ch.uzh.ifi.seal.jcs_lambda.exception.RuntimeReferenceVariableException;
 import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
 import ch.uzh.ifi.seal.jcs_lambda.utility.ReflectionUtil;
 import com.amazonaws.services.sqs.model.*;
@@ -165,7 +165,7 @@ public class JcsMessageQueue extends MessageQueue {
             }
         }
 
-        throw new RuntimeVariableReferenceException( "Unknown error while receiving message from client" );
+        throw new RuntimeReferenceVariableException( "Unknown error while receiving message from client" );
     }
 
     /**
@@ -226,7 +226,7 @@ public class JcsMessageQueue extends MessageQueue {
         }
         catch ( Exception e ){
             e.printStackTrace();
-            throw new RuntimeVariableReferenceException( "Error while handle set request" );
+            throw new RuntimeReferenceVariableException( "Error while handle set request" );
         }
     }
 
@@ -248,7 +248,7 @@ public class JcsMessageQueue extends MessageQueue {
         }
         catch ( Exception e ){
             e.printStackTrace();
-            throw new RuntimeVariableReferenceException( "Error while handle get request" );
+            throw new RuntimeReferenceVariableException( "Error while handle get request" );
         }
     }
 
