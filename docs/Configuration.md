@@ -15,11 +15,11 @@ It is necessary that you set the following environment variable:
 
 ## Step 3: Create a role
 Login into your Amazon Web Service account, go to the [Identity and Access Management](https://console.aws.amazon.com/iam/home).
-- Choose "Roles" in the menu
-- Use "create new role"
-- Select as role type "AWS Lambda"
-- As role you choose "AWSLambdaFullAccess" and "AmazonSQSFullAccess"
-- After the creation you should save the role ARN for Step 5]
+* Choose "Roles" in the menu
+* Use "create new role"
+* Select as role type "AWS Lambda"
+* As role you choose "AWSLambdaFullAccess" and "AmazonSQSFullAccess"
+* After the creation you should save the role ARN for Step 5]
 
 ## Step 4: Create a Simple Queue
 Login into your Amazon Web Service account, go to the [Simple Queue Service](https://console.aws.amazon.com/sqs/home).
