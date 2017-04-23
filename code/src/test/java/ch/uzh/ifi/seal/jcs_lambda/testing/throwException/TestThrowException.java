@@ -4,7 +4,6 @@ import ch.uzh.ifi.seal.jcs_lambda.annotations.CloudMethod;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.StartUp;
 import ch.uzh.ifi.seal.jcs_lambda.exception.CloudRuntimeException;
 import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
-import org.junit.Assert;
 import org.junit.Test;
 
 public class TestThrowException {

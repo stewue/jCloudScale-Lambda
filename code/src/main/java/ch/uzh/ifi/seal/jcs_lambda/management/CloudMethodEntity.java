@@ -3,7 +3,6 @@ package ch.uzh.ifi.seal.jcs_lambda.management;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.CloudMethod;
 import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.byReference.JcsMessageQueue;
 import ch.uzh.ifi.seal.jcs_lambda.exception.CloudRuntimeException;
-import ch.uzh.ifi.seal.jcs_lambda.logging.LogMessage;
 import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
 import ch.uzh.ifi.seal.jcs_lambda.utility.AwsUtil;
 import ch.uzh.ifi.seal.jcs_lambda.utility.ByReferenceUtil;
