@@ -104,8 +104,12 @@ public class CodeModifier {
                 "\n" +
                 "public class Response {\n" +
                 "    public " + returnType + " returnValue;\n" +
+                "    public StackTraceElement [] exceptionStackTrace; \n" +
                 "    public Response ( Object returnValue ) {\n" +
                 "        this.returnValue = (" + returnType + ") returnValue;\n" +
+                "    }\n" +
+                "    public Response ( StackTraceElement [] exceptionStackTrace ) {\n" +
+                "        this.exceptionStackTrace = exceptionStackTrace;\n" +
                 "    }\n" +
                 "}";
 
@@ -154,6 +158,7 @@ public class CodeModifier {
                 "        catch(Exception ex) {\n" +
                 "            System.out.println( ex );\n" +
                 "            ex.printStackTrace(); \n" +
+                "            response = new Response( ex.getStackTrace() ); \n" +
                 "        }\n" +
                 "\n" +
                 "        OutputStreamWriter writer = new OutputStreamWriter(outputStream, \"UTF-8\");\n" +
