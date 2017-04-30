@@ -28,10 +28,6 @@ public class AmazonSimpleStorageService {
         Logger.info( "Init Amazon S3 Credentials" );
     }
 
-    /**
-     *
-     * @return
-     */
     public static AmazonSimpleStorageService getInstance(){
         if( instance == null ){
             instance = new AmazonSimpleStorageService();

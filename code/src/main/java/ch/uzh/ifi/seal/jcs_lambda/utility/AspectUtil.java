@@ -95,6 +95,7 @@ public class AspectUtil {
     /**
      * get all parameters (value + name) of the method
      * @param joinPoint current point of execution
+     * @param cloudMethodEntity current cloud method entity
      * @return return a map with the values and parameter names of the injected method
      */
     public static HashMap<String, Object> getParametersWithValue( ProceedingJoinPoint joinPoint, CloudMethodEntity cloudMethodEntity ){

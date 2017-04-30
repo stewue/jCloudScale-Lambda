@@ -42,16 +42,16 @@ public class MessageQueue {
     }
 
     /**
-     *
-     * @param url
+     * connect to queue
+     * @param url url of the queue
      */
     public void connect ( String url ){
         this.url = url;
     }
 
     /**
-     *
-     * @param body
+     * send a message to a queue
+     * @param body message body as string
      */
     public void sendMessage ( String body ){
         SendMessageRequest request = new SendMessageRequest();

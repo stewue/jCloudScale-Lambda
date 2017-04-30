@@ -121,8 +121,11 @@ public class CloudMethodEntity {
 
     /**
      * run method in cloud
+     * @param context object with current context
      * @param parameters captured parameters from the innvocation
+     * @param classVariables hash-map with all class variables, that aren't local
      * @return return response object from the cloud
+     * @throws Exception throw all exceptions to the aspect
      */
     // TODO REFACROTING
     public Object runMethodInCloud( Object context, Map<String, Object> parameters,  Map<String, Object> classVariables ) throws Exception {
@@ -136,7 +139,7 @@ public class CloudMethodEntity {
 
             messageQueue = JcsMessageQueue.getInstance();
             messageQueue.registerObject( uuid, context );
-            messageQueue.increasePendingCloudCalculation();
+            messageQueue.increasePendingRequests();
             messageQueue.startAsyncReceiving();
         }
 
@@ -193,7 +196,7 @@ public class CloudMethodEntity {
         }
 
         if( hasAReferenceVariable ){
-            messageQueue.decreasePendingCloudCalculation();
+            messageQueue.decreasePendingRequests();
         }
 
         Logger.debug( "Get response from " + url );

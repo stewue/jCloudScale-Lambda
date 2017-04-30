@@ -21,7 +21,7 @@ public class JcsMessageQueue extends MessageQueue {
 
     private Map<String, Object> registeredObjects = new HashMap<>();
 
-    private int pendingCloudCalculation = 0;
+    private int pendingRequests = 0;
     private boolean asyncReceiverAlreadyRunning = false;
     private Thread asyncReceivingThread;
 
@@ -47,6 +47,9 @@ public class JcsMessageQueue extends MessageQueue {
         return (JcsMessageQueue) instance;
     }
 
+    /**
+     * remove all messages from the queue
+     */
     public void purgeQueue (){
         try {
             PurgeQueueRequest purgeQueueRequest = new PurgeQueueRequest();
@@ -56,26 +59,26 @@ public class JcsMessageQueue extends MessageQueue {
             Logger.info("Purge SQS ");
         }
         catch ( Exception e ){
-
+            // you can purge a queue only once a minute
         }
     }
 
     /**
-     *
+     * increase number of pending requests
      */
-    public void increasePendingCloudCalculation(){
-        pendingCloudCalculation++;
+    public void increasePendingRequests(){
+        pendingRequests++;
     }
 
     /**
-     *
+     * decrease number of pending requests
      */
-    public void decreasePendingCloudCalculation(){
-        if( pendingCloudCalculation > 0){
-            pendingCloudCalculation--;
+    public void decreasePendingRequests(){
+        if( pendingRequests > 0){
+            pendingRequests--;
         }
 
-        if( pendingCloudCalculation == 0 && asyncReceiverAlreadyRunning ){
+        if( pendingRequests == 0 && asyncReceiverAlreadyRunning ){
             asyncReceivingThread.interrupt();
             asyncReceiverAlreadyRunning = false;
             Logger.info( "async receiver stopped" );
@@ -83,7 +86,7 @@ public class JcsMessageQueue extends MessageQueue {
     }
 
     /**
-     *
+     * local client wait on request and stop if no pending request exists
      */
     public void startAsyncReceiving(){
 
@@ -98,18 +101,17 @@ public class JcsMessageQueue extends MessageQueue {
         asyncReceivingThread = new Thread() {
             public void run() {
                 try {
-                    while( pendingCloudCalculation > 0 ) {
+                    while( pendingRequests > 0 ) {
                         ReceiveMessageRequest receiveRq = new ReceiveMessageRequest()
+                                .withMaxNumberOfMessages(10)
                                 .withQueueUrl( url );
 
                         ReceiveMessageResult receiving = amazonSQS.receiveMessage(receiveRq);
                         List<Message> messages = receiving.getMessages();
 
-
                         Logger.debug( "Async receiver has " + messages.size() + " messages received" );
                         for (Message message : messages ) {
                             QueueItem queueItem = gson.fromJson( message.getBody(), QueueItem.class );
-
                             String messageReceiptHandle = message.getReceiptHandle();
 
                             if( registeredObjects.containsKey( queueItem.receiverId ) ){
@@ -121,6 +123,7 @@ public class JcsMessageQueue extends MessageQueue {
                             }
                             else
                             {
+                                // message not for me => release message
                                 releaseMessage( messageReceiptHandle );
                             }
                         }
@@ -134,8 +137,13 @@ public class JcsMessageQueue extends MessageQueue {
         asyncReceivingThread.start();
     }
 
+    /**
+     * Cloud send some requests to local client and wait on answer
+     * @param responseSenderId cloud object id
+     * @return variable value
+     */
     public QueueItem receiveSyncMessage( String responseSenderId ){
-        while( pendingCloudCalculation > 0 ) {
+        while( pendingRequests > 0 ) {
             ReceiveMessageRequest receiveRq = new ReceiveMessageRequest()
                     .withMaxNumberOfMessages(10)
                     .withQueueUrl( url );
@@ -147,8 +155,8 @@ public class JcsMessageQueue extends MessageQueue {
             for (Message message : messages ) {
                 try {
                     QueueItem queueItem = gson.fromJson(message.getBody(), QueueItem.class);
-
                     String messageReceiptHandle = message.getReceiptHandle();
+
                     if (queueItem.receiverId.equals(responseSenderId)) {
                         Logger.debug( "Handle queue item: " + queueItem.toString() );
 
@@ -156,6 +164,7 @@ public class JcsMessageQueue extends MessageQueue {
                         amazonSQS.deleteMessage(new DeleteMessageRequest(url, messageReceiptHandle));
                         return queueItem;
                     } else {
+                        // message not for me => release message
                         releaseMessage( messageReceiptHandle );
                     }
                 }
@@ -169,8 +178,8 @@ public class JcsMessageQueue extends MessageQueue {
     }
 
     /**
-     *
-     * @param messageReceiptHandle
+     * release message (it's now visible for other receivers
+     * @param messageReceiptHandle aws message receipt
      */
     private void releaseMessage( String messageReceiptHandle ){
         ChangeMessageVisibilityRequest visibilityRequest = new ChangeMessageVisibilityRequest();
@@ -181,17 +190,17 @@ public class JcsMessageQueue extends MessageQueue {
     }
 
     /**
-     *
-     * @param uuid
-     * @param obj
+     * register an object, that a cloud instance can get or set a variable
+     * @param uuid object id
+     * @param obj object this context
      */
     public void registerObject( String uuid, Object obj ){
         registeredObjects.put( uuid, obj );
     }
 
     /**
-     *
-     * @param queueItem
+     * handle an asynchronous request
+     * @param queueItem current queue item
      */
     private void asyncHandleItemFromQueue( QueueItem queueItem ){
         Object context = registeredObjects.get( queueItem.receiverId );
@@ -207,9 +216,9 @@ public class JcsMessageQueue extends MessageQueue {
     }
 
     /**
-     *
-     * @param queueItem
-     * @param context
+     * handle an asynchronous set request
+     * @param queueItem current queue item
+     * @param context origin object
      */
     private void handleSet ( QueueItem queueItem, Object context ){
         String fieldName = queueItem.variable;
@@ -231,9 +240,9 @@ public class JcsMessageQueue extends MessageQueue {
     }
 
     /**
-     *
-     * @param queueItem
-     * @param context
+     * handle an asynchronous get request
+     * @param queueItem current queue item
+     * @param context origin object
      */
     private void handleGet ( QueueItem queueItem, Object context ){
         String fieldName = queueItem.variable;
@@ -253,9 +262,9 @@ public class JcsMessageQueue extends MessageQueue {
     }
 
     /**
-     *
-     * @param ReceivedQueueItem
-     * @param returnObject
+     * send a response message on a request
+     * @param ReceivedQueueItem received item
+     * @param returnObject response message
      */
     private void sendResponseMessage( QueueItem ReceivedQueueItem, Object returnObject ){
         QueueItem queueItem = new QueueItem();

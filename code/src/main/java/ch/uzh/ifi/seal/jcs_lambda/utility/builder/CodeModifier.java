@@ -21,6 +21,7 @@ public class CodeModifier {
      * create a request dto class
      * @param temporaryPackageName package name of the new, temporary created package
      * @param parameters hash-map with the parameters of the origin method
+     * @param classVariables hash-map with all class variables, that aren't local
      */
     public static void createRequestClass (String temporaryPackageName, Map<String, Class> parameters, Map<String, Class> classVariables ){
 

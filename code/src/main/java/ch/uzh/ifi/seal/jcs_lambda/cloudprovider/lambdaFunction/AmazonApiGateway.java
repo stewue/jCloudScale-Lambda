@@ -27,10 +27,6 @@ public class AmazonApiGateway {
         Logger.info( "Init ApiGateway Credentials" );
     }
 
-    /**
-     *
-     * @return
-     */
     public static AmazonApiGateway getInstance(){
         if( instance == null ){
             instance = new AmazonApiGateway();
@@ -42,6 +38,7 @@ public class AmazonApiGateway {
     /**
      * Get the rest api id
      * if no rest api exists, then create one
+     * @return string with rest api id
      */
     public String getRestApiId (){
         // Get the id of the restAPI
