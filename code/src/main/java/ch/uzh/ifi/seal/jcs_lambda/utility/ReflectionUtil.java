@@ -59,9 +59,9 @@ public class ReflectionUtil {
     }
 
     /**
-     *
-     * @param method
-     * @return
+     * check if method name is present or if we have only the internal names (arg0, arg1, ...)
+     * @param method method object
+     * @return result of the inspection
      */
     public static boolean isMethodParameterNamePresent( Method method ){
         Parameter [] methodParameters = method.getParameters();
@@ -74,8 +74,16 @@ public class ReflectionUtil {
         }
     }
 
+    /**
+     * convert a classname string into a class object
+     * @param classname full classname as string
+     * @return class object
+     * @throws ClassNotFoundException return exceptions if an error occurred
+     */
     public static Class getClassFromString ( String classname ) throws ClassNotFoundException {
         Class clazz;
+
+        // first check if it is a primitive type
         if( classname.equals("byte") ){
             clazz = byte.class;
         }
@@ -100,6 +108,7 @@ public class ReflectionUtil {
         else if( classname.equals("char") ){
             clazz = char.class;
         }
+        // default if it isn't a primitive type
         else{
             clazz = Class.forName( classname );
         }

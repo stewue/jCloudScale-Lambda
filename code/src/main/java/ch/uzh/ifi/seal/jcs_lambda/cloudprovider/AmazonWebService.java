@@ -10,8 +10,8 @@ public class AmazonWebService {
     private static BasicAWSCredentials basicAWSCredentials;
 
     /**
-     *
-     * @return
+     * get credential
+     * @return credential object
      */
     public static BasicAWSCredentials getCredentials () {
         if( basicAWSCredentials == null ) {

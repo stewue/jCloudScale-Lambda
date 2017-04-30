@@ -26,8 +26,6 @@ public class AmazonLambda {
     private AWSLambda amazonLambda;
     private HashMap<String, FunctionDescription> lambdaFunctionDescriptions = new HashMap<>();
 
-
-
     /**
      * login to all aws services with the credential
      */
@@ -58,7 +56,7 @@ public class AmazonLambda {
     }
 
     /**
-     *
+     * get all lambda functions with our prefix, that exists in aws
      */
     private void loadAllLambdaFunctions () {
         ListFunctionsResult lambdaFunctions = null;
@@ -111,6 +109,8 @@ public class AmazonLambda {
      * @param handlerName the start point of the execution
      * @param functionCode Amazon S3 id of the uploaded file
      * @param description methodDescription object
+     * @param memory int with memory size (in mb)
+     * @param timeout int with timeout amount (in sec)
      */
     public void createOrUpdateFunction ( String functionName, String handlerName, FunctionCode functionCode, FunctionDescription description, int memory, int timeout ){
         // Check if function name already exists

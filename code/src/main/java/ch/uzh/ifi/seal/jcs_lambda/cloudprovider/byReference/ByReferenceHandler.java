@@ -33,6 +33,11 @@ public class ByReferenceHandler {
         return instance;
     }
 
+    /**
+     * cloud send a get request to local client
+     * @param joinPoint current point of execution
+     * @return variable value from client
+     */
     public Object getVariable( ProceedingJoinPoint joinPoint ){
         try {
             // Send request
@@ -49,12 +54,12 @@ public class ByReferenceHandler {
             field.setAccessible( true );
             queueItem.variableType = field.getType().getName();
 
-            messageQueue.increasePendingCloudCalculation();
+            messageQueue.increasePendingRequests();
             messageQueue.sendMessage( gson.toJson( queueItem ) );
 
             // wait on response
             QueueItem responseItem = messageQueue.receiveSyncMessage( queueItem.senderId );
-            messageQueue.decreasePendingCloudCalculation();
+            messageQueue.decreasePendingRequests();
 
             Class clazzVariableType = ReflectionUtil.getClassFromString( responseItem.variableType );
             return gson.fromJson( responseItem.body, clazzVariableType );
@@ -65,6 +70,10 @@ public class ByReferenceHandler {
         }
     }
 
+    /**
+     * cloud send a set request to local client
+     * @param joinPoint current point of execution
+     */
     public void setVariable( ProceedingJoinPoint joinPoint ){
         try {
             // Send request
@@ -82,9 +91,11 @@ public class ByReferenceHandler {
             queueItem.variableType = field.getType().getName();
             queueItem.body = gson.toJson( joinPoint.getArgs()[0] );
 
-            messageQueue.increasePendingCloudCalculation();
+            messageQueue.increasePendingRequests();
             messageQueue.sendMessage( gson.toJson( queueItem ) );
-            messageQueue.decreasePendingCloudCalculation();
+            messageQueue.decreasePendingRequests();
+
+            // do not wait on answer, it isn't necessary
         }
         catch ( Exception e ){
             e.printStackTrace();

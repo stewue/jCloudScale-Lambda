@@ -11,9 +11,9 @@ public class ByReferenceUtil {
     private static Map<Class,Boolean> classHasAReferenceVariable = new HashMap<>();
 
     /**
-     *
-     * @param clazz
-     * @return
+     * check if a class has a reference variable
+     * @param clazz checking class
+     * @return boolean if it exists or not
      */
     public static boolean checkIfClassHasAReferenceVariable( Class clazz ){
 
@@ -41,9 +41,9 @@ public class ByReferenceUtil {
     }
 
     /**
-     *
-     * @param context
-     * @return
+     * get uuid of a object
+     * @param context current object
+     * @return uuid
      */
     public static String getUUID( Object context ){
         try {
