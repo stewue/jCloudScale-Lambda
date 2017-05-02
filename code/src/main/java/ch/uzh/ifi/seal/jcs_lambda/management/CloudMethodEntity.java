@@ -1,8 +1,12 @@
 package ch.uzh.ifi.seal.jcs_lambda.management;
 
 import ch.uzh.ifi.seal.jcs_lambda.annotations.CloudMethod;
-import ch.uzh.ifi.seal.jcs_lambda.exception.IllegalDefinitionException;
+import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.byReference.JcsMessageQueue;
+import ch.uzh.ifi.seal.jcs_lambda.exception.CloudRuntimeException;
+import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
 import ch.uzh.ifi.seal.jcs_lambda.utility.AwsUtil;
+import ch.uzh.ifi.seal.jcs_lambda.utility.ByReferenceUtil;
+import ch.uzh.ifi.seal.jcs_lambda.utility.ReflectionUtil;
 import ch.uzh.ifi.seal.jcs_lambda.utility.Util;
 import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeModifier;
 import com.google.gson.Gson;
@@ -20,6 +24,7 @@ public class CloudMethodEntity {
     private String methodName;
     private HashMap<String, Class> parameters;
     private String returnType;
+    private boolean isReturnTypeVoid;
 
     private Map<String, Class> classVariables;
     private boolean isParameterNamePresent;
@@ -39,11 +44,11 @@ public class CloudMethodEntity {
         packageName = method.getDeclaringClass().getPackage().getName();
         className = method.getDeclaringClass().getSimpleName();
         methodName = method.getName();
-        parameters = Util.getMethodParameters( method );
+        parameters = ReflectionUtil.getMethodParameters( method );
         returnType = method.getReturnType().getName();
 
-        classVariables = Util.getClassVariables( method );
-        isParameterNamePresent = Util.isMethodParameterNamePresent( method );
+        classVariables = ReflectionUtil.getClassVariables( method );
+        isParameterNamePresent = ReflectionUtil.isMethodParameterNamePresent( method );
 
         fullQualifiedName = Util.getFullQualifiedName( packageName, className, methodName, parameters );
 
@@ -57,8 +62,10 @@ public class CloudMethodEntity {
         timeout = AwsUtil.returnValidTimeout( annotation.timeout() );
 
         if( returnType.equals("void" ) ){
-            throw new IllegalDefinitionException( "Return type void isn't valid!");
+            isReturnTypeVoid = true;
+            returnType = "String";
         }
+
     }
 
     public String getFullQualifiedName (){
@@ -97,6 +104,9 @@ public class CloudMethodEntity {
         return isParameterNamePresent;
     }
 
+    public boolean isReturnTypeVoid(){
+        return isReturnTypeVoid;
+    }
     /**
      * create some trash classes for cloud deployment
      */
@@ -111,15 +121,34 @@ public class CloudMethodEntity {
 
     /**
      * run method in cloud
+     * @param context object with current context
      * @param parameters captured parameters from the innvocation
+     * @param classVariables hash-map with all class variables, that aren't local
      * @return return response object from the cloud
+     * @throws Exception throw all exceptions to the aspect
      */
-    public Object runMethodInCloud( Map<String, Object> parameters,  Map<String, Object> classVariables ) {
+    // TODO REFACROTING
+    public Object runMethodInCloud( Object context, Map<String, Object> parameters,  Map<String, Object> classVariables ) throws Exception {
+
+        boolean hasAReferenceVariable = ByReferenceUtil.checkIfClassHasAReferenceVariable( context.getClass() );
+
+        JcsMessageQueue messageQueue = null;
+
+        if( hasAReferenceVariable ){
+            String uuid = ByReferenceUtil.getUUID( context );
+
+            messageQueue = JcsMessageQueue.getInstance();
+            messageQueue.registerObject( uuid, context );
+            messageQueue.increasePendingRequests();
+            messageQueue.startAsyncReceiving();
+        }
+
+        // Create request dto
+        Object requestInstance = null;
         try{
-            // Create request dto
             Class requestClass = Class.forName( temporaryPackageName + ".Request" );
             Field[] requestFields = requestClass.getDeclaredFields();
-            Object requestInstance = requestClass.newInstance();
+            requestInstance = requestClass.newInstance();
 
             // add all parameter and class variable values to the dto
             for( Field field : requestFields ){
@@ -137,22 +166,47 @@ public class CloudMethodEntity {
 
                 field.set( requestInstance, value );
             }
-
-            Gson gson = new Gson();
-
-            // handle request dto
-            Class responseClass = Class.forName( temporaryPackageName + ".Response" );
-            String returnJsonObject = Util.doRequest( url, gson.toJson( requestInstance ) );
-
-            Object returnObj = gson.fromJson( returnJsonObject, responseClass );
-
-            // cast returnObj and get the return value
-            Field field = responseClass.getField("returnValue" );
-            return field.get( responseClass.cast(returnObj) );
         }
         catch ( Exception e ){
-            e.printStackTrace();
-            throw new RuntimeException( "Unable to create request/response dto or to get or set the value" );
+            throw new RuntimeException( "Unable to create request dto or to set the value" );
+        }
+
+
+        Gson gson = new Gson();
+
+        // handle request dto
+        Class responseClass = null;
+        String returnJsonObject = "";
+        try {
+            responseClass = Class.forName(temporaryPackageName + ".Response");
+            Logger.debug( "Send request to " + url );
+            returnJsonObject = Util.doRequest(url, gson.toJson(requestInstance));
+        }
+        catch ( Exception e ){
+            throw new RuntimeException( "Unable to create response dto or to set/get the value" );
+        }
+
+        Object returnObj = gson.fromJson( returnJsonObject, responseClass );
+
+        // check if exception occurred in cloud
+        Field fieldException = responseClass.getDeclaredField("exceptionStackTrace" );
+        StackTraceElement [] stackTraceElements = (StackTraceElement []) fieldException.get( responseClass.cast(returnObj) );
+        if( stackTraceElements != null ){
+            throw new CloudRuntimeException( "Something failed in the cloud on runtime!", stackTraceElements );
+        }
+
+        if( hasAReferenceVariable ){
+            messageQueue.decreasePendingRequests();
+        }
+
+        Logger.debug( "Get response from " + url );
+        if( isReturnTypeVoid ){
+            return null;
+        }
+        else{
+            // cast returnObj and get the return value
+            Field fieldReturnValue = responseClass.getDeclaredField("returnValue" );
+            return fieldReturnValue.get( responseClass.cast(returnObj) );
         }
     }
 }

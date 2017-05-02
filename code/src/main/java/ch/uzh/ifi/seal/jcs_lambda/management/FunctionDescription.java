@@ -8,6 +8,7 @@ public class FunctionDescription {
 
     /**
      * Init FunctionDescription
+     * @param fullQualifiedName full name of the method
      */
     public FunctionDescription( String fullQualifiedName ){
         setLastUpdateToNow();

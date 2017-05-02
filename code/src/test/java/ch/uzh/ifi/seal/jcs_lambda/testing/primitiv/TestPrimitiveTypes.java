@@ -2,6 +2,7 @@ package ch.uzh.ifi.seal.jcs_lambda.testing.primitiv;
 
 import ch.uzh.ifi.seal.jcs_lambda.annotations.CloudMethod;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.StartUp;
+import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -21,7 +22,7 @@ public class TestPrimitiveTypes {
 
     @CloudMethod
     private int sum( int a, int b ){
-        System.out.println("Cloud only");
+        Logger.info("Cloud only");
 
         return a + b;
     }

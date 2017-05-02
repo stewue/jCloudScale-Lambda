@@ -21,11 +21,13 @@ public class CodeModifier {
      * create a request dto class
      * @param temporaryPackageName package name of the new, temporary created package
      * @param parameters hash-map with the parameters of the origin method
+     * @param classVariables hash-map with all class variables, that aren't local
      */
     public static void createRequestClass (String temporaryPackageName, Map<String, Class> parameters, Map<String, Class> classVariables ){
 
         String sourceCode = "package " + temporaryPackageName + "; \n \n";
-        sourceCode += "public class Request { \n";
+        sourceCode += "public class Request { \n"
+                    + " public String _uuid_; \n";
 
         // Generate all attributes
         for(Map.Entry<String, Class> entry : parameters.entrySet() ){
@@ -103,8 +105,12 @@ public class CodeModifier {
                 "\n" +
                 "public class Response {\n" +
                 "    public " + returnType + " returnValue;\n" +
+                "    public StackTraceElement [] exceptionStackTrace; \n" +
                 "    public Response ( Object returnValue ) {\n" +
                 "        this.returnValue = (" + returnType + ") returnValue;\n" +
+                "    }\n" +
+                "    public Response ( StackTraceElement [] exceptionStackTrace ) {\n" +
+                "        this.exceptionStackTrace = exceptionStackTrace;\n" +
                 "    }\n" +
                 "}";
 
@@ -121,6 +127,7 @@ public class CodeModifier {
         String sourceCode = "package " + methodEntity.getTemporaryPackageName() + "; \n" +
                 "\n" +
                 "import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.JVMContext; \n" +
+                "import ch.uzh.ifi.seal.jcs_lambda.logging.Logger; \n" +
                 "import com.amazonaws.services.lambda.runtime.Context;\n" +
                 "import com.amazonaws.services.lambda.runtime.RequestStreamHandler;\n" +
                 "import com.google.gson.Gson;\n" +
@@ -145,24 +152,26 @@ public class CodeModifier {
                 "\n" +
                 "        try {\n" +
                 "            JSONObject event = (JSONObject) parser.parse(reader);\n" +
-                "            System.out.println( \"Input: \" +  event.toJSONString() );\n" +
+                "            Logger.info( \"Input: \" +  event.toJSONString() );\n" +
                 "            Request request = gson.fromJson( event.toJSONString() , Request.class );\n" +
                 "\n" +
                 "            response = invoke( request );\n" +
                 "        }\n" +
                 "        catch(Exception ex) {\n" +
-                "            System.out.println( ex );\n" +
+                "            Logger.info( ex.getMessage() );\n" +
                 "            ex.printStackTrace(); \n" +
+                "            response = new Response( ex.getStackTrace() ); \n" +
                 "        }\n" +
                 "\n" +
                 "        OutputStreamWriter writer = new OutputStreamWriter(outputStream, \"UTF-8\");\n" +
                 "        writer.write( gson.toJson(response) );\n" +
                 "        writer.close();\n" +
                 "        \n" +
-                "        System.out.println( \"Output: \" +  gson.toJson(response) );\n" +
+                "        Logger.info( \"Output: \" +  gson.toJson(response) );\n" +
                 "    }\n" +
                 "\n" +
                 "    private Response invoke( Request request ) throws Exception {\n" +
+                "        JVMContext.setContextId( request._uuid_ ); \n" +
                 "        " + methodEntity.getClassName() + " object = new " + methodEntity.getClassName() + "(); \n" +
                 "        Class params[] = request.getClassArray(); \n" +
                 "        Object paramsObj[] = request.getObjectArray(); \n" +
@@ -182,8 +191,18 @@ public class CodeModifier {
                             "\n";
                 }
 
+                // handle void return type
+                if( methodEntity.isReturnTypeVoid() ){
+                    sourceCode +=
+                            "        method.invoke( object, paramsObj ); \n" +
+                            "        return new Response( \"\" ); \n";
+                }
+                else {
+                    sourceCode +=
+                        "        return new Response( method.invoke( object, paramsObj ) ); \n";
+                }
+
                 sourceCode +=
-                "        return new Response( method.invoke( object, paramsObj ) ); \n" +
                 "    }\n" +
                 "\n" +
                 "}";
@@ -252,6 +271,4 @@ public class CodeModifier {
             Logger.error( "Unable to remove temporary created files" );
         }
     }
-
-
 }

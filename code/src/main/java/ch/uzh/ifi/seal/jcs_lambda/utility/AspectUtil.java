@@ -29,6 +29,14 @@ public class AspectUtil {
             for (Field field : fields) {
                 Annotation[] annotations = field.getAnnotations();
 
+                //TODO TMP
+                if( field.getName().equals("_uuid_") ){
+                    Object _this = joinPoint.getThis();
+                    Object value = field.get( _this );
+                    classVariableValues.put( field.getName(), value );
+                    continue;
+                }
+
                 for (Annotation annotation : annotations) {
                     // check if its the read only annotation
                     if ( annotation.annotationType().equals(ReadOnly.class) ) {
@@ -87,6 +95,7 @@ public class AspectUtil {
     /**
      * get all parameters (value + name) of the method
      * @param joinPoint current point of execution
+     * @param cloudMethodEntity current cloud method entity
      * @return return a map with the values and parameter names of the injected method
      */
     public static HashMap<String, Object> getParametersWithValue( ProceedingJoinPoint joinPoint, CloudMethodEntity cloudMethodEntity ){

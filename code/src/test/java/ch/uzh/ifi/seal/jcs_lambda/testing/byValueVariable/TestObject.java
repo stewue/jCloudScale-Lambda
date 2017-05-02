@@ -3,6 +3,7 @@ package ch.uzh.ifi.seal.jcs_lambda.testing.byValueVariable;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.CloudMethod;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.Local;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.ReadOnly;
+import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
 
 public class TestObject {
     @Local
@@ -21,7 +22,7 @@ public class TestObject {
 
     @CloudMethod
     public int sum( int d ){
-        System.out.println("Cloud only");
+        Logger.info("Cloud only");
         return a + b + c + d;
     }
 }

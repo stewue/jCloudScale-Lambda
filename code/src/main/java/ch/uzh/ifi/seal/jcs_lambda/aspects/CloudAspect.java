@@ -1,8 +1,10 @@
 package ch.uzh.ifi.seal.jcs_lambda.aspects;
 
+import ch.uzh.ifi.seal.jcs_lambda.annotations.ByReference;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.CloudMethod;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.StartUp;
 import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.JVMContext;
+import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.byReference.ByReferenceHandler;
 import ch.uzh.ifi.seal.jcs_lambda.exception.MissingStartUpException;
 import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
 import ch.uzh.ifi.seal.jcs_lambda.management.CloudManager;
@@ -29,8 +31,8 @@ public class CloudAspect {
 
     private static CloudManager cloudManager = null;
 
-    // only pseudo variable, that import optimizer won't remove the startup annotation
-    private static Class clazz = StartUp.class;
+    // only pseudo variable, that import optimizer won't remove the startup and ByReference annotation
+    private static Class [] annotation = new Class[]{ StartUp.class, ByReference.class };
 
     /**
      * On Startup register all methods with cloud annotation
@@ -93,13 +95,53 @@ public class CloudAspect {
                 throw new MissingStartUpException();
             }
 
+            // get context from invocation
+            Object context = joinPoint.getThis();
+
             String fullQualifiedName = AspectUtil.getFullQualifiedName(joinPoint);
             CloudMethodEntity methodEntity = cloudManager.getMethodByName(fullQualifiedName);
 
             Map<String, Object> parametersWithValues = AspectUtil.getParametersWithValue( joinPoint, methodEntity );
             Map<String, Object> classVariablesWithValue = AspectUtil.getClassVariablesValues( joinPoint );
 
-            return methodEntity.runMethodInCloud( parametersWithValues, classVariablesWithValue );
+            return methodEntity.runMethodInCloud( context, parametersWithValues, classVariablesWithValue );
+        }
+    }
+
+    /**
+     * Invoke all gets from a ByReference field
+     * @param joinPoint current point of execution
+     * @return return the local value of the variable
+     * @throws Throwable throw all errors
+     */
+    @Around("get( !final !transient * * ) && @annotation(ByReference)")
+    public Object getValueFromClient( ProceedingJoinPoint joinPoint ) throws Throwable {
+        // local get "normal" variable value
+        if( JVMContext.getContext() == false ){
+            return joinPoint.proceed();
+        }
+        // in cloud get value from local application
+        else {
+            ByReferenceHandler referenceHandler = ByReferenceHandler.getInstance();
+            return referenceHandler.getVariable( joinPoint );
+        }
+    }
+
+    /**
+     * Invoke all sets from a ByReference field
+     * @param joinPoint current point of execution
+     * @throws Throwable throw all errors
+     */
+    @Around("set( !final !transient * * ) && @annotation(ByReference)")
+    public void setValueToClient( ProceedingJoinPoint joinPoint ) throws Throwable {
+        // local set "normal" variable value
+        if( JVMContext.getContext() == false ){
+            joinPoint.proceed();
+        }
+        // in cloud get value from local application
+        else {
+            ByReferenceHandler referenceHandler = ByReferenceHandler.getInstance();
+            referenceHandler.setVariable( joinPoint );
         }
     }
 }
