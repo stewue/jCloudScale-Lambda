@@ -10,7 +10,7 @@
     <properties>
         <javaVersion>1.8</javaVersion>
         <aspectj.version>1.8.10</aspectj.version>
-        <aws.version>1.11.98</aws.version>
+        <aws.version>1.11.119</aws.version>
         <maven.test.skip>true</maven.test.skip>
     </properties>
 
@@ -53,6 +53,11 @@
         <dependency>
             <groupId>com.amazonaws</groupId>
             <artifactId>aws-java-sdk-api-gateway</artifactId>
+            <version>${aws.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-sqs</artifactId>
             <version>${aws.version}</version>
         </dependency>
         <dependency>
