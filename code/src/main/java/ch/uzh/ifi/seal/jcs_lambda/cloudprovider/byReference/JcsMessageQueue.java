@@ -63,6 +63,10 @@ public class JcsMessageQueue extends MessageQueue {
         }
     }
 
+    public int getPendingRequests (){
+        return pendingRequests;
+    }
+
     /**
      * increase number of pending requests
      */
@@ -232,6 +236,8 @@ public class JcsMessageQueue extends MessageQueue {
             Field field = context.getClass().getDeclaredField( fieldName );
             field.setAccessible( true );
             field.set( context, setObject );
+
+            sendResponseMessage( queueItem, new Object[]{} );
         }
         catch ( Exception e ){
             e.printStackTrace();
