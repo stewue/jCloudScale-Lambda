@@ -1,11 +1,13 @@
 package ch.uzh.ifi.seal.jcs_lambda.utility;
 
+import ch.uzh.ifi.seal.jcs_lambda.annotations.ByReference;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.ReadOnly;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,8 +17,16 @@ public class ReflectionUtil {
      * @param method method object from that we need the variables
      * @return map with all variables
      */
-    public static Map<String, Class> getClassVariables( Method method ){
-        Map<String, Class> classVariables = new HashMap<>();
+    public static Map<String, Type> getClassVariablesReadOnly(Method method ){
+        return getClassVariablesWithAnnotation( method, ReadOnly.class );
+    }
+
+    public static Map<String, Type> getClassVariablesByReference(Method method ){
+        return getClassVariablesWithAnnotation( method, ByReference.class );
+    }
+
+    public static Map<String, Type> getClassVariablesWithAnnotation(Method method, Class variableAnnotation ){
+        Map<String, Type> classVariables = new HashMap<>();
 
         Class clazz = method.getDeclaringClass();
         Field[] fields = clazz.getDeclaredFields();
@@ -25,9 +35,9 @@ public class ReflectionUtil {
             Annotation[] annotations = field.getAnnotations();
 
             for( Annotation annotation : annotations ){
-                if( annotation.annotationType().equals( ReadOnly.class ) ){
+                if( annotation.annotationType().equals( variableAnnotation ) ){
                     String name = field.getName();
-                    Class type = field.getType();
+                    Type type = field.getGenericType();
 
                     classVariables.put( name, type );
                 }
@@ -35,6 +45,27 @@ public class ReflectionUtil {
         }
 
         return classVariables;
+    }
+
+    /**
+     * Get all parameters (name + type) of a method
+     * @param method current method
+     * @return hash-map with the parameter names and types
+     */
+    public static HashMap<String, Type> getMethodParametersWithGenerics( Method method ){
+        HashMap<String, Type> parameters = new HashMap<>();
+
+        Parameter [] methodParameters = method.getParameters();
+
+        for( Parameter parameter : methodParameters ){
+            String parameterName = parameter.getName();
+            Type parameterType = parameter.getParameterizedType();
+
+            parameters.put( parameterName, parameterType );
+        }
+
+
+        return parameters;
     }
 
     /**

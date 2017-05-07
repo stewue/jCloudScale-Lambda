@@ -10,6 +10,7 @@ import javax.tools.StandardLocation;
 import javax.tools.ToolProvider;
 import java.io.File;
 import java.io.FileWriter;
+import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -21,30 +22,30 @@ public class CodeModifier {
      * create a request dto class
      * @param temporaryPackageName package name of the new, temporary created package
      * @param parameters hash-map with the parameters of the origin method
-     * @param classVariables hash-map with all class variables, that aren't local
+     * @param classVariablesReadOnly hash-map with all class variables, that aren't local
      */
-    public static void createRequestClass (String temporaryPackageName, Map<String, Class> parameters, Map<String, Class> classVariables ){
+    public static void createRequestClass (String temporaryPackageName, Map<String, Type> parameters, Map<String, Type> classVariablesReadOnly ){
 
         String sourceCode = "package " + temporaryPackageName + "; \n \n";
         sourceCode += "public class Request { \n"
                     + " public String _uuid_; \n";
 
         // Generate all attributes
-        for(Map.Entry<String, Class> entry : parameters.entrySet() ){
+        for(Map.Entry<String, Type> entry : parameters.entrySet() ){
             String parameterName = entry.getKey();
-            String parameterType = entry.getValue().getName();
+            String parameterType = entry.getValue().getTypeName();
             sourceCode += "public " +  parameterType + " " + parameterName + "; \n";
         }
 
         // Generate class variables
         sourceCode += "/* class variables */ \n";
-        for(Map.Entry<String, Class> entry : classVariables.entrySet() ){
+        for(Map.Entry<String, Type> entry : classVariablesReadOnly.entrySet() ){
             String classVariableName = entry.getKey();
-            String classVarianleType = entry.getValue().getName();
+            String classVariableType = entry.getValue().toString();
 
             // only add class variable to dto if not already a parameter with the same name exists
             if( parameters.get( classVariableName ) == null ){
-                sourceCode += "public " +  classVarianleType + " " + classVariableName + "; \n";
+                sourceCode += "public " +  classVariableType + " " + classVariableName + "; \n";
             }
         }
 
@@ -54,7 +55,7 @@ public class CodeModifier {
             "       Object [] ret = {";
 
         int i = 0;
-        for(Map.Entry<String, Class> entry : parameters.entrySet() ){
+        for(Map.Entry<String, Type> entry : parameters.entrySet() ){
             String parameterName = entry.getKey();
 
             if( i>0){
@@ -75,8 +76,8 @@ public class CodeModifier {
             "       Class [] ret = {";
 
         int j = 0;
-        for(Map.Entry<String, Class> entry : parameters.entrySet() ){
-            String parameterType = entry.getValue().getName();
+        for(Map.Entry<String, Type> entry : parameters.entrySet() ){
+            String parameterType = entry.getValue().getTypeName();
 
             if( j>0){
                 sourceCode += ", ";
@@ -158,7 +159,6 @@ public class CodeModifier {
                 "            response = invoke( request );\n" +
                 "        }\n" +
                 "        catch(Exception ex) {\n" +
-                "            Logger.info( ex.getMessage() );\n" +
                 "            ex.printStackTrace(); \n" +
                 "            response = new Response( ex.getStackTrace() ); \n" +
                 "        }\n" +
@@ -182,7 +182,8 @@ public class CodeModifier {
                 "        Field field; \n" +
                 "\n";
 
-                for(Map.Entry<String, Class> entry : methodEntity.getClassVariables().entrySet() ){
+                // read only variable
+                for(Map.Entry<String, Type> entry : methodEntity.getClassVariablesReadOnly().entrySet() ){
                     String name = entry.getKey();
                     sourceCode +=
                             "        field = object.getClass().getDeclaredField(\""+ name + "\" ); \n" +

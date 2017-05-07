@@ -13,6 +13,7 @@ import com.google.gson.Gson;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,12 +23,13 @@ public class CloudMethodEntity {
     private String packageName;
     private String className;
     private String methodName;
-    private HashMap<String, Class> parameters;
+    private HashMap<String, Type> parameters;
     private String returnType;
     private boolean isReturnTypeVoid;
 
-    private Map<String, Class> classVariables;
+    private Map<String, Type> classVariablesReadOnly;
     private boolean isParameterNamePresent;
+    private Map<String, Type> classVariablesByReference;
 
     private String url;
 
@@ -44,13 +46,14 @@ public class CloudMethodEntity {
         packageName = method.getDeclaringClass().getPackage().getName();
         className = method.getDeclaringClass().getSimpleName();
         methodName = method.getName();
-        parameters = ReflectionUtil.getMethodParameters( method );
+        parameters = ReflectionUtil.getMethodParametersWithGenerics( method );
         returnType = method.getReturnType().getName();
 
-        classVariables = ReflectionUtil.getClassVariables( method );
+        classVariablesReadOnly = ReflectionUtil.getClassVariablesReadOnly( method );
         isParameterNamePresent = ReflectionUtil.isMethodParameterNamePresent( method );
+        classVariablesByReference = ReflectionUtil.getClassVariablesByReference( method );
 
-        fullQualifiedName = Util.getFullQualifiedName( packageName, className, methodName, parameters );
+        fullQualifiedName = Util.getFullQualifiedName( packageName, className, methodName,  ReflectionUtil.getMethodParameters( method ) );
 
         temporaryPackageName = CodeModifier.TEMPORARY_PACKAGE + "." + fullQualifiedName;
 
@@ -88,8 +91,12 @@ public class CloudMethodEntity {
         return temporaryPackageName;
     }
 
-    public Map<String, Class> getClassVariables (){
-        return classVariables;
+    public Map<String, Type> getClassVariablesReadOnly(){
+        return classVariablesReadOnly;
+    }
+
+    public Map<String, Type> getClassVariablesByReference(){
+        return classVariablesByReference;
     }
 
     public int getMemory(){
@@ -112,7 +119,7 @@ public class CloudMethodEntity {
      */
     public void modifyCode (){
         // Create DTO classes
-        CodeModifier.createRequestClass( temporaryPackageName, parameters, classVariables );
+        CodeModifier.createRequestClass( temporaryPackageName, parameters, classVariablesReadOnly);
         CodeModifier.createResponseClass( temporaryPackageName, returnType );
 
         // Create Lambda Function Handler for AWS
@@ -123,12 +130,12 @@ public class CloudMethodEntity {
      * run method in cloud
      * @param context object with current context
      * @param parameters captured parameters from the innvocation
-     * @param classVariables hash-map with all class variables, that aren't local
+     * @param classVariablesReadOnly hash-map with all class variables, that aren't local
      * @return return response object from the cloud
      * @throws Exception throw all exceptions to the aspect
      */
     // TODO REFACROTING
-    public Object runMethodInCloud( Object context, Map<String, Object> parameters,  Map<String, Object> classVariables ) throws Exception {
+    public Object runMethodInCloud( Object context, Map<String, Object> parameters,  Map<String, Object> classVariablesReadOnly ) throws Exception {
 
         boolean hasAReferenceVariable = ByReferenceUtil.checkIfClassHasAReferenceVariable( context.getClass() );
 
@@ -155,13 +162,17 @@ public class CloudMethodEntity {
                 String name = field.getName();
                 Object value;
 
+                // if its a uuid
+                if( name.equals("_uuid_") ){
+                    value = ByReferenceUtil.getUUID( context );
+                }
                 // check if its a parameter
-                if( parameters.get( name ) != null ){
+                else if( parameters.get( name ) != null ){
                     value = parameters.get( name );
                 }
                 // else it is a class variable
                 else {
-                    value = classVariables.get( name );
+                    value = classVariablesReadOnly.get( name );
                 }
 
                 field.set( requestInstance, value );

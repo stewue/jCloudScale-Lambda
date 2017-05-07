@@ -5,11 +5,7 @@ import ch.uzh.ifi.seal.jcs_lambda.annotations.CloudMethod;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.ReadOnly;
 import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
 
-import java.util.UUID;
-
 public class TestObject {
-    public String _uuid_ = UUID.randomUUID().toString();
-
     @ReadOnly
     private int a;
 
@@ -25,7 +21,6 @@ public class TestObject {
     public int doSomething(){
         Logger.info("Cloud only");
 
-        b.y = "Modified";
         b = new Complex();
 
         return a * 2;
