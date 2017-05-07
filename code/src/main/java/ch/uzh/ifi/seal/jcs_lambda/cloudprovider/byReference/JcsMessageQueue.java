@@ -119,9 +119,10 @@ public class JcsMessageQueue extends MessageQueue {
                             String messageReceiptHandle = message.getReceiptHandle();
 
                             if( registeredObjects.containsKey( queueItem.receiverId ) ){
+                                Logger.debug( "Handle queue item: " + queueItem.toString() );
+
                                 asyncHandleItemFromQueue( queueItem );
 
-                                Logger.debug( "Handle queue item: " + queueItem.toString() );
                                 // remove message
                                 amazonSQS.deleteMessage(new DeleteMessageRequest( url, messageReceiptHandle ) );
                             }

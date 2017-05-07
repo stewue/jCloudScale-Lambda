@@ -46,17 +46,9 @@ public class ByReferenceUtil {
      * @return uuid
      */
     public static String getUUID( Object context ){
-        try {
-            Field uuidField = context.getClass().getDeclaredField("_uuid_" );
-            uuidField.setAccessible(true);
-            String uuid = (String) uuidField.get(context);
+        UniqueIdentifierManager uuidManager = UniqueIdentifierManager.getInstance();
+        String uuid = uuidManager.getUuid( context );
 
-            return uuid;
-        }
-        catch ( Exception e ){
-
-        }
-
-        return null;
+        return uuid;
     }
 }
