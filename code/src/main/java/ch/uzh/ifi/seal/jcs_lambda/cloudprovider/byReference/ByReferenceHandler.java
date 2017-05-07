@@ -52,7 +52,8 @@ public class ByReferenceHandler {
             Class clazz = context.getClass();
             Field field = clazz.getDeclaredField( queueItem.variable );
             field.setAccessible( true );
-            queueItem.variableType = field.getType().getName();
+
+            queueItem.variableType = field.getGenericType().getTypeName();
 
             messageQueue.increasePendingRequests();
             messageQueue.sendMessage( gson.toJson( queueItem ) );
@@ -93,9 +94,12 @@ public class ByReferenceHandler {
 
             messageQueue.increasePendingRequests();
             messageQueue.sendMessage( gson.toJson( queueItem ) );
+
+            // wait on response
+            messageQueue.receiveSyncMessage( queueItem.senderId );
             messageQueue.decreasePendingRequests();
 
-            // do not wait on answer, it isn't necessary
+            // ignore response
         }
         catch ( Exception e ){
             e.printStackTrace();
