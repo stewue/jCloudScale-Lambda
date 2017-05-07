@@ -10,6 +10,6 @@ public class QueueItem {
     public String body;
 
     public String toString(){
-        return "senderId: " + senderId + ", queueType: " + queueType + ", invokeType: " + invokeType + ", variable: " + variable + ", body: " + body;
+        return "senderId: " + senderId + ", receiverId: " + receiverId + ", queueType: " + queueType + ", invokeType: " + invokeType + ", variable: " + variable + ", body: " + body;
     }
 }
