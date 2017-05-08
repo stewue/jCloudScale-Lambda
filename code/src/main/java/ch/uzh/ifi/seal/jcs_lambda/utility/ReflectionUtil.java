@@ -32,15 +32,11 @@ public class ReflectionUtil {
         Field[] fields = clazz.getDeclaredFields();
 
         for( Field field : fields ){
-            Annotation[] annotations = field.getAnnotations();
+            if( field.isAnnotationPresent( variableAnnotation ) ){
+                String name = field.getName();
+                Type type = field.getGenericType();
 
-            for( Annotation annotation : annotations ){
-                if( annotation.annotationType().equals( variableAnnotation ) ){
-                    String name = field.getName();
-                    Type type = field.getGenericType();
-
-                    classVariables.put( name, type );
-                }
+                classVariables.put( name, type );
             }
         }
 
