@@ -17,9 +17,15 @@ public class UniqueIdentifierManager {
         return instance;
     }
 
+    /**
+     * create for each object a unique id
+     * @param obj context
+     * @return uuid
+     */
     public String getUuid( Object obj ){
         String key = registered.get( obj );
 
+        // if object isn't registered, than create now id
         if( key == null ){
             String uuid = UUID.randomUUID().toString();
 
@@ -28,6 +34,7 @@ public class UniqueIdentifierManager {
 
             return uuid;
         }
+        // object is registered, than return id
         else{
             return key;
         }
