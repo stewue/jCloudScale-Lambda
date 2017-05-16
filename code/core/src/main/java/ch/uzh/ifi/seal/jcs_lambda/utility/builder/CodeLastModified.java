@@ -14,7 +14,7 @@ public class CodeLastModified {
         long lastDeployed = 0;
 
         try {
-            String content = Files.toString( new File("lastModified.txt"), Charsets.UTF_8 );
+            String content = Files.toString( new File("jcs_lambda/lastModified.txt"), Charsets.UTF_8 );
             content = content.replace("\n", "").replace("\r", "");
             lastDeployed = Long.valueOf( content );
         }
@@ -26,7 +26,7 @@ public class CodeLastModified {
 
     public static void updateLastModified(){
         try{
-            PrintWriter writer = new PrintWriter("lastModified.txt", "UTF-8" );
+            PrintWriter writer = new PrintWriter("jcs_lambda/lastModified.txt", "UTF-8" );
             writer.print( getLastModified() );
             writer.close();
         } catch (IOException e) {

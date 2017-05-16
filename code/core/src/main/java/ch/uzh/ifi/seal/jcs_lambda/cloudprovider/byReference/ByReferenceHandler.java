@@ -22,7 +22,6 @@ public class ByReferenceHandler {
 
     private ByReferenceHandler(){
         messageQueue = JcsMessageQueue.getInstance();
-        messageQueue.connect( AwsConfiguration.AWS_QUEUE_URL );
     }
 
     public static ByReferenceHandler getInstance(){
