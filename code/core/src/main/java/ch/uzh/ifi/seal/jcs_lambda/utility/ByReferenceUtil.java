@@ -12,10 +12,16 @@ public class ByReferenceUtil {
 
     /**
      * check if a class has a reference variable
-     * @param clazz checking class
+     * @param context object of the type of the checking class
      * @return boolean if it exists or not
      */
-    public static boolean checkIfClassHasAReferenceVariable( Class clazz ){
+    public static boolean checkIfClassHasAReferenceVariable( Object context ){
+
+        if( context == null ){
+            return false;
+        }
+
+        Class clazz = context.getClass();
 
         if( classHasAReferenceVariable.containsKey( clazz ) ){
             return classHasAReferenceVariable.get( clazz );

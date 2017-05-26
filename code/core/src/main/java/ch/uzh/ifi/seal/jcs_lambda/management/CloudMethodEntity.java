@@ -137,7 +137,7 @@ public class CloudMethodEntity {
     // TODO REFACROTING
     public Object runMethodInCloud( Object context, Map<String, Object> parameters,  Map<String, Object> classVariablesReadOnly ) throws Exception {
 
-        boolean hasAReferenceVariable = ByReferenceUtil.checkIfClassHasAReferenceVariable( context.getClass() );
+        boolean hasAReferenceVariable = ByReferenceUtil.checkIfClassHasAReferenceVariable( context );
 
         JcsMessageQueue messageQueue = null;
 
@@ -179,6 +179,7 @@ public class CloudMethodEntity {
             }
         }
         catch ( Exception e ){
+            e.printStackTrace();
             throw new RuntimeException( "Unable to create request dto or to set the value" );
         }
 
