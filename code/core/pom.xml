@@ -93,6 +93,7 @@
                 <configuration>
                     <source>${javaVersion}</source>
                     <target>${javaVersion}</target>
+                    <useIncrementalCompilation>false</useIncrementalCompilation>
                 </configuration>
             </plugin>
 
@@ -130,10 +131,10 @@
                     <target>${javaVersion}</target>
                     <complianceLevel>${javaVersion}</complianceLevel>
                     <verbose>true</verbose>
-                    <weaveWithAspectsInMainSourceFolder>true</weaveWithAspectsInMainSourceFolder>
                 </configuration>
                 <executions>
                     <execution>
+                        <phase>process-sources</phase>
                         <configuration>
                             <XnoInline>true</XnoInline>
                         </configuration>

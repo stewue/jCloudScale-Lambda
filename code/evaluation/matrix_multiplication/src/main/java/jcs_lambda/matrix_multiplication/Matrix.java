@@ -1,4 +1,4 @@
-package ch.uzh.ifi.seal.jcs_lambda_matrix_multiplication;
+package jcs_lambda.matrix_multiplication;
 
 import java.util.concurrent.ThreadLocalRandom;
 

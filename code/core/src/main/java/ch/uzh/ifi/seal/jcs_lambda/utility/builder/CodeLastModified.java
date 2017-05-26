@@ -26,6 +26,10 @@ public class CodeLastModified {
 
     public static void updateLastModified(){
         try{
+            // create folder if not exists
+            File file = new File("jcs_lambda/lastModified.txt");
+            file.getParentFile().mkdirs();
+
             PrintWriter writer = new PrintWriter("jcs_lambda/lastModified.txt", "UTF-8" );
             writer.print( getLastModified() );
             writer.close();
