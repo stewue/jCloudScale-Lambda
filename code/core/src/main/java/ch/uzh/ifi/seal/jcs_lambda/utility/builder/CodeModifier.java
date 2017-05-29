@@ -242,7 +242,7 @@ public class CodeModifier {
             JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
             StandardJavaFileManager fileManager = compiler.getStandardFileManager(null, null, null);
 
-            fileManager.setLocation(StandardLocation.CLASS_OUTPUT, Arrays.asList(new File("target/classes")));
+            fileManager.setLocation( StandardLocation.CLASS_OUTPUT, Arrays.asList( new File("target/classes") ));
 
             // Compile the file
             compiler.getTask(null,
@@ -255,7 +255,36 @@ public class CodeModifier {
             fileManager.close();
         }
         catch ( Exception e ){
+            e.printStackTrace();
+        }
+    }
 
+    public static void compileFilesAfterMaven(){
+        File dir = new File( RELATIVE_PATH );
+        compileFilesAfterMavenRecursive( dir );
+
+        try {
+            FileUtils.deleteDirectory("target/test-classes/" + TEMPORARY_PACKAGE);
+        }
+        catch ( Exception e ){
+
+        }
+    }
+
+    private static void compileFilesAfterMavenRecursive( File file ) {
+
+        File [] files = file.listFiles();
+
+        if( files.length > 0 && files[0].isDirectory() ){
+            for (File newFile : files) {
+                compileFilesAfterMavenRecursive( newFile );
+            }
+        }
+        else{
+
+            compileFile( new File ( file.getPath() + "/Request.java" ) );
+            compileFile( new File ( file.getPath() + "/Response.java" ) );
+            compileFile( new File ( file.getPath() + "/Endpoint.java" ) );
         }
     }
 

@@ -188,16 +188,16 @@ public class CloudMethodEntity {
 
         // handle request dto
         Class responseClass = null;
-        String returnJsonObject = "";
         try {
             responseClass = Class.forName(temporaryPackageName + ".Response");
-            Logger.debug( "Send request to " + url );
-            returnJsonObject = Util.doRequest(url, gson.toJson(requestInstance));
         }
         catch ( Exception e ){
-            throw new RuntimeException( "Unable to create response dto or to set/get the value" );
+            e.printStackTrace();
+            throw new RuntimeException( "Unable to create response dto" );
         }
 
+        Logger.debug( "Send request to " + url );
+        String returnJsonObject = Util.doRequest(url, gson.toJson(requestInstance));
         Object returnObj = gson.fromJson( returnJsonObject, responseClass );
 
         // check if exception occurred in cloud

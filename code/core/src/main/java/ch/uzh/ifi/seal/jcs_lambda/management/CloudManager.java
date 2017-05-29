@@ -7,8 +7,10 @@ import ch.uzh.ifi.seal.jcs_lambda.configuration.AwsConfiguration;
 import ch.uzh.ifi.seal.jcs_lambda.exception.IllegalDefinitionException;
 import ch.uzh.ifi.seal.jcs_lambda.utility.AwsUtil;
 import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeLastModified;
+import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeModifier;
 import ch.uzh.ifi.seal.jcs_lambda.utility.builder.JarBuilder;
 import com.amazonaws.services.lambda.model.FunctionCode;
+import org.aspectj.apache.bcel.classfile.Code;
 
 import java.io.File;
 import java.util.HashMap;
@@ -84,6 +86,7 @@ public class CloudManager {
         if( deployToCloud && updateNecessary ){
             // build jar file with maven
             JarBuilder.mvnBuild();
+            CodeModifier.compileFilesAfterMaven();
 
             // get jar file
             File file = new File( "target/jcs_lambda-tests.jar" );
