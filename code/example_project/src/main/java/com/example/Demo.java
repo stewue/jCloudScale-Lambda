@@ -8,12 +8,12 @@ public class Demo
     @StartUp
     public static void main ( String [] args ){
         Demo demo = new Demo();
-
         System.out.println( demo.run() );
     }
 
     @CloudMethod
     public String run(){
-       return "Run code in cloud";
+        System.out.println("cloud only");
+        return "Run code in cloud";
     }
 }
