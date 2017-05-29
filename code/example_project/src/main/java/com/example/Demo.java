@@ -9,11 +9,11 @@ public class Demo
     public static void main ( String [] args ){
         Demo demo = new Demo();
 
-        System.out.println( demo.run78( 99 ) );
+        System.out.println( demo.run() );
     }
 
     @CloudMethod
-    public String run78( int a ){
-        return "Run code in cloud iiiiiiiiiiiii" + a;
+    public String run(){
+        return "Run code in cloud";
     }
 }
