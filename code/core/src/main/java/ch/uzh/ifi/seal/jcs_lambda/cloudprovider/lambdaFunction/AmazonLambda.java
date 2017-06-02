@@ -13,7 +13,9 @@ import com.amazonaws.services.lambda.model.*;
 import com.amazonaws.services.lambda.model.Runtime;
 import com.google.gson.Gson;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.UUID;
 
 public class AmazonLambda {
@@ -25,6 +27,7 @@ public class AmazonLambda {
 
     private AWSLambda amazonLambda;
     private HashMap<String, FunctionDescription> lambdaFunctionDescriptions = new HashMap<>();
+    private List<FunctionConfiguration> lambdaFunctions = new ArrayList<>();
 
     /**
      * login to all aws services with the credential
@@ -59,17 +62,17 @@ public class AmazonLambda {
      * get all lambda functions with our prefix, that exists in aws
      */
     private void loadAllLambdaFunctions () {
-        ListFunctionsResult lambdaFunctions = null;
+        ListFunctionsResult allLambdaFunctions = null;
         // Get all lambda functions (and their descriptions) and save them as a hash-map
         try {
-            lambdaFunctions = amazonLambda.listFunctions();
+            allLambdaFunctions = amazonLambda.listFunctions();
         }
         catch ( Exception e ){
             throw new InvalidCredentialsException();
         }
 
         // save for each function the description
-        for( FunctionConfiguration item  : lambdaFunctions.getFunctions() ){
+        for( FunctionConfiguration item  : allLambdaFunctions.getFunctions() ){
             FunctionDescription description = gson.fromJson(item.getDescription(), FunctionDescription.class);
 
             String functionNameWithPrefix = item.getFunctionName();
@@ -78,6 +81,7 @@ public class AmazonLambda {
                 String functionName = functionNameWithPrefix.substring( AwsConfiguration.AWS_FUNCTION_PREFIX.length() );
 
                 lambdaFunctionDescriptions.put( functionName, description);
+                lambdaFunctions.add( item );
             }
         }
 
@@ -177,5 +181,23 @@ public class AmazonLambda {
         catch ( Exception e ) {
             AmazonWebService.logException( e );
         }
+    }
+
+    public void removeAllFunctions(){
+        AmazonCloudWatchLog cloudWatchLog = AmazonCloudWatchLog.getInstance();
+
+        // Remove each function
+        for (FunctionConfiguration currentFunctionConfiguration : lambdaFunctions ) {
+            DeleteFunctionRequest deleteFunctionRequest = new DeleteFunctionRequest();
+            deleteFunctionRequest.setFunctionName(  currentFunctionConfiguration.getFunctionArn() );
+            amazonLambda.deleteFunction( deleteFunctionRequest );
+
+            Logger.info("Remove Function: " + currentFunctionConfiguration.getFunctionName() );
+
+            cloudWatchLog.deleteLogGroup( "/aws/lambda/" + currentFunctionConfiguration.getFunctionName() );
+        }
+
+        // remove rest end point
+        amazonApiGateway.removeApi();
     }
 }

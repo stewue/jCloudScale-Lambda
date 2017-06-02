@@ -171,4 +171,12 @@ public class AmazonApiGateway {
             }
         }
     }
+
+    public void removeApi(){
+        DeleteRestApiRequest deleteRestApiRequest = new DeleteRestApiRequest();
+        deleteRestApiRequest.setRestApiId( getRestApiId() );
+        amazonApiGateway.deleteRestApi( deleteRestApiRequest );
+
+        Logger.info("Remove REST API");
+    }
 }
