@@ -3,9 +3,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com</groupId>
-    <artifactId>helper</artifactId>
+    <artifactId>code_size</artifactId>
     <version>0.0.1</version>
-    <name>JCS Lambda Helper</name>
+    <name>JCS Lambda Code Size</name>
 
     <properties>
         <javaVersion>1.8</javaVersion>
@@ -18,6 +18,11 @@
             <groupId>ch.uzh.ifi.seal</groupId>
             <artifactId>jcs_lambda</artifactId>
             <version>0.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.aspectj</groupId>
+            <artifactId>aspectjtools</artifactId>
+            <version>1.8.10</version>
         </dependency>
     </dependencies>
 
