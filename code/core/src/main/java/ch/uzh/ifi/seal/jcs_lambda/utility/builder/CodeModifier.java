@@ -260,7 +260,7 @@ public class CodeModifier {
     }
 
     public static void compileFilesAfterMaven(){
-        File dir = new File( RELATIVE_PATH );
+        File dir = new File( RELATIVE_PATH + TEMPORARY_PACKAGE );
         compileFilesAfterMavenRecursive( dir );
 
         try {
@@ -281,7 +281,6 @@ public class CodeModifier {
             }
         }
         else{
-
             compileFile( new File ( file.getPath() + "/Request.java" ) );
             compileFile( new File ( file.getPath() + "/Response.java" ) );
             compileFile( new File ( file.getPath() + "/Endpoint.java" ) );

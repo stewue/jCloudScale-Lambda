@@ -69,6 +69,7 @@ public class CloudManager {
         // check if code is modified
         boolean updateNecessary = CodeLastModified.isModified();
 
+        // TODO
         // if code isn't modified, check if each function in the cloud exists
         if( !updateNecessary ){
             for( Map.Entry<String, CloudMethodEntity> entry : cloudMethods.entrySet() ) {
@@ -79,7 +80,6 @@ public class CloudManager {
                     updateNecessary = true;
                 }
             }
-
         }
 
         // check if a function is new or code is modified
