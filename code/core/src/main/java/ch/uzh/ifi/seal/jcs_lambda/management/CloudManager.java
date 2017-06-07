@@ -4,10 +4,13 @@ import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.lambdaFunction.AmazonApiGateway;
 import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.lambdaFunction.AmazonLambda;
 import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.lambdaFunction.AmazonSimpleStorageService;
 import ch.uzh.ifi.seal.jcs_lambda.configuration.AwsConfiguration;
+import ch.uzh.ifi.seal.jcs_lambda.exception.IllegalDefinitionException;
 import ch.uzh.ifi.seal.jcs_lambda.utility.AwsUtil;
 import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeLastModified;
+import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeModifier;
 import ch.uzh.ifi.seal.jcs_lambda.utility.builder.JarBuilder;
 import com.amazonaws.services.lambda.model.FunctionCode;
+import org.aspectj.apache.bcel.classfile.Code;
 
 import java.io.File;
 import java.util.HashMap;
@@ -15,6 +18,8 @@ import java.util.Map;
 
 public class CloudManager {
     private static CloudManager instance = null;
+
+    private boolean deployToCloud;
 
     private HashMap<String, CloudMethodEntity> cloudMethods = new HashMap<>();
 
@@ -50,6 +55,10 @@ public class CloudManager {
         return cloudMethods.get( fullQualifiedName );
     }
 
+    public void setDeployToCloud( boolean deployToCloud ){
+        this.deployToCloud = deployToCloud;
+    }
+
     /**
      * build a jar file with all dependencies and create/update all necessary functions in the cloud
      */
@@ -60,6 +69,7 @@ public class CloudManager {
         // check if code is modified
         boolean updateNecessary = CodeLastModified.isModified();
 
+        // TODO
         // if code isn't modified, check if each function in the cloud exists
         if( !updateNecessary ){
             for( Map.Entry<String, CloudMethodEntity> entry : cloudMethods.entrySet() ) {
@@ -70,13 +80,13 @@ public class CloudManager {
                     updateNecessary = true;
                 }
             }
-
         }
 
         // check if a function is new or code is modified
-        if( updateNecessary ){
+        if( deployToCloud && updateNecessary ){
             // build jar file with maven
             JarBuilder.mvnBuild();
+            CodeModifier.compileFilesAfterMaven();
 
             // get jar file
             File file = new File( "target/jcs_lambda-tests.jar" );
@@ -94,6 +104,9 @@ public class CloudManager {
                 String handlerName = method.getTemporaryPackageName() + ".Endpoint::handleRequest";
                 FunctionDescription functionDescription = new FunctionDescription( method.getFullQualifiedName() );
 
+                if( handlerName.length() > 120 ){
+                    throw new IllegalDefinitionException( "Handlername to long" );
+                }
                 awsCloudProvider.createOrUpdateFunction( functionNameWithPrefix, handlerName, functionCode, functionDescription, method.getMemory(), method.getTimeout() );
             }
 

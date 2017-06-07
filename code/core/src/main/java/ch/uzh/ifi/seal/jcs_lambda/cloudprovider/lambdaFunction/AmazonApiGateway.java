@@ -7,6 +7,8 @@ import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.services.apigateway.AmazonApiGatewayClientBuilder;
 import com.amazonaws.services.apigateway.model.*;
 
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.HashMap;
 
 public class AmazonApiGateway {
@@ -17,6 +19,7 @@ public class AmazonApiGateway {
     private Resource rootResource;
 
     private boolean releaseNewDeploymentStage =  false;
+    private String newRestEndpoint;
 
     private AmazonApiGateway () {
         // Create ApiGateway Object
@@ -129,6 +132,7 @@ public class AmazonApiGateway {
         amazonApiGateway.putIntegrationResponse( putIntegrationResponseRequest );
 
         releaseNewDeploymentStage = true;
+        newRestEndpoint = AmazonLambda.getInstance().getBaseUrl() + functionName;
 
         Logger.info( "API Gateway for Lambda Function '" + functionName + "' created" );
     }
@@ -145,6 +149,34 @@ public class AmazonApiGateway {
             amazonApiGateway.createDeployment(createDeploymentRequest);
 
             Logger.info("API Gateway: new deployment stage released");
+
+            // avoid problems that a new endpoint is not available
+            try {
+                for (int i = 0; i < 20; i++) {
+                    Logger.info( "Wait that new rest endpoint is available... Check number #" + i);
+                    URL url = new URL( newRestEndpoint );
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                    connection.setRequestMethod("POST");
+                    connection.connect();
+
+                    if( connection.getResponseCode() != 403 ){
+                        return;
+                    }
+
+                    Thread.sleep( 500 );
+                }
+            }
+            catch ( Exception e ){
+
+            }
         }
+    }
+
+    public void removeApi(){
+        DeleteRestApiRequest deleteRestApiRequest = new DeleteRestApiRequest();
+        deleteRestApiRequest.setRestApiId( getRestApiId() );
+        amazonApiGateway.deleteRestApi( deleteRestApiRequest );
+
+        Logger.info("Remove REST API");
     }
 }

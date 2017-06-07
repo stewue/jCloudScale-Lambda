@@ -38,11 +38,14 @@ public class AmazonWebService {
             Logger.error( "Error Type:       " + ase.getErrorType() );
             Logger.error( "Request ID:       " + ase.getRequestId() );
         }
-        else if ( e instanceof AmazonClientException) {
+        else if ( e instanceof AmazonClientException ) {
             AmazonClientException ace = (AmazonClientException) e;
 
             Logger.error("Caught an AmazonClientException, which means the client encountered a serious internal problem while trying to communicate with, such as not being able to access the network." );
             Logger.error("Error Message: " + ace.getMessage() );
+        }
+        else {
+            e.printStackTrace();
         }
 
         System.exit( -1 );

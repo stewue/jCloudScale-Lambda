@@ -10,4 +10,6 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface StartUp {}
+public @interface StartUp {
+    boolean deployToCloud() default true;
+}
