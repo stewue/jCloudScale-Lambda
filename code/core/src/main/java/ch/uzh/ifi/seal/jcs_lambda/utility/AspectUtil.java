@@ -1,12 +1,15 @@
 package ch.uzh.ifi.seal.jcs_lambda.utility;
 
 import ch.uzh.ifi.seal.jcs_lambda.annotations.ReadOnly;
+import ch.uzh.ifi.seal.jcs_lambda.annotations.StartUp;
 import ch.uzh.ifi.seal.jcs_lambda.management.CloudMethodEntity;
+import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
@@ -123,5 +126,16 @@ public class AspectUtil {
         }
 
         return parameters;
+    }
+
+    /**
+     *
+     */
+    public static boolean getStartUpAnnotation( JoinPoint joinPoint ) throws Exception {
+        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+        Method method = signature.getMethod();
+        StartUp annotation = method.getAnnotation(StartUp.class);
+
+        return annotation.deployToCloud();
     }
 }

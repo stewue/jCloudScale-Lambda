@@ -15,11 +15,11 @@ public class TestGenericTypeReadOnly {
 
         int result = testObject.sum();
 
-        List<Integer> list = testObject.getList();
+        List<Complex> list = testObject.getList();
         int checksum = 0;
 
-        for ( int element : list ){
-            checksum += element;
+        for ( Complex element : list ){
+            checksum += element.a + element.b;
         }
 
         Assert.assertEquals( result, checksum );
@@ -30,7 +30,7 @@ public class TestGenericTypeReadOnly {
         TestObject testObject = new TestObject();
         int size = testObject.getList().size();
 
-        List<Integer> list = testObject.addAndReturn();
+        List<Complex> list = testObject.addAndReturn();
 
         Assert.assertEquals( list.size(), size + 1 );
     }

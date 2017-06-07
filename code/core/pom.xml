@@ -61,6 +61,11 @@
             <version>${aws.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-logs</artifactId>
+            <version>${aws.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjweaver</artifactId>
             <version>${aspectj.version}</version>
@@ -93,6 +98,7 @@
                 <configuration>
                     <source>${javaVersion}</source>
                     <target>${javaVersion}</target>
+                    <useIncrementalCompilation>false</useIncrementalCompilation>
                 </configuration>
             </plugin>
 
@@ -130,10 +136,10 @@
                     <target>${javaVersion}</target>
                     <complianceLevel>${javaVersion}</complianceLevel>
                     <verbose>true</verbose>
-                    <weaveWithAspectsInMainSourceFolder>true</weaveWithAspectsInMainSourceFolder>
                 </configuration>
                 <executions>
                     <execution>
+                        <phase>process-sources</phase>
                         <configuration>
                             <XnoInline>true</XnoInline>
                         </configuration>

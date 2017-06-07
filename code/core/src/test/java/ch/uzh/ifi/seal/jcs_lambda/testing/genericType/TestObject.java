@@ -12,33 +12,33 @@ import java.util.List;
 public class TestObject {
 
     @ReadOnly
-    public List<Integer> list = new ArrayList<>();
+    public List<Complex> list = new ArrayList<>();
 
     public TestObject(){
-        list.add(1);
-        list.add(2);
-        list.add(3);
-        list.add(4);
+        list.add( new Complex(1,2) );
+        list.add( new Complex(3,4) );
+        list.add( new Complex(5,6) );
+        list.add( new Complex(7,8) );
     }
 
     @CloudMethod
     public int sum(){
         int sum = 0;
 
-        for ( Integer element : list ){
-            sum += element;
+        for ( Complex element : list ){
+            sum += element.a + element.b;
         }
 
         return sum;
     }
 
     @CloudMethod
-    public List<Integer> addAndReturn (){
-        list.add(5);
+    public List<Complex> addAndReturn (){
+        list.add( new Complex(9,10 ) );
         return list;
     }
 
-    public List<Integer> getList (){
+    public List<Complex> getList (){
         return list;
     }
 

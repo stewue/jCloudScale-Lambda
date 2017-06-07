@@ -1,6 +1,7 @@
 package ch.uzh.ifi.seal.jcs_lambda.utility;
 
 import ch.uzh.ifi.seal.jcs_lambda.exception.CloudRuntimeException;
+import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.BufferedReader;
@@ -56,6 +57,8 @@ public class Util {
 
             // Check if error occurred in cloud
             if( con.getResponseCode() != 200 ){
+                Logger.error( "HTTP-Status: " + con.getResponseCode() + " & Connection:  " + con.toString() );
+
                 throw new CloudRuntimeException( "An error occurred in the cloud method '" + url + "'. Please check the log file from aws cloud watch" );
             }
 

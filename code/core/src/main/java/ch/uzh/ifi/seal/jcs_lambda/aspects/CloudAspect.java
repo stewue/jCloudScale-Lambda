@@ -42,10 +42,12 @@ public class CloudAspect {
     @Before("@annotation(StartUp) && execution(* *(..))")
     public void startUpMethod ( JoinPoint joinPoint ) throws Throwable {
 
-        Logger.info( "@startUp*" );
+        Logger.info( "@startUp" );
         long startTimestamp = System.currentTimeMillis();
 
         cloudManager = CloudManager.getInstance();
+
+        cloudManager.setDeployToCloud( AspectUtil.getStartUpAnnotation( joinPoint ) );
 
         // Get all method with @CloudMethod annotation
         ConfigurationBuilder reflectionConfig = new ConfigurationBuilder()
@@ -116,7 +118,7 @@ public class CloudAspect {
      */
     @Around("get( !final !transient * * ) && @annotation(ByReference)")
     public Object getValueFromClient( ProceedingJoinPoint joinPoint ) throws Throwable {
-        // local get "normal" variable value
+        // local get "normal" variable
         if( JVMContext.getContext() == false ){
             return joinPoint.proceed();
         }
@@ -134,7 +136,7 @@ public class CloudAspect {
      */
     @Around("set( !final !transient * * ) && @annotation(ByReference)")
     public void setValueToClient( ProceedingJoinPoint joinPoint ) throws Throwable {
-        // local set "normal" variable value
+        // local set "normal" variable
         if( JVMContext.getContext() == false ){
             joinPoint.proceed();
         }
