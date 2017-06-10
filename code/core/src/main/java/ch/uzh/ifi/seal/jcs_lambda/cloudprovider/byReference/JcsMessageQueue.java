@@ -104,6 +104,7 @@ public class JcsMessageQueue extends MessageQueue {
 
         asyncReceivingThread = new Thread() {
             public void run() {
+                System.out.println( registeredObjects.toString() );
                 try {
                     while( pendingRequests > 0 ) {
                         ReceiveMessageRequest receiveRq = new ReceiveMessageRequest()

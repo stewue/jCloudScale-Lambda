@@ -22,6 +22,7 @@ import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Set;
@@ -118,15 +119,21 @@ public class CloudAspect {
      */
     @Around("get( !final !transient * * ) && @annotation(ByReference)")
     public Object getValueFromClient( ProceedingJoinPoint joinPoint ) throws Throwable {
-        // local get "normal" variable
-        if( JVMContext.getContext() == false ){
-            return joinPoint.proceed();
-        }
         // in cloud get value from local application
-        else {
+        if( JVMContext.getContext() ){
             ByReferenceHandler referenceHandler = ByReferenceHandler.getInstance();
-            return referenceHandler.getVariable( joinPoint );
+            Object returnValue = referenceHandler.getVariableAspect( joinPoint );
+
+            Object context = joinPoint.getThis();
+            String variableName = joinPoint.getSignature().getName();
+
+            // set in cloud objecz
+            Field field = context.getClass().getDeclaredField( variableName );
+            field.setAccessible(true);
+            field.set( context, returnValue );
         }
+
+        return joinPoint.proceed();
     }
 
     /**
@@ -136,14 +143,12 @@ public class CloudAspect {
      */
     @Around("set( !final !transient * * ) && @annotation(ByReference)")
     public void setValueToClient( ProceedingJoinPoint joinPoint ) throws Throwable {
-        // local set "normal" variable
-        if( JVMContext.getContext() == false ){
-            joinPoint.proceed();
-        }
+        joinPoint.proceed();
+
         // in cloud get value from local application
-        else {
+        if( JVMContext.getContext() ){
             ByReferenceHandler referenceHandler = ByReferenceHandler.getInstance();
-            referenceHandler.setVariable( joinPoint );
+            referenceHandler.setVariableAspect( joinPoint );
         }
     }
 }
