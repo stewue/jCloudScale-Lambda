@@ -37,7 +37,20 @@ public class ByReferenceHandler {
      * @param joinPoint current point of execution
      * @return variable value from client
      */
-    public Object getVariable( ProceedingJoinPoint joinPoint ){
+    public Object getVariableAspect(ProceedingJoinPoint joinPoint ){
+        try {
+            Object context = joinPoint.getThis();
+            String variableName = joinPoint.getSignature().getName();
+
+            return getVariable( context, variableName );
+        }
+        catch ( Exception e ){
+            e.printStackTrace();
+            throw new RuntimeReferenceVariableException( "invalid casting" );
+        }
+    }
+
+    public Object getVariable( Object context, String variableName ){
         try {
             // Send request
             QueueItem queueItem = new QueueItem();
@@ -45,9 +58,8 @@ public class ByReferenceHandler {
             queueItem.receiverId = JVMContext.getContextId();
             queueItem.queueType = QueueType.REQUEST;
             queueItem.invokeType = InvokeType.GET;
-            queueItem.variable = joinPoint.getSignature().getName();
+            queueItem.variable = variableName;
 
-            Object context = joinPoint.getThis();
             Class clazz = context.getClass();
             Field field = clazz.getDeclaredField( queueItem.variable );
             field.setAccessible( true );
