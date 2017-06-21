@@ -143,7 +143,7 @@ public class CloudAspect {
         // in cloud get value from local application
         else {
             ByReferenceHandler referenceHandler = ByReferenceHandler.getInstance();
-            referenceHandler.setVariable( joinPoint );
+            referenceHandler.setVariableAspect( joinPoint );
         }
     }
 }

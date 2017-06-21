@@ -21,11 +21,7 @@ public class TestObject {
     public int doSomething(){
         Logger.info("Cloud only");
 
-        // work
         b = new Complex();
-
-        // doesn't work
-        b.y = "TEST STRING";
 
         return a * 2;
     }

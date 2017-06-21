@@ -74,7 +74,21 @@ public class ByReferenceHandler {
      * cloud send a set request to local client
      * @param joinPoint current point of execution
      */
-    public void setVariable( ProceedingJoinPoint joinPoint ){
+    public void setVariableAspect(ProceedingJoinPoint joinPoint ){
+        try {
+            Object context = joinPoint.getThis();
+            String variableName = joinPoint.getSignature().getName();
+            Object variableValue = joinPoint.getArgs()[0];
+
+            setVariable( context, variableName, variableValue );
+        }
+        catch ( Exception e ){
+            e.printStackTrace();
+            throw new RuntimeReferenceVariableException( "invalid casting" );
+        }
+    }
+
+    public void setVariable( Object context, String variableName, Object variableValue ){
         try {
             // Send request
             QueueItem queueItem = new QueueItem();
@@ -82,14 +96,14 @@ public class ByReferenceHandler {
             queueItem.receiverId = JVMContext.getContextId();
             queueItem.queueType = QueueType.REQUEST;
             queueItem.invokeType = InvokeType.SET;
-            queueItem.variable = joinPoint.getSignature().getName();
+            queueItem.variable = variableName;
 
-            Object context = joinPoint.getThis();
+
             Class clazz = context.getClass();
             Field field = clazz.getDeclaredField( queueItem.variable );
             field.setAccessible( true );
             queueItem.variableType = field.getType().getName();
-            queueItem.body = gson.toJson( joinPoint.getArgs()[0] );
+            queueItem.body = gson.toJson( variableValue );
 
             messageQueue.increasePendingRequests();
             messageQueue.sendMessage( gson.toJson( queueItem ) );
