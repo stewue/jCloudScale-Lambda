@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com</groupId>
-    <artifactId>code_size</artifactId>
+    <artifactId>codeSize</artifactId>
     <version>0.0.1</version>
     <name>JCS Lambda Code Size</name>
 
@@ -23,6 +23,11 @@
             <groupId>org.aspectj</groupId>
             <artifactId>aspectjtools</artifactId>
             <version>1.8.10</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.3</version>
         </dependency>
     </dependencies>
 
