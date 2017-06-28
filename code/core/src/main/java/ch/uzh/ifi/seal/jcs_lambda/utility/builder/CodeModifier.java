@@ -135,6 +135,8 @@ public class CodeModifier {
                 "import org.json.simple.JSONObject;\n" +
                 "import org.json.simple.parser.JSONParser;\n" +
                 "import java.io.*;\n" +
+                "import ch.uzh.ifi.seal.jcs_lambda.monitoring.Monitoring;\n" +
+                "import ch.uzh.ifi.seal.jcs_lambda.monitoring.MonitoringType;" +
                 "import " + methodEntity.getPackageName() + ".*; \n" +
 
 
@@ -145,6 +147,9 @@ public class CodeModifier {
                 "public class Endpoint implements RequestStreamHandler {\n" +
                 "    public void handleRequest(InputStream inputStream, OutputStream outputStream, Context context) throws IOException {\n" +
                 "        JVMContext.setServerContext(); \n" +
+                "        Monitoring monitoring = Monitoring.getInstance();\n" +
+                "        monitoring.start( MonitoringType.DESERIALIZING );\n" +
+                "        \n" +
                 "        JSONParser parser = new JSONParser();\n" +
                 "        Gson gson = new Gson();\n" +
                 "\n" +
@@ -155,19 +160,25 @@ public class CodeModifier {
                 "            JSONObject event = (JSONObject) parser.parse(reader);\n" +
                 "            Logger.info( \"Input: \" +  event.toJSONString() );\n" +
                 "            Request request = gson.fromJson( event.toJSONString() , Request.class );\n" +
+                "            monitoring.stop( MonitoringType.DESERIALIZING );\n" +
                 "\n" +
+                "            monitoring.start( MonitoringType.COMPUTING );\n" +
                 "            response = invoke( request );\n" +
+                "            monitoring.stop( MonitoringType.COMPUTING );\n" +
                 "        }\n" +
                 "        catch(Exception ex) {\n" +
                 "            ex.printStackTrace(); \n" +
                 "            response = new Response( ex.getStackTrace() ); \n" +
                 "        }\n" +
                 "\n" +
+                "        monitoring.start( MonitoringType.SERIALIZING );\n" +
                 "        OutputStreamWriter writer = new OutputStreamWriter(outputStream, \"UTF-8\");\n" +
                 "        writer.write( gson.toJson(response) );\n" +
                 "        writer.close();\n" +
                 "        \n" +
                 "        Logger.info( \"Output: \" +  gson.toJson(response) );\n" +
+                "        monitoring.stop( MonitoringType.SERIALIZING );\n" +
+                "        monitoring.outputAll();\n" +
                 "    }\n" +
                 "\n" +
                 "    private Response invoke( Request request ) throws Exception {\n" +
@@ -294,7 +305,7 @@ public class CodeModifier {
         File directory = new File( RELATIVE_PATH + TEMPORARY_PACKAGE );
 
         try{
-            //FileUtils.deleteDirectory( directory );
+            FileUtils.deleteDirectory( directory );
         }
         catch ( Exception e ){
             Logger.error( "Unable to remove temporary created files" );
