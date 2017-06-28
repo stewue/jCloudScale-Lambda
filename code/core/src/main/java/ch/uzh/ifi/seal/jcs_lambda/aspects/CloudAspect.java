@@ -127,7 +127,7 @@ public class CloudAspect {
             Object context = joinPoint.getThis();
             String variableName = joinPoint.getSignature().getName();
 
-            // set in cloud objecz
+            // set in cloud object
             Field field = context.getClass().getDeclaredField( variableName );
             field.setAccessible(true);
             field.set( context, returnValue );
