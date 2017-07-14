@@ -6,6 +6,8 @@
 
 [Cloud Log - CloudWatch](https://console.aws.amazon.com/cloudwatch/home)
 
-[Check your freetier](https://console.aws.amazon.com/billing/home?region=eu-central-1#/freetier)
+[Check your freetier](https://console.aws.amazon.com/billing/home?#/freetier)
 
-[Billing Overview](https://console.aws.amazon.com/billing/home?region=eu-central-1#/bill)
+[Billing Overview](https://console.aws.amazon.com/billing/home?#/bill)
+
+[JCloudScale](https://github.com/xLeitix/jcloudscale)
