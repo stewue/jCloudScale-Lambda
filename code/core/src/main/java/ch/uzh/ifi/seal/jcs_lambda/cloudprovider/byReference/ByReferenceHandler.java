@@ -124,7 +124,7 @@ public class ByReferenceHandler {
             messageQueue.receiveSyncMessage( queueItem.senderId );
             messageQueue.decreasePendingRequests();
 
-            // ignore response
+            // ignore response and do nothing
         }
         catch ( Exception e ){
             e.printStackTrace();

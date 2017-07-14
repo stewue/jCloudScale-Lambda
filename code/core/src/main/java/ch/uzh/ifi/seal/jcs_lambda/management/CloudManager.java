@@ -69,7 +69,6 @@ public class CloudManager {
         // check if code is modified
         boolean updateNecessary = CodeLastModified.isModified();
 
-        // TODO
         // if code isn't modified, check if each function in the cloud exists
         if( !updateNecessary ){
             for( Map.Entry<String, CloudMethodEntity> entry : cloudMethods.entrySet() ) {
@@ -91,9 +90,8 @@ public class CloudManager {
             // get jar file
             File file = new File( "target/jcs_lambda-tests.jar" );
 
-            AmazonSimpleStorageService amazonS3 = AmazonSimpleStorageService.getInstance();
-
             // upload jar file to amazon s3
+            AmazonSimpleStorageService amazonS3 = AmazonSimpleStorageService.getInstance();
             FunctionCode functionCode = amazonS3.uploadFile( file );
 
             // update each function and set new description and code ("link" to file in amazon s3)

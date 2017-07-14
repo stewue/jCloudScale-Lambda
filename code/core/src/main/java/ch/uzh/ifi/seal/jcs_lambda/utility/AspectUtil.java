@@ -32,7 +32,7 @@ public class AspectUtil {
             for (Field field : fields) {
                 Annotation[] annotations = field.getAnnotations();
 
-                //TODO TMP
+                // unique identifier of class is always required
                 if( field.getName().equals("_uuid_") ){
                     Object _this = joinPoint.getThis();
                     Object value = field.get( _this );
@@ -129,7 +129,10 @@ public class AspectUtil {
     }
 
     /**
-     *
+     * get value of startUp annotation
+     * @param joinPoint used start point of the application
+     * @return value of startUp annotation
+     * @throws Exception exception
      */
     public static boolean getStartUpAnnotation( JoinPoint joinPoint ) throws Exception {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();

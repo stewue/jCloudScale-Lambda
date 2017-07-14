@@ -9,10 +9,6 @@ import com.amazonaws.auth.BasicAWSCredentials;
 public class AmazonWebService {
     private static BasicAWSCredentials basicAWSCredentials;
 
-    /**
-     * get credential
-     * @return credential object
-     */
     public static BasicAWSCredentials getCredentials () {
         if( basicAWSCredentials == null ) {
             // Create AWS Credentials
