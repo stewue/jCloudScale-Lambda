@@ -25,9 +25,6 @@ public class TestThrowException {
         if( a > 0 || b > 0 ){
             throw new RuntimeException();
         }
-        Exception e = new Exception();
-
-        StackTraceElement [] exceptionStackTrace = e.getStackTrace();
 
         return a + b;
     }

@@ -27,6 +27,7 @@ public class AmazonApiGateway {
                 .withCredentials( new AWSStaticCredentialsProvider( AmazonWebService.getCredentials() ) )
                 .withRegion( AwsConfiguration.AWS_REGION )
                 .build();
+
         Logger.info( "Init ApiGateway Credentials" );
     }
 
@@ -172,6 +173,9 @@ public class AmazonApiGateway {
         }
     }
 
+    /**
+     * Remove an API gateway with all endpoint
+     */
     public void removeApi(){
         DeleteRestApiRequest deleteRestApiRequest = new DeleteRestApiRequest();
         deleteRestApiRequest.setRestApiId( getRestApiId() );

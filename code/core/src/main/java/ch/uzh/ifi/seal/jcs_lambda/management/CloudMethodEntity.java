@@ -136,7 +136,7 @@ public class CloudMethodEntity {
      * @return return response object from the cloud
      * @throws Exception throw all exceptions to the aspect
      */
-    // TODO REFACROTING
+    // TODO Refactoring
     public Object runMethodInCloud( Object context, Map<String, Object> parameters,  Map<String, Object> classVariablesReadOnly ) throws Exception {
 
         Monitoring monitoring = Monitoring.getInstance();

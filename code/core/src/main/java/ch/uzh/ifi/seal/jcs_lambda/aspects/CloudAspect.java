@@ -10,6 +10,7 @@ import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
 import ch.uzh.ifi.seal.jcs_lambda.management.CloudManager;
 import ch.uzh.ifi.seal.jcs_lambda.management.CloudMethodEntity;
 import ch.uzh.ifi.seal.jcs_lambda.utility.AspectUtil;
+import ch.uzh.ifi.seal.jcs_lambda.utility.ReflectionUtil;
 import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeLastModified;
 import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeModifier;
 import org.aspectj.lang.JoinPoint;
@@ -47,29 +48,22 @@ public class CloudAspect {
         long startTimestamp = System.currentTimeMillis();
 
         cloudManager = CloudManager.getInstance();
-
         cloudManager.setDeployToCloud( AspectUtil.getStartUpAnnotation( joinPoint ) );
 
-        // Get all method with @CloudMethod annotation
-        ConfigurationBuilder reflectionConfig = new ConfigurationBuilder()
-                .setUrls( ClasspathHelper.forPackage("") )
-                .setScanners( new MethodAnnotationsScanner());
-        Reflections reflections = new Reflections( reflectionConfig );
-        Set<Method> methods = reflections.getMethodsAnnotatedWith( CloudMethod.class );
-
-        // Register and modify all methods with annotation
-        for( Method currentMethod : methods ){
+        // Register and modify all methods with an annotation
+        for( Method currentMethod : ReflectionUtil.getAllMethodWithCloudMethodAnnotation() ){
             CloudMethodEntity methodEntity = new CloudMethodEntity( currentMethod );
-
             cloudManager.registerMethod( methodEntity );
-
             methodEntity.modifyCode();
         }
 
+        // start build and upload process
         cloudManager.buildAndUpload();
 
+        // remove all temporary created classes
         CodeModifier.removeTemporaryClasses();
 
+        // update last modified value
         CodeLastModified.updateLastModified();
 
         // Calculate init time

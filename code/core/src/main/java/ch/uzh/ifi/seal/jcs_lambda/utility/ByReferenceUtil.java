@@ -31,7 +31,6 @@ public class ByReferenceUtil {
         boolean foundAnnoationInClass = false;
 
         for( Field field : fields ){
-
             Annotation [] annotations = field.getAnnotations();
 
             for( Annotation annotation : annotations ) {

@@ -67,15 +67,12 @@ public class JcsMessageQueue extends MessageQueue {
         return pendingRequests;
     }
 
-    /**
-     * increase number of pending requests
-     */
     public void increasePendingRequests(){
         pendingRequests++;
     }
 
     /**
-     * decrease number of pending requests
+     * decrease number of pending requests and stop async receiving of necessary
      */
     public void decreasePendingRequests(){
         if( pendingRequests > 0){
@@ -119,6 +116,7 @@ public class JcsMessageQueue extends MessageQueue {
                             QueueItem queueItem = gson.fromJson( message.getBody(), QueueItem.class );
                             String messageReceiptHandle = message.getReceiptHandle();
 
+                            // check if item is for this application
                             if( registeredObjects.containsKey( queueItem.receiverId ) ){
                                 Logger.debug( "Handle queue item: " + queueItem.toString() );
 
@@ -163,7 +161,8 @@ public class JcsMessageQueue extends MessageQueue {
                     QueueItem queueItem = gson.fromJson(message.getBody(), QueueItem.class);
                     String messageReceiptHandle = message.getReceiptHandle();
 
-                    if (queueItem.receiverId.equals(responseSenderId)) {
+                    // check if item is for this application
+                    if ( queueItem.receiverId.equals(responseSenderId) ) {
                         Logger.debug( "Handle queue item: " + queueItem.toString() );
 
                         // remove message
