@@ -7,7 +7,7 @@ import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.byReference.JcsMessageQueue;
 
 public class Demo
 {
-    @StartUp( deployToCloud = false )
+    @StartUp
     public static void main ( String [] args ){
         Demo demo = new Demo();
         demo.a = 7;

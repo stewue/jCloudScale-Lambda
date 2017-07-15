@@ -42,5 +42,8 @@ $RECYCLE.BIN/
 /out/
 
 lastModified.txt
+
+/jcs_lambda/
+
 Demo.java
 Dump.java
