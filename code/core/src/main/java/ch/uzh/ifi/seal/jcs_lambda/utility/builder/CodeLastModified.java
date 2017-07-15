@@ -8,6 +8,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 public class CodeLastModified {
+    /**
+     * Check if code was modified since last time
+     * @return result
+     */
     public static boolean isModified(){
         long lastModified = getLastModified();
 
@@ -24,6 +28,9 @@ public class CodeLastModified {
         return lastDeployed < lastModified;
     }
 
+    /**
+     * set a new last modified date
+     */
     public static void updateLastModified(){
         try{
             // create folder if not exists
@@ -38,12 +45,20 @@ public class CodeLastModified {
         }
     }
 
+    /**
+     * Get last modified of src folder
+     * @return last modifed date as long
+     */
     private static long getLastModified() {
         File directory = new File("src" );
 
         return getLastModifiedRecursively( directory.getAbsolutePath() );
     }
 
+    /**
+     * Get last modified of a path
+     * @return last modifed date as long
+     */
     private static long getLastModifiedRecursively ( String path ){
         File root = new File( path );
         File[] list = root.listFiles();

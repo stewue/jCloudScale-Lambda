@@ -46,10 +46,6 @@ public class AmazonLambda {
         amazonApiGateway.getRestApiId();
     }
 
-    /**
-     * get an instance of the cloud provider (singleton)
-     * @return aws cloud provider instance
-     */
     public static AmazonLambda getInstance(){
         if( instance == null ){
             instance = new AmazonLambda();
@@ -77,7 +73,7 @@ public class AmazonLambda {
 
             String functionNameWithPrefix = item.getFunctionName();
             if( description != null && functionNameWithPrefix.startsWith( AwsConfiguration.AWS_FUNCTION_PREFIX ) ){
-                // remove prefix
+                // remove prefix of the name
                 String functionName = functionNameWithPrefix.substring( AwsConfiguration.AWS_FUNCTION_PREFIX.length() );
 
                 lambdaFunctionDescriptions.put( functionName, description);
@@ -183,6 +179,9 @@ public class AmazonLambda {
         }
     }
 
+    /**
+     * Remove all Lambda functions
+     */
     public void removeAllFunctions(){
         AmazonCloudWatchLog cloudWatchLog = AmazonCloudWatchLog.getInstance();
 
