@@ -1,8 +1,7 @@
-package com.example;
+package com.byValue_vs_byReference;
 
 import ch.uzh.ifi.seal.jcs_lambda.annotations.ByReference;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.CloudMethod;
-import ch.uzh.ifi.seal.jcs_lambda.annotations.ReadOnly;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.StartUp;
 
 public class Demo1
