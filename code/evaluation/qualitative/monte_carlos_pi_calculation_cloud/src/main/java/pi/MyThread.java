@@ -18,7 +18,7 @@ public class MyThread implements Callable<Long> {
 	private boolean quit;
 
 	public MyThread (){
-
+		// empty no argument constructor
 	}
 
 	public MyThread(int nameThread, long sideSquare, long pointsOfThread, boolean quit) {
