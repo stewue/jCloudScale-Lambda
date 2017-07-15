@@ -10,9 +10,9 @@ public class Main
         long start = System.nanoTime();
 
         // input parameters.
-        final int threadCount = 100;
+        final int threadCount = 5;
         final int from = 1;
-        final int to = Integer.MAX_VALUE/50;
+        final int to = Integer.MAX_VALUE/100;
 
         System.out.println( String.format("Searching prime numbers between %s and %s in %s threads.", from, to, threadCount) );
 
