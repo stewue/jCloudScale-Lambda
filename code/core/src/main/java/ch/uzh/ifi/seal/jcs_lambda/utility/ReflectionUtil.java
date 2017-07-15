@@ -1,7 +1,12 @@
 package ch.uzh.ifi.seal.jcs_lambda.utility;
 
 import ch.uzh.ifi.seal.jcs_lambda.annotations.ByReference;
+import ch.uzh.ifi.seal.jcs_lambda.annotations.CloudMethod;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.ReadOnly;
+import org.reflections.Reflections;
+import org.reflections.scanners.MethodAnnotationsScanner;
+import org.reflections.util.ClasspathHelper;
+import org.reflections.util.ConfigurationBuilder;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -10,10 +15,11 @@ import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public class ReflectionUtil {
     /**
-     * Get all class variables as map
+     * Get all class variables as map, which has a ReadOnly annotation
      * @param method method object from that we need the variables
      * @return map with all variables
      */
@@ -21,10 +27,21 @@ public class ReflectionUtil {
         return getClassVariablesWithAnnotation( method, ReadOnly.class );
     }
 
+    /**
+     * Get all class variables as map, which has a ByReference annotation
+     * @param method method object from that we need the variables
+     * @return map with all variables
+     */
     public static Map<String, Type> getClassVariablesByReference(Method method ){
         return getClassVariablesWithAnnotation( method, ByReference.class );
     }
 
+    /**
+     * Get all class variables as map of a specific annotation
+     * @param method context as a method
+     * @param variableAnnotation the getClass of the annotation
+     * @return map with all variables
+     */
     public static Map<String, Type> getClassVariablesWithAnnotation(Method method, Class variableAnnotation ){
         Map<String, Type> classVariables = new HashMap<>();
 
@@ -141,5 +158,17 @@ public class ReflectionUtil {
         }
 
         return clazz;
+    }
+
+    /**
+     * Get all method with @CloudMethod annotation
+     * @return a set with all methods, which has the annotation
+     */
+    public static Set<Method> getAllMethodWithCloudMethodAnnotation (){
+        ConfigurationBuilder reflectionConfig = new ConfigurationBuilder()
+                .setUrls( ClasspathHelper.forPackage("") )
+                .setScanners( new MethodAnnotationsScanner());
+        Reflections reflections = new Reflections( reflectionConfig );
+        return reflections.getMethodsAnnotatedWith( CloudMethod.class );
     }
 }

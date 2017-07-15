@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="ProjectModuleManager">
-    <modules>
-      <module fileurl="file://$PROJECT_DIR$/code_size.iml" filepath="$PROJECT_DIR$/code_size.iml" />
-      <module fileurl="file://E:\OneDrive\Uni\17_FS\Bachelorarbeit\jcs_lambda\code\evaluation\code_size\example.iml" filepath="E:\OneDrive\Uni\17_FS\Bachelorarbeit\jcs_lambda\code\evaluation\code_size\example.iml" />
-    </modules>
-  </component>
-</project>

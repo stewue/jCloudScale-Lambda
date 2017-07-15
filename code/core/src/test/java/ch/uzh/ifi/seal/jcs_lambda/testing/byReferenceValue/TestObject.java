@@ -3,6 +3,7 @@ package ch.uzh.ifi.seal.jcs_lambda.testing.byReferenceValue;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.ByReference;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.CloudMethod;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.ReadOnly;
+import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.byReference.Explicit;
 import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
 
 public class TestObject {
@@ -21,11 +22,7 @@ public class TestObject {
     public int doSomething(){
         Logger.info("Cloud only");
 
-        // work
         b = new Complex();
-
-        // doesn't work
-        b.y = "TEST STRING";
 
         return a * 2;
     }

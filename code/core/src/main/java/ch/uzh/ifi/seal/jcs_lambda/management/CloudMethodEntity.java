@@ -4,6 +4,8 @@ import ch.uzh.ifi.seal.jcs_lambda.annotations.CloudMethod;
 import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.byReference.JcsMessageQueue;
 import ch.uzh.ifi.seal.jcs_lambda.exception.CloudRuntimeException;
 import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
+import ch.uzh.ifi.seal.jcs_lambda.monitoring.Monitoring;
+import ch.uzh.ifi.seal.jcs_lambda.monitoring.MonitoringType;
 import ch.uzh.ifi.seal.jcs_lambda.utility.AwsUtil;
 import ch.uzh.ifi.seal.jcs_lambda.utility.ByReferenceUtil;
 import ch.uzh.ifi.seal.jcs_lambda.utility.ReflectionUtil;
@@ -134,9 +136,12 @@ public class CloudMethodEntity {
      * @return return response object from the cloud
      * @throws Exception throw all exceptions to the aspect
      */
-    // TODO REFACROTING
+    // TODO Refactoring
     public Object runMethodInCloud( Object context, Map<String, Object> parameters,  Map<String, Object> classVariablesReadOnly ) throws Exception {
 
+        Monitoring monitoring = Monitoring.getInstance();
+        monitoring.start( MonitoringType.TOTAL_RUNTIME );
+        monitoring.start( MonitoringType.REQUEST );
         boolean hasAReferenceVariable = ByReferenceUtil.checkIfClassHasAReferenceVariable( context );
 
         JcsMessageQueue messageQueue = null;
@@ -183,6 +188,7 @@ public class CloudMethodEntity {
             throw new RuntimeException( "Unable to create request dto or to set the value" );
         }
 
+        monitoring.stop( MonitoringType.REQUEST );
 
         Gson gson = new Gson();
 
@@ -196,9 +202,20 @@ public class CloudMethodEntity {
             throw new RuntimeException( "Unable to create response dto" );
         }
 
+        monitoring.start( MonitoringType.SERIALIZING );
+        String serializedString = gson.toJson(requestInstance);
+        monitoring.stop( MonitoringType.SERIALIZING );
+
         Logger.debug( "Send request to " + url );
-        String returnJsonObject = Util.doRequest(url, gson.toJson(requestInstance));
+        monitoring.start( MonitoringType.NETWORKING );
+        String returnJsonObject = Util.doRequest(url, serializedString );
+        monitoring.stop( MonitoringType.NETWORKING );
+
+        monitoring.start( MonitoringType.DESERIALIZING );
         Object returnObj = gson.fromJson( returnJsonObject, responseClass );
+        monitoring.stop( MonitoringType.DESERIALIZING );
+
+        monitoring.start( MonitoringType.RESPONSE );
 
         // check if exception occurred in cloud
         Field fieldException = responseClass.getDeclaredField("exceptionStackTrace" );
@@ -212,13 +229,21 @@ public class CloudMethodEntity {
         }
 
         Logger.debug( "Get response from " + url );
+
+        Object returnObjToMethod;
         if( isReturnTypeVoid ){
-            return null;
+            returnObjToMethod = null;
         }
         else{
             // cast returnObj and get the return value
             Field fieldReturnValue = responseClass.getDeclaredField("returnValue" );
-            return fieldReturnValue.get( responseClass.cast(returnObj) );
+            returnObjToMethod = fieldReturnValue.get( responseClass.cast(returnObj) );
         }
+
+        monitoring.stop( MonitoringType.RESPONSE );
+        monitoring.stop( MonitoringType.TOTAL_RUNTIME );
+        monitoring.outputAll();
+
+        return returnObjToMethod;
     }
 }

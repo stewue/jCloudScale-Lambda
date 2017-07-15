@@ -10,6 +10,7 @@ import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
 import ch.uzh.ifi.seal.jcs_lambda.management.CloudManager;
 import ch.uzh.ifi.seal.jcs_lambda.management.CloudMethodEntity;
 import ch.uzh.ifi.seal.jcs_lambda.utility.AspectUtil;
+import ch.uzh.ifi.seal.jcs_lambda.utility.ReflectionUtil;
 import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeLastModified;
 import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeModifier;
 import org.aspectj.lang.JoinPoint;
@@ -22,6 +23,7 @@ import org.reflections.scanners.MethodAnnotationsScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Set;
@@ -46,29 +48,22 @@ public class CloudAspect {
         long startTimestamp = System.currentTimeMillis();
 
         cloudManager = CloudManager.getInstance();
-
         cloudManager.setDeployToCloud( AspectUtil.getStartUpAnnotation( joinPoint ) );
 
-        // Get all method with @CloudMethod annotation
-        ConfigurationBuilder reflectionConfig = new ConfigurationBuilder()
-                .setUrls( ClasspathHelper.forPackage("") )
-                .setScanners( new MethodAnnotationsScanner());
-        Reflections reflections = new Reflections( reflectionConfig );
-        Set<Method> methods = reflections.getMethodsAnnotatedWith( CloudMethod.class );
-
-        // Register and modify all methods with annotation
-        for( Method currentMethod : methods ){
+        // Register and modify all methods with an annotation
+        for( Method currentMethod : ReflectionUtil.getAllMethodWithCloudMethodAnnotation() ){
             CloudMethodEntity methodEntity = new CloudMethodEntity( currentMethod );
-
             cloudManager.registerMethod( methodEntity );
-
             methodEntity.modifyCode();
         }
 
+        // start build and upload process
         cloudManager.buildAndUpload();
 
+        // remove all temporary created classes
         CodeModifier.removeTemporaryClasses();
 
+        // update last modified value
         CodeLastModified.updateLastModified();
 
         // Calculate init time
@@ -118,15 +113,21 @@ public class CloudAspect {
      */
     @Around("get( !final !transient * * ) && @annotation(ByReference)")
     public Object getValueFromClient( ProceedingJoinPoint joinPoint ) throws Throwable {
-        // local get "normal" variable
-        if( JVMContext.getContext() == false ){
-            return joinPoint.proceed();
-        }
         // in cloud get value from local application
-        else {
+        if( JVMContext.getContext() ){
             ByReferenceHandler referenceHandler = ByReferenceHandler.getInstance();
-            return referenceHandler.getVariable( joinPoint );
+            Object returnValue = referenceHandler.getVariableAspect( joinPoint );
+
+            Object context = joinPoint.getThis();
+            String variableName = joinPoint.getSignature().getName();
+
+            // set in cloud object
+            Field field = context.getClass().getDeclaredField( variableName );
+            field.setAccessible(true);
+            field.set( context, returnValue );
         }
+
+        return joinPoint.proceed();
     }
 
     /**
@@ -136,14 +137,12 @@ public class CloudAspect {
      */
     @Around("set( !final !transient * * ) && @annotation(ByReference)")
     public void setValueToClient( ProceedingJoinPoint joinPoint ) throws Throwable {
-        // local set "normal" variable
-        if( JVMContext.getContext() == false ){
-            joinPoint.proceed();
-        }
+        joinPoint.proceed();
+
         // in cloud get value from local application
-        else {
+        if( JVMContext.getContext() ){
             ByReferenceHandler referenceHandler = ByReferenceHandler.getInstance();
-            referenceHandler.setVariable( joinPoint );
+            referenceHandler.setVariableAspect( joinPoint );
         }
     }
 }

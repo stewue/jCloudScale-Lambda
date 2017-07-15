@@ -8,9 +8,13 @@ ch.uzh.ifi.seal.jcs_lambda.configuration
 ch.uzh.ifi.seal.jcs_lambda.exception
 ch.uzh.ifi.seal.jcs_lambda.logging
 ch.uzh.ifi.seal.jcs_lambda.management
+ch.uzh.ifi.seal.jcs_lambda.monitoring
+ch.uzh.ifi.seal.jcs_lambda.testing.asynchronous
 ch.uzh.ifi.seal.jcs_lambda.testing.byReferenceValue
+ch.uzh.ifi.seal.jcs_lambda.testing.byReferenceValueExplicit
 ch.uzh.ifi.seal.jcs_lambda.testing.byValueVariable
 ch.uzh.ifi.seal.jcs_lambda.testing.complex
+ch.uzh.ifi.seal.jcs_lambda.testing.genericType
 ch.uzh.ifi.seal.jcs_lambda.testing.primitiv
 ch.uzh.ifi.seal.jcs_lambda.testing.throwException
 ch.uzh.ifi.seal.jcs_lambda.testing.voidReturnType

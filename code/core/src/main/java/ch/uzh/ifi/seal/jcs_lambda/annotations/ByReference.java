@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * This annotations is for variable, that the cloud could access via pipeline by reference
+ * This annotations is for variable, that the cloud could access via queue by-reference
  */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)

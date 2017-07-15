@@ -15,9 +15,6 @@ public class MessageQueue {
 
     protected String url;
 
-    /**
-     *
-     */
     protected MessageQueue (){
         long startTimestamp = System.currentTimeMillis();
 
@@ -29,10 +26,6 @@ public class MessageQueue {
         Logger.debug( "Time to init message queue: " + ( ( System.currentTimeMillis() - startTimestamp ) / 1000.0 ) + " sec" );
     }
 
-    /**
-     * get an instance of the the message queue (singleton)
-     * @return message queue instance
-     */
     public static MessageQueue getInstance(){
         if( instance == null ){
             instance = new MessageQueue();
