@@ -7,7 +7,7 @@ import ch.uzh.ifi.seal.jcs_lambda.annotations.StartUp;
 
 public class Demo1
 {
-    @StartUp(deployToCloud = false)
+    @StartUp
     public static void main ( String [] args ){
         Demo1 demo = new Demo1();
         demo.a = rand();
