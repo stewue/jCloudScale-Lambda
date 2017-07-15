@@ -37,7 +37,7 @@ public class ByReferenceHandler {
      * @param joinPoint current point of execution
      * @return variable value from client
      */
-    public Object getVariableAspect(ProceedingJoinPoint joinPoint ){
+    public Object getVariableAspect( ProceedingJoinPoint joinPoint ){
         try {
             Object context = joinPoint.getThis();
             String variableName = joinPoint.getSignature().getName();
@@ -109,7 +109,6 @@ public class ByReferenceHandler {
             queueItem.queueType = QueueType.REQUEST;
             queueItem.invokeType = InvokeType.SET;
             queueItem.variable = variableName;
-
 
             Class clazz = context.getClass();
             Field field = clazz.getDeclaredField( queueItem.variable );

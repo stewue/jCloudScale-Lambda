@@ -41,7 +41,7 @@ public class CodeModifier {
         sourceCode += "/* class variables */ \n";
         for(Map.Entry<String, Type> entry : classVariablesReadOnly.entrySet() ){
             String classVariableName = entry.getKey();
-            String classVariableType = entry.getValue().toString();
+            String classVariableType = entry.getValue().getTypeName();
 
             // only add class variable to dto if not already a parameter with the same name exists
             if( parameters.get( classVariableName ) == null ){
@@ -305,7 +305,7 @@ public class CodeModifier {
         File directory = new File( RELATIVE_PATH + TEMPORARY_PACKAGE );
 
         try{
-            FileUtils.deleteDirectory( directory );
+            //FileUtils.deleteDirectory( directory );
         }
         catch ( Exception e ){
             Logger.error( "Unable to remove temporary created files" );
