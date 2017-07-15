@@ -3,9 +3,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com</groupId>
-    <artifactId>example</artifactId>
+    <artifactId>byValue_vs_byReference</artifactId>
     <version>0.0.1</version>
-    <name>JCS Lambda Example Project</name>
+    <name>JCS Lambda - byValue vs. byReference</name>
 
     <properties>
         <javaVersion>1.8</javaVersion>
