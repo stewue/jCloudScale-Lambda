@@ -41,5 +41,7 @@ $RECYCLE.BIN/
 !.idea/runConfigurations/
 /out/
 
+/jcs_lambda/
+
 lastModified.txt
 Demo.java
