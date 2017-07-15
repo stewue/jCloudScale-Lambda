@@ -30,7 +30,7 @@ public class CreateFile {
 
         save += "}\n";
 
-            PrintWriter out = new PrintWriter("src/main/java/com/example/Demo.java");
+            PrintWriter out = new PrintWriter("src/main/java/com/numberOfFunctions/Demo.java");
             out.println( save );
             out.close();
     }
