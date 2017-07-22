@@ -6,7 +6,7 @@
 | -------------     |:-------------:| 
 | *Local*           | The local variable value is not available in the cloud. |
 | *ReadOnly*        | The variable value is sent as read-only copy if the serverless function is started. |
-| *ByReference*     | The serverless function has access to the local variable value and has read and write access.  |
+| *ByReference*     | The serverless function has access to the local variable value with read and write access. |
 
 ## Custom exceptions
 
