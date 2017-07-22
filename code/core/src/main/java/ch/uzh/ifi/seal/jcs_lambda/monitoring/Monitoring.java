@@ -52,7 +52,7 @@ public class Monitoring {
         currentResultRecord.put( type, different );
     }
 
-    public long getCurrentMessure( MonitoringType type ){
+    public long getCurrentMeasurement( MonitoringType type ){
         return currentResultRecord.get( type );
     }
 
