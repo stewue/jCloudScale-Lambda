@@ -1,7 +1,11 @@
 package ch.uzh.ifi.seal.jcs_lambda.monitoring;
 
 import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
+import com.google.common.base.Charsets;
+import com.google.common.io.Files;
 
+import java.io.File;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -55,15 +59,8 @@ public class Monitoring {
     /**
      * Output the current measurement
      */
-    public void outputAll (){
+    private String outputAsString (){
         String output = "";
-
-        // output title
-        for (MonitoringType enumValue : MonitoringType.values() ) {
-            output += enumValue + ";";
-        }
-
-        output += "\n";
 
         // output value
         for (MonitoringType enumValue : MonitoringType.values() ) {
@@ -75,6 +72,49 @@ public class Monitoring {
 
             output +=  value + ";";
         }
+
+        return output;
+    }
+
+    /**
+     * Output the current measurement as csv
+     */
+    public void outputCSV ( String filename ){
+        String absoluteJavaPath = "jcs_lambda/" + filename + ".csv";
+
+        // create folder if not exists
+        File file = new File( absoluteJavaPath );
+        file.getParentFile().mkdirs();
+
+        String content = "";
+        try{
+            content = Files.toString( file, Charsets.UTF_8 );
+        }
+        catch ( Exception e ){
+
+        }
+
+        try {
+            PrintWriter writer = new PrintWriter(absoluteJavaPath, "UTF-8");
+            writer.write( content + "\n" +outputAsString() );
+            writer.close();
+        }
+        catch ( Exception e ){
+
+        }
+    }
+
+    /**
+     * Output the current measurement in the console
+     */
+    public void outputConsole (){
+        String output = outputAsString();
+
+        // output title
+        for (MonitoringType enumValue : MonitoringType.values() ) {
+            output += enumValue + ";";
+        }
+        output += "\n";
 
         Logger.fatal( output );
     }
