@@ -6,7 +6,7 @@ import java.util.concurrent.ThreadLocalRandom;
 public class CreateFile {
     public static void main ( String [] args ) throws Exception {
 
-        String save = "package com.example;\n" +
+        String save = "package com.numberOfFunctions;\n" +
                 "\n" +
                 "import ch.uzh.ifi.seal.jcs_lambda.annotations.CloudMethod;\n" +
                 "import ch.uzh.ifi.seal.jcs_lambda.annotations.StartUp;\n" +
