@@ -9,6 +9,8 @@ import ch.uzh.ifi.seal.jcs_lambda.exception.MissingStartUpException;
 import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
 import ch.uzh.ifi.seal.jcs_lambda.management.CloudManager;
 import ch.uzh.ifi.seal.jcs_lambda.management.CloudMethodEntity;
+import ch.uzh.ifi.seal.jcs_lambda.monitoring.Monitoring;
+import ch.uzh.ifi.seal.jcs_lambda.monitoring.MonitoringType;
 import ch.uzh.ifi.seal.jcs_lambda.utility.AspectUtil;
 import ch.uzh.ifi.seal.jcs_lambda.utility.ReflectionUtil;
 import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeLastModified;
@@ -45,7 +47,9 @@ public class CloudAspect {
     public void startUpMethod ( JoinPoint joinPoint ) throws Throwable {
 
         System.out.println( "@StartUp process with jCloudScale Lambda" );
-        long startTimestamp = System.currentTimeMillis();
+
+        Monitoring monitoring = Monitoring.getInstance();
+        monitoring.start( MonitoringType.TOTAL_STARTUP );
 
         cloudManager = CloudManager.getInstance();
         cloudManager.setDeployToCloud( AspectUtil.getStartUpAnnotation( joinPoint ) );
@@ -67,10 +71,9 @@ public class CloudAspect {
         CodeLastModified.updateLastModified();
 
         // Calculate init time
-        long endTimestamp = System.currentTimeMillis();
-        long different = endTimestamp - startTimestamp;
+        monitoring.stop( MonitoringType.TOTAL_STARTUP );
 
-        Logger.info( "Time needed for initialization: " + ( different / 1000.0 ) + " sec" );
+        Logger.info( "Time needed for initialization: " + ( monitoring.getCurrentMessure( MonitoringType.TOTAL_STARTUP ) / 1000.0 ) + " sec" );
     }
 
     /**
