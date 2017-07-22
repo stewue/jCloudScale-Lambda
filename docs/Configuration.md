@@ -52,11 +52,11 @@ Open a terminal and navigate to the *code/core* folder and execute the command *
 Now a local maven dependencies is created.
 
 ## You are now ready for your own Project with jCloudScale Lambda
-You can now create your own project with jCloudScale Lambda as maven dependency. Under *code/example_project* is a simple example, where all jCloudScale Lambda configuration is correctly set up (pom.xml file and a xml configuration file in the resource folder).
+You can now create your own project with jCloudScale Lambda as maven dependency. Under *code/example_project* is a simple example, where the jCloudScale Lambda configuration is correctly set up (pom.xml file and a xml configuration file in the resource folder).
 
 - Import the project into your IDE.
 - If you start the application in the console should appear "@StartUp process with jCloudScale Lambda". If the message does not appear, the ajc compiler was not correctly set up. You must manually change the compiler. 
 
-**Notice:** jCloudScale Lambda need access to the *target* folder from maven at runtime, because some class files are added at runtime. If you start the application from a common IDE (for example Intellij or Eclipse), no issues should occur.
+**Notice:** jCloudScale Lambda need access to the *target* folder from maven at runtime, because some class files are dynamically added at runtime. If you start the application from a common IDE (for example Intellij or Eclipse), no issues should occur.
 
 **Notice:** If you use Intellij IDEA as IDE, you need the Ultimate version, because the community edition does not support the ajc compiler! The used compiler is shown in the Intellij under Settings -> Build, Execution, Deployment -> Compiler -> Java Compiler.
