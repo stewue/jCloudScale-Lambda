@@ -5,6 +5,8 @@ import ch.uzh.ifi.seal.jcs_lambda.configuration.AwsConfiguration;
 import ch.uzh.ifi.seal.jcs_lambda.exception.InvalidCredentialsException;
 import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
 import ch.uzh.ifi.seal.jcs_lambda.management.FunctionDescription;
+import ch.uzh.ifi.seal.jcs_lambda.monitoring.Monitoring;
+import ch.uzh.ifi.seal.jcs_lambda.monitoring.MonitoringType;
 import ch.uzh.ifi.seal.jcs_lambda.utility.AwsUtil;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.services.lambda.AWSLambda;
@@ -33,6 +35,9 @@ public class AmazonLambda {
      * login to all aws services with the credential
      */
     private AmazonLambda(){
+        Monitoring monitoring = Monitoring.getInstance();
+        monitoring.start( MonitoringType.AWS_INIT );
+
         // Create Amazon Lambda Object
         amazonLambda = AWSLambdaClientBuilder.standard()
                 .withCredentials( new AWSStaticCredentialsProvider( AmazonWebService.getCredentials() ) )
@@ -44,6 +49,8 @@ public class AmazonLambda {
 
         amazonApiGateway = AmazonApiGateway.getInstance();
         amazonApiGateway.getRestApiId();
+
+        monitoring.stop( MonitoringType.AWS_INIT );
     }
 
     public static AmazonLambda getInstance(){

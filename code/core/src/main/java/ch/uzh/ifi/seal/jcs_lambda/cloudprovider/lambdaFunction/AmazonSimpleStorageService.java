@@ -3,6 +3,8 @@ package ch.uzh.ifi.seal.jcs_lambda.cloudprovider.lambdaFunction;
 import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.AmazonWebService;
 import ch.uzh.ifi.seal.jcs_lambda.configuration.AwsConfiguration;
 import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
+import ch.uzh.ifi.seal.jcs_lambda.monitoring.Monitoring;
+import ch.uzh.ifi.seal.jcs_lambda.monitoring.MonitoringType;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.services.lambda.model.FunctionCode;
 import com.amazonaws.services.s3.AmazonS3;
@@ -43,6 +45,9 @@ public class AmazonSimpleStorageService {
      */
     public FunctionCode uploadFile(File file ){
         try {
+            Monitoring monitoring = Monitoring.getInstance();
+            monitoring.start( MonitoringType.UPLOAD );
+
             // bucket name must be unique over all users
             s3Bucketname = AwsConfiguration.AWS_BUCKET_PREFIX + UUID.randomUUID();
 
@@ -57,6 +62,8 @@ public class AmazonSimpleStorageService {
             FunctionCode functionCode = new FunctionCode();
             functionCode.setS3Bucket( s3Bucketname );
             functionCode.setS3Key( file.getName() );
+
+            monitoring.stop( MonitoringType.UPLOAD );
 
             return functionCode;
         }
@@ -98,6 +105,9 @@ public class AmazonSimpleStorageService {
      */
     public void removeAllTemporaryCreatedBuckets(){
         try{
+            Monitoring monitoring = Monitoring.getInstance();
+            monitoring.start( MonitoringType.REMOVE_BUCKET );
+
             // Get all buckets
             ListBucketsRequest listBucketsRequest = new ListBucketsRequest();
             List<Bucket> buckets = amazonS3.listBuckets( listBucketsRequest );
@@ -109,6 +119,7 @@ public class AmazonSimpleStorageService {
                 }
             }
 
+            monitoring.stop( MonitoringType.REMOVE_BUCKET );
         }
         catch ( Exception e ){
             AmazonWebService.logException( e );

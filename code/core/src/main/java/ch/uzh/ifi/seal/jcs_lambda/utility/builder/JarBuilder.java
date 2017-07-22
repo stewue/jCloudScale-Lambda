@@ -2,6 +2,8 @@ package ch.uzh.ifi.seal.jcs_lambda.utility.builder;
 
 import ch.uzh.ifi.seal.jcs_lambda.configuration.JcsConfiguration;
 import ch.uzh.ifi.seal.jcs_lambda.exception.MavenBuildException;
+import ch.uzh.ifi.seal.jcs_lambda.monitoring.Monitoring;
+import ch.uzh.ifi.seal.jcs_lambda.monitoring.MonitoringType;
 import org.apache.maven.shared.invoker.*;
 
 import java.io.File;
@@ -14,6 +16,8 @@ public class JarBuilder {
      * Builds the maven project using maven sdk for java
      */
     public static void mvnBuild() {
+        Monitoring monitoring = Monitoring.getInstance();
+        monitoring.start( MonitoringType.MAVEN );
 
         // get absolute project path (folder where pom.xml is)
         Path currentRelativePath = Paths.get("");
@@ -40,5 +44,7 @@ public class JarBuilder {
 
             throw new MavenBuildException();
         }
+
+        monitoring.stop( MonitoringType.MAVEN );
     }
 }

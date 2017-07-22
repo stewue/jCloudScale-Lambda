@@ -55,11 +55,13 @@ public class CloudAspect {
         cloudManager.setDeployToCloud( AspectUtil.getStartUpAnnotation( joinPoint ) );
 
         // Register and modify all methods with an annotation
+        monitoring.start( MonitoringType.CODE_MODIFICATION );
         for( Method currentMethod : ReflectionUtil.getAllMethodWithCloudMethodAnnotation() ){
             CloudMethodEntity methodEntity = new CloudMethodEntity( currentMethod );
             cloudManager.registerMethod( methodEntity );
             methodEntity.modifyCode();
         }
+        monitoring.stop( MonitoringType.CODE_MODIFICATION );
 
         // start build and upload process
         cloudManager.buildAndUpload();
@@ -74,6 +76,8 @@ public class CloudAspect {
         monitoring.stop( MonitoringType.TOTAL_STARTUP );
 
         Logger.info( "Time needed for initialization: " + ( monitoring.getCurrentMeasurement( MonitoringType.TOTAL_STARTUP ) / 1000.0 ) + " sec" );
+
+        monitoring.outputCSV( "startup" );
     }
 
     /**

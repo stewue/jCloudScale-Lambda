@@ -5,6 +5,8 @@ import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.lambdaFunction.AmazonLambda;
 import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.lambdaFunction.AmazonSimpleStorageService;
 import ch.uzh.ifi.seal.jcs_lambda.configuration.AwsConfiguration;
 import ch.uzh.ifi.seal.jcs_lambda.exception.IllegalDefinitionException;
+import ch.uzh.ifi.seal.jcs_lambda.monitoring.Monitoring;
+import ch.uzh.ifi.seal.jcs_lambda.monitoring.MonitoringType;
 import ch.uzh.ifi.seal.jcs_lambda.utility.AwsUtil;
 import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeLastModified;
 import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeModifier;
@@ -63,7 +65,7 @@ public class CloudManager {
      * build a jar file with all dependencies and create/update all necessary functions in the cloud
      */
     public void buildAndUpload (){
-
+        Monitoring monitoring = Monitoring.getInstance();
         AmazonLambda awsCloudProvider = AmazonLambda.getInstance();
 
         // check if code is modified
@@ -95,6 +97,7 @@ public class CloudManager {
             FunctionCode functionCode = amazonS3.uploadFile( file );
 
             // update each function and set new description and code ("link" to file in amazon s3)
+            monitoring.start( MonitoringType.CONFIGURE_ENDPOINTS );
             for( Map.Entry<String, CloudMethodEntity> entry : cloudMethods.entrySet() ) {
                 CloudMethodEntity method = entry.getValue();
 
@@ -107,6 +110,7 @@ public class CloudManager {
                 }
                 awsCloudProvider.createOrUpdateFunction( functionNameWithPrefix, handlerName, functionCode, functionDescription, method.getMemory(), method.getTimeout() );
             }
+            monitoring.stop( MonitoringType.CONFIGURE_ENDPOINTS );
 
             // Release new deployment stage
             AmazonApiGateway.getInstance().releaseDeploymentStage();

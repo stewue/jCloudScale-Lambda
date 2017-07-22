@@ -3,6 +3,8 @@ package ch.uzh.ifi.seal.jcs_lambda.cloudprovider.lambdaFunction;
 import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.AmazonWebService;
 import ch.uzh.ifi.seal.jcs_lambda.configuration.AwsConfiguration;
 import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
+import ch.uzh.ifi.seal.jcs_lambda.monitoring.Monitoring;
+import ch.uzh.ifi.seal.jcs_lambda.monitoring.MonitoringType;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.services.apigateway.AmazonApiGatewayClientBuilder;
 import com.amazonaws.services.apigateway.model.*;
@@ -143,6 +145,9 @@ public class AmazonApiGateway {
      */
     public void releaseDeploymentStage(){
         if( releaseNewDeploymentStage ) {
+            Monitoring monitoring = Monitoring.getInstance();
+            monitoring.start( MonitoringType.ENDPOINT_AVAILABLE );
+
             // Create new deployment stage
             CreateDeploymentRequest createDeploymentRequest = new CreateDeploymentRequest();
             createDeploymentRequest.setRestApiId(restApiId);
@@ -161,6 +166,7 @@ public class AmazonApiGateway {
                     connection.connect();
 
                     if( connection.getResponseCode() != 403 ){
+                        monitoring.stop( MonitoringType.ENDPOINT_AVAILABLE );
                         return;
                     }
 
