@@ -16,23 +16,25 @@ It is necessary that you set the following environment variable:
 ## Step 3: Create a role
 Login into your Amazon Web Service account, go to the [Identity and Access Management](https://console.aws.amazon.com/iam/home).
 - Choose "Roles" in the menu
-- Use "create new role"
+- Use "Create new role"
 - Select as role type "AWS Lambda"
 - As role you choose "AWSLambdaFullAccess" and "AmazonSQSFullAccess"
-- After the creation you should save the role ARN for Step 5]
+- After the creation you should save the role ARN for Step 5
 
 ## Step 4: Create a Simple Queue
+**Hint:** This step is optional. If you will never use a by-reference variable, the configuration of a message queue is unnecessary.
+
 Login into your Amazon Web Service account, go to the [Simple Queue Service](https://console.aws.amazon.com/sqs/home).
 
 Create a new queue with the exactly following configurations:
 ![SQS-Settings](sqs-settings.PNG "SQS Settings")
 
-After the creation you should save the queue ARN for Step 5
+After the creation you should save the queue ARN for Step 5.
 
 ## Step 5: Modify the JCloudScale Lambda settings 
-Now open the *AwsConfiguration.java* file in *src/main/java/ch/uzh/ifi/seal/jcs_lambda/configuration* and paste your Role ARN and Queue url into the *AWS_ROLE_ARN* and *AWS_QUEUE_URL* variable.
+Now open the *AwsConfiguration.java* file in *src/main/java/ch/uzh/ifi/seal/jcs_lambda/configuration* and paste your Role ARN and Queue URL into the *AWS_ROLE_ARN* and *AWS_QUEUE_URL* variable.
 
-If you would like to change the default settings from JCS Lambda, then you can change here the following configurations:
+If you would like to change the default settings from jCloudScale Lambda, then you can change here the following configurations:
 
 | Variable                      | Description   | 
 | -------------                 |:-------------:| 
@@ -44,8 +46,8 @@ If you would like to change the default settings from JCS Lambda, then you can c
 | *AWS_API_GATEWAY_STAGE_NAME*  | Here you can set the name of the gateway stage. Normally it's not necessary to modify this parameter. |
 | *AWS_FUNCTION_PREFIX*         | Normally it's not necessary to modify this parameter. (Should not be longer the 15 characters) |
 
-## Step 6:
-Open a terminal and navigate to the *code/core* folder and execute the command *mvn clean install*
+## Step 6: Finished the configuration
+Open a terminal and navigate to the *code/core* folder and execute the command *mvn clean install*.
 
 Now a local maven dependencies is created.
 
@@ -55,6 +57,6 @@ You can now create your own project with jCloudScale Lambda as maven dependency.
 - Import the project into your IDE.
 - If you start the application in the console should appear "@StartUp process with jCloudScale Lambda". If the message does not appear, the ajc compiler was not correctly set up. You must manually change the compiler. 
 
-**Notice:** If you use Intellij IDEA as IDE, you need the Ultimate version, because the community edition does not support the ajc compiler!
-
 **Notice:** jCloudScale Lambda need access to the target folder from maven at runtime, because some class files are added at runtime. If you start the application from a common IDE (for example Intellij or Eclipse), no issues should occur.
+
+**Notice:** If you use Intellij IDEA as IDE, you need the Ultimate version, because the community edition does not support the ajc compiler! The used compiler is shown in the Intellij under Settings -> Build, Execution, Deployment -> Compiler -> Java Compiler.
