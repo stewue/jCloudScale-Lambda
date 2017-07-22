@@ -139,9 +139,9 @@ public class CloudMethodEntity {
     // TODO Refactoring
     public Object runMethodInCloud( Object context, Map<String, Object> parameters,  Map<String, Object> classVariablesReadOnly ) throws Exception {
 
-        Monitoring monitoring = Monitoring.getInstance();
-        monitoring.start( MonitoringType.TOTAL_RUNTIME );
-        monitoring.start( MonitoringType.REQUEST );
+        //Monitoring monitoring = Monitoring.getInstance();
+        //monitoring.start( MonitoringType.TOTAL_RUNTIME );
+        //monitoring.start( MonitoringType.REQUEST );
         boolean hasAReferenceVariable = ByReferenceUtil.checkIfClassHasAReferenceVariable( context );
 
         JcsMessageQueue messageQueue = null;
@@ -188,7 +188,7 @@ public class CloudMethodEntity {
             throw new RuntimeException( "Unable to create request dto or to set the value" );
         }
 
-        monitoring.stop( MonitoringType.REQUEST );
+        //monitoring.stop( MonitoringType.REQUEST );
 
         Gson gson = new Gson();
 
@@ -202,20 +202,20 @@ public class CloudMethodEntity {
             throw new RuntimeException( "Unable to create response dto" );
         }
 
-        monitoring.start( MonitoringType.SERIALIZING );
+        //monitoring.start( MonitoringType.SERIALIZING );
         String serializedString = gson.toJson(requestInstance);
-        monitoring.stop( MonitoringType.SERIALIZING );
+        //monitoring.stop( MonitoringType.SERIALIZING );
 
         Logger.debug( "Send request to " + url );
-        monitoring.start( MonitoringType.NETWORKING );
+        //monitoring.start( MonitoringType.NETWORKING );
         String returnJsonObject = Util.doRequest(url, serializedString );
-        monitoring.stop( MonitoringType.NETWORKING );
+        //monitoring.stop( MonitoringType.NETWORKING );
 
-        monitoring.start( MonitoringType.DESERIALIZING );
+        //monitoring.start( MonitoringType.DESERIALIZING );
         Object returnObj = gson.fromJson( returnJsonObject, responseClass );
-        monitoring.stop( MonitoringType.DESERIALIZING );
+        //monitoring.stop( MonitoringType.DESERIALIZING );
 
-        monitoring.start( MonitoringType.RESPONSE );
+        //monitoring.start( MonitoringType.RESPONSE );
 
         // check if exception occurred in cloud
         Field fieldException = responseClass.getDeclaredField("exceptionStackTrace" );
@@ -240,9 +240,9 @@ public class CloudMethodEntity {
             returnObjToMethod = fieldReturnValue.get( responseClass.cast(returnObj) );
         }
 
-        monitoring.stop( MonitoringType.RESPONSE );
-        monitoring.stop( MonitoringType.TOTAL_RUNTIME );
-        monitoring.outputAll();
+        //monitoring.stop( MonitoringType.RESPONSE );
+        //monitoring.stop( MonitoringType.TOTAL_RUNTIME );
+        //monitoring.outputAll();
 
         return returnObjToMethod;
     }
