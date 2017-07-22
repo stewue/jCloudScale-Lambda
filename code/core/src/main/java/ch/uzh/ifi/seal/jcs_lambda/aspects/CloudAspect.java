@@ -73,7 +73,7 @@ public class CloudAspect {
         // Calculate init time
         monitoring.stop( MonitoringType.TOTAL_STARTUP );
 
-        Logger.info( "Time needed for initialization: " + ( monitoring.getCurrentMessure( MonitoringType.TOTAL_STARTUP ) / 1000.0 ) + " sec" );
+        Logger.info( "Time needed for initialization: " + ( monitoring.getCurrentMeasurement( MonitoringType.TOTAL_STARTUP ) / 1000.0 ) + " sec" );
     }
 
     /**
