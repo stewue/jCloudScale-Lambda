@@ -178,7 +178,7 @@ public class CodeModifier {
                 "        \n" +
                 "        Logger.info( \"Output: \" +  gson.toJson(response) );\n" +
                 "        monitoring.stop( MonitoringType.SERIALIZING );\n" +
-                "        monitoring.outputAll();\n" +
+                "        monitoring.outputConsole();\n" +
                 "    }\n" +
                 "\n" +
                 "    private Response invoke( Request request ) throws Exception {\n" +

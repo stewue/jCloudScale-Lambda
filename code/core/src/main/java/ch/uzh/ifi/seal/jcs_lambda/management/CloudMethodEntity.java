@@ -189,7 +189,6 @@ public class CloudMethodEntity {
         }
 
         monitoring.stop( MonitoringType.REQUEST );
-
         Gson gson = new Gson();
 
         // handle request dto
@@ -242,7 +241,7 @@ public class CloudMethodEntity {
 
         monitoring.stop( MonitoringType.RESPONSE );
         monitoring.stop( MonitoringType.TOTAL_RUNTIME );
-        monitoring.outputAll();
+        monitoring.outputCSV( "runtime" );
 
         return returnObjToMethod;
     }
