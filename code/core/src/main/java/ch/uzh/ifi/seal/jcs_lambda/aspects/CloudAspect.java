@@ -44,7 +44,7 @@ public class CloudAspect {
     @Before("@annotation(StartUp) && execution(* *(..))")
     public void startUpMethod ( JoinPoint joinPoint ) throws Throwable {
 
-        Logger.info( "@startUp" );
+        System.out.println( "@StartUp process with jCloudScale Lambda" );
         long startTimestamp = System.currentTimeMillis();
 
         cloudManager = CloudManager.getInstance();
