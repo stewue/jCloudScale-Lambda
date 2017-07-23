@@ -1,8 +1,8 @@
-package com.example;
+package com.helper;
 
 import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.lambdaFunction.AmazonLambda;
 
-public class Demo
+public class RemoveFunctionManager
 {
     public static void main ( String [] args ){
         AmazonLambda amazonLambda = AmazonLambda.getInstance();
