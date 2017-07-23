@@ -11,7 +11,7 @@ If you not already installed [Maven](https://maven.apache.org/download.cgi) and 
 
 It is necessary that you set the following environment variable:
 - *JAVA_HOME*
-- *MAVEN_HOME* (or you just set the maven home in the *AwsConfiguration.java* file in *src/main/java/ch/uzh/ifi/seal/jcs_lambda/configuration* file)
+- *MAVEN_HOME* (or you just set the maven home in the *AwsConfiguration.java* file in *code/core/src/main/java/ch/uzh/ifi/seal/jcs_lambda/configuration* file)
 
 ## Step 3: Create a role
 Login into your Amazon Web Service account, go to the [Identity and Access Management](https://console.aws.amazon.com/iam/home).
@@ -27,12 +27,13 @@ Login into your Amazon Web Service account, go to the [Identity and Access Manag
 Login into your Amazon Web Service account, go to the [Simple Queue Service](https://console.aws.amazon.com/sqs/home).
 
 Create a new queue with the exactly following configurations:
+
 ![SQS-Settings](sqs-settings.PNG "SQS Settings")
 
 After the creation you should save the queue ARN for Step 5.
 
 ## Step 5: Modify the JCloudScale Lambda Settings 
-Now open the *AwsConfiguration.java* file in *src/main/java/ch/uzh/ifi/seal/jcs_lambda/configuration* and paste your Role ARN and Queue URL into the *AWS_ROLE_ARN* and *AWS_QUEUE_URL* variable.
+Now open the *AwsConfiguration.java* file in *code/core/src/main/java/ch/uzh/ifi/seal/jcs_lambda/configuration* and paste your Role ARN and Queue URL into the *AWS_ROLE_ARN* and *AWS_QUEUE_URL* variable.
 
 If you would like to change the default settings from jCloudScale Lambda, then you can change here the following configurations:
 
@@ -49,14 +50,14 @@ If you would like to change the default settings from jCloudScale Lambda, then y
 ## Step 6: Finish the Configuration
 Open a terminal and navigate to the *code/core* folder and execute the command *mvn clean install*.
 
-Now a local maven dependencies is created.
+Now a local maven dependency is created.
 
 ## You are now ready for your own Project with jCloudScale Lambda
 You can now create your own project with jCloudScale Lambda as maven dependency. Under *code/example_project* is a simple example, where the jCloudScale Lambda configuration is correctly set up (pom.xml file and a xml configuration file in the resource folder).
 
 - Import the project into your IDE.
-- If you start the application in the console should appear "@StartUp process with jCloudScale Lambda". If the message does not appear, the ajc compiler was not correctly set up. You must manually change the compiler. 
+- If you start the application in the console should appear *"@StartUp process with jCloudScale Lambda"*. If the message does not appear, the ajc compiler was not correctly set up. You must manually change the compiler. 
 
 **Notice:** jCloudScale Lambda need access to the *target* folder from maven at runtime, because some class files are dynamically added at runtime. If you start the application from a common IDE (for example Intellij or Eclipse), no issues should occur.
 
-**Notice:** If you use Intellij IDEA as IDE, you need the Ultimate version, because the community edition does not support the ajc compiler! The used compiler is shown in the Intellij under Settings -> Build, Execution, Deployment -> Compiler -> Java Compiler.
+**Notice:** If you use Intellij IDEA as IDE, you need the Ultimate version, because the community edition does not support the ajc compiler! The used compiler is shown in the Intellij under *Settings -> Build, Execution, Deployment -> Compiler -> Java Compiler*.

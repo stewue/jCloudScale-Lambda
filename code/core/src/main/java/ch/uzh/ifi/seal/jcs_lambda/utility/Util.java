@@ -71,6 +71,11 @@ public class Util {
             }
             in.close();
 
+            // Check if task timed out
+            if( response.toString().contains( "Task timed out after" ) ) {
+                throw new CloudRuntimeException( "An error occurred in the cloud method '" + url + "'. Please check the log file from aws cloud watch, why the task timed out!" );
+            }
+
             return response.toString();
         }
         catch ( Exception e ){

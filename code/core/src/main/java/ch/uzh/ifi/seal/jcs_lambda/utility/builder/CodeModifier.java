@@ -305,7 +305,7 @@ public class CodeModifier {
         File directory = new File( RELATIVE_PATH + TEMPORARY_PACKAGE );
 
         try{
-            //FileUtils.deleteDirectory( directory );
+            FileUtils.deleteDirectory( directory );
         }
         catch ( Exception e ){
             Logger.error( "Unable to remove temporary created files" );
