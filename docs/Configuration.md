@@ -50,7 +50,7 @@ If you would like to change the default settings from jCloudScale Lambda, then y
 ## Step 6: Finish the Configuration
 Open a terminal and navigate to the *code/core* folder and execute the command *mvn clean install*.
 
-Now a local maven dependencies is created.
+Now a local maven dependency is created.
 
 ## You are now ready for your own Project with jCloudScale Lambda
 You can now create your own project with jCloudScale Lambda as maven dependency. Under *code/example_project* is a simple example, where the jCloudScale Lambda configuration is correctly set up (pom.xml file and a xml configuration file in the resource folder).
