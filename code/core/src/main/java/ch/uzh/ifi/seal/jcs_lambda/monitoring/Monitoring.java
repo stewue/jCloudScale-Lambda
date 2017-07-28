@@ -78,6 +78,7 @@ public class Monitoring {
 
     /**
      * Output the current measurement as csv
+     * @param filename filename where the value is saved
      */
     public void outputCSV ( String filename ){
         String absoluteJavaPath = "jcs_lambda/" + filename + ".csv";
