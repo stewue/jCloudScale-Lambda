@@ -1,18 +1,9 @@
 package ch.uzh.ifi.seal.jcs_lambda.cloudprovider.byReference;
 
-import ch.uzh.ifi.seal.jcs_lambda.annotations.ByReference;
-import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.JVMContext;
-import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.byReference.dto.InvokeType;
-import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.byReference.dto.QueueItem;
-import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.byReference.dto.QueueType;
 import ch.uzh.ifi.seal.jcs_lambda.exception.RuntimeReferenceVariableException;
 import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
-import ch.uzh.ifi.seal.jcs_lambda.utility.ReflectionUtil;
-import com.google.gson.Gson;
-import org.aspectj.lang.ProceedingJoinPoint;
 
 import java.lang.reflect.Field;
-import java.util.UUID;
 
 public class Explicit {
     /**

@@ -2,7 +2,6 @@ package ch.uzh.ifi.seal.jcs_lambda.testing.asynchronous;
 
 import ch.uzh.ifi.seal.jcs_lambda.annotations.StartUp;
 import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.byReference.JcsMessageQueue;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.concurrent.Callable;
