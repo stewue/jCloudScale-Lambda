@@ -7,9 +7,9 @@ public class Calculator
 {
     @StartUp
     public static void main ( String [] args ){
-        int m = 1000;
-        int n = 1000;
-        int o = 1000;
+        int m = 500;
+        int n = 500;
+        int o = 500;
 
         for(int i=0; i<1; i++) {
             Matrix matrixA = new Matrix(m, n);

@@ -10,7 +10,7 @@ public class Main
         long start = System.nanoTime();
 
         // input parameters.
-        final int threadCount = 5;
+        final int threadCount = 50;
         final int from = 1;
         final int to = Integer.MAX_VALUE/100;
 
