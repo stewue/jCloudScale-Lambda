@@ -5,7 +5,6 @@ import ch.uzh.ifi.seal.jcs_lambda.annotations.CloudMethod;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.ReadOnly;
 import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.byReference.Explicit;
 import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
-import com.google.gson.Gson;
 
 public class TestObject {
     @ReadOnly

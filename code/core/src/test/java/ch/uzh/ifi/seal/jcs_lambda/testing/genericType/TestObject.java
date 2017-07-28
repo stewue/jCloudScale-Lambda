@@ -1,10 +1,7 @@
 package ch.uzh.ifi.seal.jcs_lambda.testing.genericType;
 
-import ch.uzh.ifi.seal.jcs_lambda.annotations.ByReference;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.CloudMethod;
-import ch.uzh.ifi.seal.jcs_lambda.annotations.Local;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.ReadOnly;
-import ch.uzh.ifi.seal.jcs_lambda.logging.Logger;
 
 import java.util.ArrayList;
 import java.util.List;

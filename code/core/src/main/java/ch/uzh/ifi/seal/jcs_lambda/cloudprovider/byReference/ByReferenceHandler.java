@@ -4,7 +4,6 @@ import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.JVMContext;
 import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.byReference.dto.InvokeType;
 import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.byReference.dto.QueueItem;
 import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.byReference.dto.QueueType;
-import ch.uzh.ifi.seal.jcs_lambda.configuration.AwsConfiguration;
 import ch.uzh.ifi.seal.jcs_lambda.exception.RuntimeReferenceVariableException;
 import ch.uzh.ifi.seal.jcs_lambda.utility.ReflectionUtil;
 import com.google.gson.Gson;
