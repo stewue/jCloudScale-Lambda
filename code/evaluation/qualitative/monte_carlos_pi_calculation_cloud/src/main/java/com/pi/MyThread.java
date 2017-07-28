@@ -1,4 +1,4 @@
-package pi;
+package com.pi;
 
 import ch.uzh.ifi.seal.jcs_lambda.annotations.CloudMethod;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.ReadOnly;

@@ -1,4 +1,4 @@
-package pi;
+package com.pi;
 
 public class Point {
 	private long x;
