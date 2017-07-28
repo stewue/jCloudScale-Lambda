@@ -1,7 +1,6 @@
 package ch.uzh.ifi.seal.jcs_lambda.aspects;
 
 import ch.uzh.ifi.seal.jcs_lambda.annotations.ByReference;
-import ch.uzh.ifi.seal.jcs_lambda.annotations.CloudMethod;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.StartUp;
 import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.JVMContext;
 import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.byReference.ByReferenceHandler;
@@ -20,15 +19,10 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
-import org.reflections.Reflections;
-import org.reflections.scanners.MethodAnnotationsScanner;
-import org.reflections.util.ClasspathHelper;
-import org.reflections.util.ConfigurationBuilder;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Map;
-import java.util.Set;
 
 @Aspect
 public class CloudAspect {

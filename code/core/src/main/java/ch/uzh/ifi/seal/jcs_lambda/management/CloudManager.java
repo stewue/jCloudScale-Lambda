@@ -12,7 +12,6 @@ import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeLastModified;
 import ch.uzh.ifi.seal.jcs_lambda.utility.builder.CodeModifier;
 import ch.uzh.ifi.seal.jcs_lambda.utility.builder.JarBuilder;
 import com.amazonaws.services.lambda.model.FunctionCode;
-import org.aspectj.apache.bcel.classfile.Code;
 
 import java.io.File;
 import java.util.HashMap;
