@@ -1,6 +1,7 @@
 package ch.uzh.ifi.seal.jcs_lambda.aspects;
 
 import ch.uzh.ifi.seal.jcs_lambda.annotations.ByReference;
+import ch.uzh.ifi.seal.jcs_lambda.annotations.CloudMethod;
 import ch.uzh.ifi.seal.jcs_lambda.annotations.StartUp;
 import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.JVMContext;
 import ch.uzh.ifi.seal.jcs_lambda.cloudprovider.byReference.ByReferenceHandler;
@@ -30,7 +31,7 @@ public class CloudAspect {
     private static CloudManager cloudManager = null;
 
     // only pseudo variable, that import optimizer won't remove the startup and ByReference annotation
-    private static Class [] annotation = new Class[]{ StartUp.class, ByReference.class };
+    private static Class [] annotation = new Class[]{ StartUp.class, ByReference.class, CloudMethod.class };
 
     /**
      * On Startup register all methods with cloud annotation
