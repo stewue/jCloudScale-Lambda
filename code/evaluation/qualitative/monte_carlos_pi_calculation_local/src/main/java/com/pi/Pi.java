@@ -1,15 +1,17 @@
-package pi;
-
-import ch.uzh.ifi.seal.jcs_lambda.annotations.StartUp;
+package com.pi;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletionService;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorCompletionService;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class Pi {
 
-	@StartUp
 	public static void main(String[] args) {
 		int numThread = 0;
 		long sideSquare = 0;
@@ -59,7 +61,7 @@ public class Pi {
 			}
 			System.out
 					.println("Total execution time for current run (millis): " + (timeOfEnd - timeOfStart) + " millis");
-			System.out.println("Calculate pi.Pi: " + pi);
+			System.out.println("Calculate Pi: " + pi);
 			executor.shutdown();
 		}
 	}
